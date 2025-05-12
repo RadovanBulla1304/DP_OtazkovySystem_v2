@@ -6,6 +6,10 @@ import authRoutes from './pages/auth';
 import Dashboard from './pages/dashboard/Dashboard';
 
 import adminRoutes from '@app/pages/admin';
+import Tests from './pages/tests/Tests';
+import Moduls from './pages/moduls/Moduls';
+import MyQuestions from './pages/my-questions/MyQuestions';
+import Subjects from './pages/subjects/Subjects';
 
 export const router = createBrowserRouter([
   {
@@ -23,6 +27,22 @@ export const router = createBrowserRouter([
       {
         path: '/',
         element: <Dashboard />
+      },
+      {
+        path: '/moduls',
+        element: <Moduls />
+      },
+      {
+        path: '/tests',
+        element: <Tests />
+      },
+      {
+        path: '/my-questions',
+        element: <MyQuestions />
+      },
+      {
+        path: '/subjects',
+        element: <Subjects />
       },
       {
         path: 'admin',

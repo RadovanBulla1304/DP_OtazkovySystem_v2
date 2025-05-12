@@ -1,8 +1,9 @@
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import DashboardIcon from '@mui/icons-material/Dashboard';
+import ViewModuleIcon from '@mui/icons-material/ViewModule';
 import GroupIcon from '@mui/icons-material/Group';
 import MenuIcon from '@mui/icons-material/Menu';
-
+import AvTimerIcon from '@mui/icons-material/AvTimer';
 import { Button, Container, ListItemButton, Stack, useMediaQuery } from '@mui/material';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -26,6 +27,8 @@ import { replaceDiacritics } from '@app/utils/common.util';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import ProfileMenu from './profile-menu.component';
+import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
+import SchoolIcon from '@mui/icons-material/School';
 
 const drawerWidth = 240;
 
@@ -73,20 +76,47 @@ const MainLayout = ({ children }) => {
     navigate('/auth/login');
   };
 
-  const drawerOption = [
+  let drawerOption = [
     {
       title: 'Dashboard',
       navTo: '/',
       icon: <DashboardIcon />
     }
   ];
+
   if (user?.isAdmin) {
     drawerOption.push({
       title: 'Používatelia',
       navTo: '/admin/users',
       icon: <GroupIcon />
     });
+    drawerOption.push({
+    title: 'Predmety',
+    navTo: '/subjects',
+    icon: <SchoolIcon />
+  });
   }
+
+  
+
+  drawerOption = drawerOption.concat([
+    {
+      title: 'Moduly',
+      navTo: '/moduls',
+      icon: <ViewModuleIcon />
+    },
+    {
+      title: 'Moje otázky',
+      navTo: '/my-questions',
+      icon: <QuestionAnswerIcon />
+    },
+    {
+      title: 'Testy',
+      navTo: '/tests',
+      icon: <AvTimerIcon />
+    },
+    
+  ]);
 
   const drawer = (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
