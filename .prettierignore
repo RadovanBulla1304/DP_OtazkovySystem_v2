@@ -1,0 +1,5 @@
+Dockerfile
+pnpm-lock.yaml
+package-lock.json
+README.md
+node_modules

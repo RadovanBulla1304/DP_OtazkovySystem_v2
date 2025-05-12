@@ -1,0 +1,13 @@
+FROM node:21.7.3-alpine
+RUN npm i -g pnpm
+
+WORKDIR /usr/src/app
+
+COPY ./package.json ./
+RUN pnpm install
+
+#RUN mkdir /app/node_modules/.cache && chmod -R 777 /app/node_modules/.cache
+
+COPY . .
+
+CMD ["pnpm", "run", "dev"]

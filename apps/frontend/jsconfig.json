@@ -1,0 +1,15 @@
+// {
+//   //   "compilerOptions": {
+//   //     "baseUrl": "." // Allows VS Code to resolve paths from the project root
+//   //   },
+//   "include": ["src/**/*"]
+// }
+
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@app/*": ["src/*"]
+    }
+  }
+}
