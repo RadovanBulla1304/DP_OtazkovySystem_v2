@@ -6,6 +6,9 @@ WORKDIR /usr/src/app
 COPY ./package.json ./
 RUN pnpm install
 
+ENV CHOKIDAR_USEPOLLING=true
+
+
 #RUN mkdir /app/node_modules/.cache && chmod -R 777 /app/node_modules/.cache
 
 COPY . .

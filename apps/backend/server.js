@@ -24,7 +24,6 @@ const createDefaultUser = async () => {
             isAdmin: true,
             isActive: true,
             name: 'Administrator',
-            surName: ''
         });
         admin.setPassword('admin');
         await admin.save();
