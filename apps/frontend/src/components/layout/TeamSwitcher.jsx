@@ -1,11 +1,12 @@
 import React from "react"
-import { Box, Button, Typography, Popover, List, ListItem, ListItemText, Divider, Avatar } from "@mui/material"
+import { Box, Button, Typography, Popover, List, ListItem, ListItemText, Divider, Avatar, ListItemButton } from "@mui/material"
 import AddIcon from "@mui/icons-material/Add"
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 
 import { styled } from "@mui/material/styles"
 import AddSubjectModal from "../../pages/admin/components/AddSubjectModal"
 import { useGetAllSubjectsQuery } from "@app/redux/api" // adjust path
+import * as authService from "@app/pages/auth/authService"
 
 const TeamSwitcherButton = styled(Button)(({ theme }) => ({
   width: "100%",
@@ -40,6 +41,7 @@ const CollapsedAvatar = styled(Avatar)(({ theme }) => ({
 
 const TeamSwitcher = ({ collapsed = false }) => {
   const { data: subjects = [], isLoading, refetch } = useGetAllSubjectsQuery();
+  const user = authService.getUserFromStorage();
   const [currentSubject, setCurrentSubject] = React.useState(null);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [modalOpen, setModalOpen] = React.useState(false);
@@ -75,7 +77,6 @@ const TeamSwitcher = ({ collapsed = false }) => {
     setModalOpen(false);
   };
 
-  // Render different UI based on collapsed state
   if (collapsed) {
     return (
       <>
@@ -118,11 +119,13 @@ const TeamSwitcher = ({ collapsed = false }) => {
                 ))
               )}
 
-              <Divider sx={{ my: 1 }} />
-              <ListItem button onClick={handleAddSubject} sx={{ "&:hover": { cursor: "pointer" } }}>
-                <AddIcon fontSize="small" sx={{ mr: 1 }} />
-                <ListItemText primary="Pridať predmet" />
-              </ListItem>
+              {user.isAdmin && subjects.length > 0 && <Divider sx={{ my: 1 }} />}
+              {user.isAdmin && (
+                <ListItemButton onClick={handleAddSubject} sx={{ "&:hover": { cursor: "pointer" } }}>
+                  <AddIcon fontSize="small" sx={{ mr: 1 }} />
+                  <ListItemText primary="Pridať predmet" />
+                </ListItemButton>
+              )}
             </List>
           </Box>
         </Popover>
@@ -189,11 +192,13 @@ const TeamSwitcher = ({ collapsed = false }) => {
               ))
             )}
 
-            <Divider sx={{ my: 1 }} />
-            <ListItem button onClick={handleAddSubject} sx={{ "&:hover": { cursor: "pointer" } }}>
-              <AddIcon fontSize="small" sx={{ mr: 1 }} />
-              <ListItemText primary="Pridať predmet" />
-            </ListItem>
+            {user.isAdmin && subjects.length > 0 && <Divider sx={{ my: 1 }} />}
+            {user.isAdmin && (
+              <ListItem button onClick={handleAddSubject} sx={{ "&:hover": { cursor: "pointer" } }}>
+                <AddIcon fontSize="small" sx={{ mr: 1 }} />
+                <ListItemText primary="Pridať predmet" />
+              </ListItem>
+            )}
           </List>
         </Box>
       </Popover>
