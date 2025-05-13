@@ -15,7 +15,7 @@ const baseQuery = fetchBaseQuery({
 export const api = createApi({
   reducerPath: 'api',
   baseQuery,
-  tagTypes: ['Users', 'CREOcards', 'CREOcardHistory'],
+  tagTypes: ['Users'],
   endpoints: (builder) => ({
     // USERS
     getUserMe: builder.query({
@@ -64,20 +64,20 @@ export const api = createApi({
     // SUBJECTS
     createSubject: builder.mutation({
       query: (data) => ({
-        url: '/admin/subject',
+        url: '/subject',
         method: 'POST',
         body: data
       })
     }),
     getAllSubjects: builder.query({
       query: () => ({
-        url: '/admin/getAllSubjects',
+        url: '/subject',
         method: 'GET'
       })
     }),
     editSubject: builder.mutation({
       query: (data) => ({
-        url: `/admin/subject/${data.subjectId}`,
+        url: `/subject/${data.subjectId}`,
         method: 'PUT',
         body: data.data
       })
