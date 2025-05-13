@@ -77,14 +77,15 @@ const MainLayout = ({ children }) => {
   };
 
   let drawerOption = [
-    {
-      title: 'Dashboard',
-      navTo: '/',
-      icon: <DashboardIcon />
-    }
+    
   ];
 
   if (user?.isAdmin) {
+    drawerOption.push({
+      title: 'Dashboard',
+      navTo: '/',
+      icon: <DashboardIcon />
+    });
     drawerOption.push({
       title: 'Používatelia',
       navTo: '/admin/users',
