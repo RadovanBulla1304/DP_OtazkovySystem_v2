@@ -1,135 +1,131 @@
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import ViewModuleIcon from '@mui/icons-material/ViewModule';
-import GroupIcon from '@mui/icons-material/Group';
-import MenuIcon from '@mui/icons-material/Menu';
-import AvTimerIcon from '@mui/icons-material/AvTimer';
-import { Button, Container, ListItemButton, Stack, useMediaQuery } from '@mui/material';
-import AppBar from '@mui/material/AppBar';
-import Box from '@mui/material/Box';
-import CssBaseline from '@mui/material/CssBaseline';
-import Drawer from '@mui/material/Drawer';
-import IconButton from '@mui/material/IconButton';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import * as React from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import AccountCircleIcon from "@mui/icons-material/AccountCircle"
+import DashboardIcon from "@mui/icons-material/Dashboard"
+import ViewModuleIcon from "@mui/icons-material/ViewModule"
+import GroupIcon from "@mui/icons-material/Group"
+import MenuIcon from "@mui/icons-material/Menu"
+import AvTimerIcon from "@mui/icons-material/AvTimer"
+import { Button, Container, ListItemButton, Stack, useMediaQuery } from "@mui/material"
+import AppBar from "@mui/material/AppBar"
+import Box from "@mui/material/Box"
+import CssBaseline from "@mui/material/CssBaseline"
+import Drawer from "@mui/material/Drawer"
+import IconButton from "@mui/material/IconButton"
+import List from "@mui/material/List"
+import ListItem from "@mui/material/ListItem"
+import ListItemIcon from "@mui/material/ListItemIcon"
+import ListItemText from "@mui/material/ListItemText"
+import Toolbar from "@mui/material/Toolbar"
+import Typography from "@mui/material/Typography"
+import * as React from "react"
+import { Link, NavLink } from "react-router-dom"
 
-import { styled } from '@mui/material/styles';
+import { styled } from "@mui/material/styles"
 //import { replaceDiacritics } from '../../utils/common.util';
-import logo from '@app/assets/UNIZA_TEXT_B.png';
-import * as authService from '@app/pages/auth/authService';
-import { replaceDiacritics } from '@app/utils/common.util';
-import PropTypes from 'prop-types';
-import { useNavigate } from 'react-router-dom';
-import ProfileMenu from './profile-menu.component';
-import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
-import SchoolIcon from '@mui/icons-material/School';
+import logo from "@app/assets/UNIZA_TEXT_B.png"
+import * as authService from "@app/pages/auth/authService"
+import { replaceDiacritics } from "@app/utils/common.util"
+import PropTypes from "prop-types"
+import { useNavigate } from "react-router-dom"
+import ProfileMenu from "./profile-menu.component"
+import QuestionAnswerIcon from "@mui/icons-material/QuestionAnswer"
+import SchoolIcon from "@mui/icons-material/School"
+import TeamSwitcher from "./TeamSwitcher"
 
-const drawerWidth = 240;
+const drawerWidth = 240
 
 const MainLayout = ({ children }) => {
-  const matched = useMediaQuery('(min-width:900px)');
-  const navigate = useNavigate();
-  const user = authService.getUserFromStorage();
+  const matched = useMediaQuery("(min-width:900px)")
+  const navigate = useNavigate()
+  const user = authService.getUserFromStorage()
 
   if (!user) {
-    navigate('/auth/login');
+    navigate("/auth/login")
   }
 
-  const [mobileOpen, setMobileOpen] = React.useState(false);
-  const [isClosing, setIsClosing] = React.useState(false);
-  const [profileMenuAnchorEl, setProfileAnchorEl] = React.useState(null);
-  const profileMenuOpen = Boolean(profileMenuAnchorEl);
+  const [mobileOpen, setMobileOpen] = React.useState(false)
+  const [isClosing, setIsClosing] = React.useState(false)
+  const [profileMenuAnchorEl, setProfileAnchorEl] = React.useState(null)
+  const profileMenuOpen = Boolean(profileMenuAnchorEl)
 
   const handleDrawerClose = () => {
-    setIsClosing(true);
-    setMobileOpen(false);
-  };
+    setIsClosing(true)
+    setMobileOpen(false)
+  }
 
   const handleDrawerTransitionEnd = () => {
-    setIsClosing(false);
-  };
+    setIsClosing(false)
+  }
 
   const handleDrawerToggle = () => {
     if (!isClosing) {
-      setMobileOpen(!mobileOpen);
+      setMobileOpen(!mobileOpen)
     }
-  };
+  }
 
   const openProfileMenu = (event) => {
-    setProfileAnchorEl(event.currentTarget);
-  };
+    setProfileAnchorEl(event.currentTarget)
+  }
 
   const closeProfileMenu = () => {
-    setProfileAnchorEl(null);
-  };
+    setProfileAnchorEl(null)
+  }
 
   const handleLogout = async () => {
-    authService.removeUserFromStorage();
-    authService.removeTokenFromStorage();
-    closeProfileMenu();
-    navigate('/auth/login');
-  };
+    authService.removeUserFromStorage()
+    authService.removeTokenFromStorage()
+    closeProfileMenu()
+    navigate("/auth/login")
+  }
 
-  let drawerOption = [
-    
-  ];
+  let drawerOption = []
 
   if (user?.isAdmin) {
     drawerOption.push({
-      title: 'Dashboard',
-      navTo: '/',
-      icon: <DashboardIcon />
-    });
+      title: "Dashboard",
+      navTo: "/",
+      icon: <DashboardIcon />,
+    })
     drawerOption.push({
-      title: 'Používatelia',
-      navTo: '/admin/users',
-      icon: <GroupIcon />
-    });
+      title: "Používatelia",
+      navTo: "/admin/users",
+      icon: <GroupIcon />,
+    })
     drawerOption.push({
-    title: 'Predmety',
-    navTo: '/subjects',
-    icon: <SchoolIcon />
-  });
+      title: "Predmety",
+      navTo: "/subjects",
+      icon: <SchoolIcon />,
+    })
   }
-
-  
 
   drawerOption = drawerOption.concat([
     {
-      title: 'Moduly',
-      navTo: '/moduls',
-      icon: <ViewModuleIcon />
+      title: "Moduly",
+      navTo: "/moduls",
+      icon: <ViewModuleIcon />,
     },
     {
-      title: 'Moje otázky',
-      navTo: '/my-questions',
-      icon: <QuestionAnswerIcon />
+      title: "Moje otázky",
+      navTo: "/my-questions",
+      icon: <QuestionAnswerIcon />,
     },
     {
-      title: 'Testy',
-      navTo: '/tests',
-      icon: <AvTimerIcon />
+      title: "Testy",
+      navTo: "/tests",
+      icon: <AvTimerIcon />,
     },
-    
-  ]);
+  ])
 
   const drawer = (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
       <Toolbar>
-        <Link to={'/'}>
-          <img src={logo} alt="uniza logo" height={50} style={{ objectFit: 'contain' }} />
+        <Link to={"/"}>
+          <img src={logo || "/placeholder.svg"} alt="uniza logo" height={50} style={{ objectFit: "contain" }} />
         </Link>
       </Toolbar>
-      <Stack justifyContent={'space-between'} direction={'column'} flexGrow={2}>
+      <Stack justifyContent={"space-between"} direction={"column"} flexGrow={2}>
         <List component="nav">
           {drawerOption.map((item) => {
-            const NavItem = styled(ListItemButton)({});
+            const NavItem = styled(ListItemButton)({})
             return (
               <ListItem key={item.title} disablePadding>
                 <NavItem
@@ -138,29 +134,34 @@ const MainLayout = ({ children }) => {
                   to={item.navTo}
                   style={({ isActive }) => {
                     return {
-                      backgroundColor: isActive ? '#ffeecc' : ''
-                    };
+                      backgroundColor: isActive ? "#ffeecc" : "",
+                    }
                   }}
                 >
                   <ListItemIcon>{item.icon}</ListItemIcon>
                   <ListItemText primary={item.title} />
                 </NavItem>
               </ListItem>
-            );
+            )
           })}
         </List>
+
+        {/* Add margin-top: auto to push this to the bottom */}
+        <Box sx={{ px: 2, mt: "auto", mb: 2 }}>
+          <TeamSwitcher />
+        </Box>
       </Stack>
     </div>
-  );
+  )
 
   return (
-    <Box sx={{ display: 'flex', width: '100vw' }}>
+    <Box sx={{ display: "flex", width: "100vw" }}>
       <CssBaseline />
       <AppBar
         position="fixed"
         sx={{
           width: { md: `calc(100% - ${drawerWidth}px)` },
-          ml: { md: `${drawerWidth}px` }
+          ml: { md: `${drawerWidth}px` },
         }}
       >
         <Toolbar>
@@ -169,7 +170,7 @@ const MainLayout = ({ children }) => {
             aria-label="open drawer"
             edge="start"
             onClick={handleDrawerToggle}
-            sx={{ mr: 2, display: { md: 'none' } }}
+            sx={{ mr: 2, display: { md: "none" } }}
           >
             <MenuIcon />
           </IconButton>
@@ -177,7 +178,7 @@ const MainLayout = ({ children }) => {
             Otázkový systém
           </Typography>
           <Button color="inherit" onClick={openProfileMenu} startIcon={<AccountCircleIcon />}>
-            {matched && replaceDiacritics(user?.fullName || '')}
+            {matched && replaceDiacritics(user?.fullName || "")}
           </Button>
           <ProfileMenu
             open={profileMenuOpen}
@@ -187,25 +188,21 @@ const MainLayout = ({ children }) => {
           />
         </Toolbar>
       </AppBar>
-      <Box
-        component="nav"
-        sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}
-        aria-label="nav menu"
-      >
+      <Box component="nav" sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }} aria-label="nav menu">
         <Drawer
           variant="temporary"
           open={mobileOpen}
           onTransitionEnd={handleDrawerTransitionEnd}
           onClose={handleDrawerClose}
           ModalProps={{
-            keepMounted: true
+            keepMounted: true,
           }}
           sx={{
-            display: { xs: 'block', md: 'none' },
-            '& .MuiDrawer-paper': {
-              boxSizing: 'border-box',
-              width: drawerWidth
-            }
+            display: { xs: "block", md: "none" },
+            "& .MuiDrawer-paper": {
+              boxSizing: "border-box",
+              width: drawerWidth,
+            },
           }}
         >
           {drawer}
@@ -213,11 +210,11 @@ const MainLayout = ({ children }) => {
         <Drawer
           variant="permanent"
           sx={{
-            display: { xs: 'none', md: 'flex' },
-            '& .MuiDrawer-paper': {
-              boxSizing: 'border-box',
-              width: drawerWidth
-            }
+            display: { xs: "none", md: "flex" },
+            "& .MuiDrawer-paper": {
+              boxSizing: "border-box",
+              width: drawerWidth,
+            },
           }}
           open
         >
@@ -229,8 +226,8 @@ const MainLayout = ({ children }) => {
         sx={{
           flexGrow: 1,
           width: { md: `calc(100% - ${drawerWidth}px)` },
-          height: '100vh',
-          overflow: 'auto'
+          height: "100vh",
+          overflow: "auto",
         }}
       >
         <Toolbar />
@@ -239,11 +236,11 @@ const MainLayout = ({ children }) => {
         </Container>
       </Box>
     </Box>
-  );
-};
+  )
+}
 
 MainLayout.propTypes = {
-  children: PropTypes.node.isRequired
-};
+  children: PropTypes.node.isRequired,
+}
 
-export default MainLayout;
+export default MainLayout
