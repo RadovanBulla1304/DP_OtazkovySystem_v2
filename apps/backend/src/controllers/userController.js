@@ -24,15 +24,7 @@ exports.SignOut = [
 exports.getCurrentUser = [
   async (req, res) => {
     if (req.user.user_id) {
-      const loggedUser = await User.findOne(
-        { _id: req.user.user_id },
-        {
-          email: 1,
-          isAdmin: 1,
-          name: 1,
-          fullName: 1,
-        }
-      );
+      const loggedUser = await User.findOne({ _id: req.user.user_id });
       return res.status(200).send(loggedUser);
     }
   },

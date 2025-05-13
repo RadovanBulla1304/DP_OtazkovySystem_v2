@@ -32,6 +32,7 @@ import ProfileMenu from "./profile-menu.component";
 import QuestionAnswerIcon from "@mui/icons-material/QuestionAnswer";
 import SchoolIcon from "@mui/icons-material/School";
 import TeamSwitcher from "./TeamSwitcher";
+import { useGetUserMeQuery } from "@app/redux/api";
 
 const drawerWidth = 240;
 const collapsedDrawerWidth = 65;
@@ -77,7 +78,7 @@ const SectionHeader = ({ title, collapsed }) => (
 const MainLayout = ({ children }) => {
   const matched = useMediaQuery("(min-width:900px)");
   const navigate = useNavigate();
-  const user = authService.getUserFromStorage();
+  const { data: user } = useGetUserMeQuery();
   const [drawerCollapsed, setDrawerCollapsed] = React.useState(false);
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [isClosing, setIsClosing] = React.useState(false);
@@ -340,14 +341,19 @@ const MainLayout = ({ children }) => {
             Otázkový systém
           </Typography>
           <Button color="inherit" onClick={openProfileMenu} startIcon={<AccountCircleIcon />}>
-            {matched && replaceDiacritics(user?.fullName || "")}
+            {matched && replaceDiacritics(user?.name.concat(" ", user.surname) || "")}
+            
           </Button>
+
+
           <ProfileMenu
             open={profileMenuOpen}
             anchorEl={profileMenuAnchorEl}
             onLogout={handleLogout}
             onClose={closeProfileMenu}
           />
+
+
         </Toolbar>
       </AppBar>
       <Box
