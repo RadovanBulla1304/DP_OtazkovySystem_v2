@@ -17,6 +17,7 @@ export const api = createApi({
   baseQuery,
   tagTypes: ['Users', 'CREOcards', 'CREOcardHistory'],
   endpoints: (builder) => ({
+    // USERS
     getUserMe: builder.query({
       query: () => ({
         url: '/user/current',
@@ -60,11 +61,18 @@ export const api = createApi({
       }),
       providesTags: ['Users']
     }),
+    // SUBJECTS
     createSubject: builder.mutation({
       query: (data) => ({
         url: '/admin/createSubject',
         method: 'POST',
         body: data
+      })
+    }),
+    getAllSubjects: builder.query({
+      query: () => ({
+        url: '/admin/getAllSubjects',
+        method: 'GET'
       })
     }),
   })
@@ -85,4 +93,5 @@ export const {
   useRemoveUserMutation,
   useGetUsersListQuery,
   useCreateSubjectMutation,
+  useGetAllSubjectsQuery,
 } = api;

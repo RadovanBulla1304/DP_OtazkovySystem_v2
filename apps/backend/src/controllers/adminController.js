@@ -138,3 +138,13 @@ exports.createSubject = [
     }
   },
 ];
+exports.getAllSubjects = [
+  async (req, res) => {
+    try {
+      const subjects = await Subject.find({}, { __v: 0 }); // Exclude the __v field
+      res.status(200).json(subjects); // Respond with the list of subjects
+    } catch (err) {
+      throwError(`Error fetching subjects: ${err.message}`, 500); // Handle errors
+    }
+  },
+];

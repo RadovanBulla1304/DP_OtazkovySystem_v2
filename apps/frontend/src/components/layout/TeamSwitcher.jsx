@@ -8,13 +8,9 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 
 import { styled } from "@mui/material/styles"
 import AddSubjectModal from "../../pages/admin/components/AddSubjectModal"
-import { useCreateSubjectMutation } from "@app/redux/api" // adjust path
+import { useCreateSubjectMutation, useGetAllSubjectsQuery  } from "@app/redux/api" // adjust path
 
-const sampleSubjects = [
-  { id: 1, name: "Dizajn Hier" },
-  { id: 2, name: "Priestorová akustika" },
-  { id: 3, name: "Algoritmy a údajové Štruktúry" },
-]
+
 
 const TeamSwitcherButton = styled(Button)(({ theme }) => ({
   width: "100%",
@@ -39,8 +35,15 @@ const SubjectAvatar = styled(Avatar)(({ theme }) => ({
 }))
 
 const TeamSwitcher = () => {
-  const [currentSubject, setCurrentSubject] = React.useState(sampleSubjects[0])
-  const [subjects, setSubjects] = React.useState(sampleSubjects)
+  const { data: subjects = [], isLoading, refetch } = useGetAllSubjectsQuery()
+  const [currentSubject, setCurrentSubject] = React.useState(null)
+
+
+  React.useEffect(() => {
+    if (subjects.length > 0 && !currentSubject) {
+      setCurrentSubject(subjects[0])
+    }
+  }, [subjects, currentSubject])
 
   const [anchorEl, setAnchorEl] = React.useState(null)
   const open = Boolean(anchorEl)
@@ -68,18 +71,16 @@ const TeamSwitcher = () => {
 
   const handleCreateSubject = async (newSubject) => {
     try {
-      const response = await createSubject(newSubject).unwrap()
-      const createdSubject = response?.subject || newSubject // fallback
-
-      const updatedList = [...subjects, createdSubject]
-      setSubjects(updatedList)
-      setCurrentSubject(createdSubject)
+        const response = await createSubject(newSubject).unwrap()
+        const createdSubject = response?.subject || newSubject
+        setCurrentSubject(createdSubject)
+        await refetch()
     } catch (err) {
-      console.error("Failed to create subject:", err)
+        console.error("Failed to create subject:", err)
     } finally {
-      setModalOpen(false)
+        setModalOpen(false)
     }
-  }
+}
 
   return (
     <>
@@ -90,10 +91,10 @@ const TeamSwitcher = () => {
         aria-expanded={open ? "true" : undefined}
     >
     <Box sx={{ display: "flex", alignItems: "center", width: "100%" }}>
-        <SubjectAvatar>{currentSubject.name.charAt(0)}</SubjectAvatar>
-        <Typography variant="body2" sx={{ flexGrow: 1 }}>
-        {currentSubject.name}
-        </Typography>
+        <SubjectAvatar>{currentSubject?.name?.charAt(0) || "?"}</SubjectAvatar>
+<Typography variant="body2" sx={{ flexGrow: 1 }}>
+  {currentSubject?.name || "Žiadny predmet"}
+</Typography>
         <ExpandMoreIcon fontSize="small" />
     </Box>
     </TeamSwitcherButton>
@@ -114,17 +115,24 @@ const TeamSwitcher = () => {
       >
         <Box sx={{ width: 230, maxHeight: 350, overflow: "auto" }}>
           <List dense>
-            {subjects.map((subject) => (
-              <ListItem
-                key={subject.id}
-                button
-                onClick={() => handleSubjectSelect(subject)}
-                selected={currentSubject.id === subject.id}
-              >
-                <SubjectAvatar>{subject.name.charAt(0)}</SubjectAvatar>
-                <ListItemText primary={subject.name} />
-              </ListItem>
-            ))}
+            {isLoading ? (
+        <ListItem>
+            <ListItemText primary="Načítavam..." />
+        </ListItem>
+        ) : (
+        subjects.map((subject) => (
+            <ListItem
+            key={subject.id}
+            button
+            onClick={() => handleSubjectSelect(subject)}
+            selected={currentSubject?.id === subject.id}
+            >
+            <SubjectAvatar>{subject.name.charAt(0)}</SubjectAvatar>
+            <ListItemText primary={subject.name} />
+            </ListItem>
+        ))
+        )}
+
             <Divider sx={{ my: 1 }} />
             <ListItem button onClick={handleAddSubject}>
               <AddIcon fontSize="small" sx={{ mr: 1 }} />
