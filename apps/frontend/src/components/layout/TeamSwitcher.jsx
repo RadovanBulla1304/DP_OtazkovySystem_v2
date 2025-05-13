@@ -5,7 +5,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 
 import { styled } from "@mui/material/styles"
 import AddSubjectModal from "../../pages/admin/components/AddSubjectModal"
-import { useCreateSubjectMutation, useGetAllSubjectsQuery } from "@app/redux/api" // adjust path
+import { useGetAllSubjectsQuery } from "@app/redux/api" // adjust path
 
 const TeamSwitcherButton = styled(Button)(({ theme }) => ({
   width: "100%",
@@ -39,57 +39,49 @@ const CollapsedAvatar = styled(Avatar)(({ theme }) => ({
 }))
 
 const TeamSwitcher = ({ collapsed = false }) => {
-  const { data: subjects = [], isLoading, refetch } = useGetAllSubjectsQuery()
-  const [currentSubject, setCurrentSubject] = React.useState(null)
+  const { data: subjects = [], isLoading, refetch } = useGetAllSubjectsQuery();
+  const [currentSubject, setCurrentSubject] = React.useState(null);
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const [modalOpen, setModalOpen] = React.useState(false);
+  const open = Boolean(anchorEl);
 
   React.useEffect(() => {
     if (subjects.length > 0 && !currentSubject) {
-      setCurrentSubject(subjects[0])
+      setCurrentSubject(subjects[0]);
     }
-  }, [subjects, currentSubject])
-
-  const [anchorEl, setAnchorEl] = React.useState(null)
-  const open = Boolean(anchorEl)
-
-  const [modalOpen, setModalOpen] = React.useState(false)
-  const [createSubject] = useCreateSubjectMutation()
+  }, [subjects, currentSubject]);
 
   const handleClick = (event) => {
-    setAnchorEl(event.currentTarget)
-  }
+    setAnchorEl(event.currentTarget);
+  };
 
   const handleClose = () => {
-    setAnchorEl(null)
-  }
+    setAnchorEl(null);
+  };
 
   const handleSubjectSelect = (subject) => {
-    setCurrentSubject(subject)
-    handleClose()
-  }
+    setCurrentSubject(subject);
+    handleClose();
+  };
 
   const handleAddSubject = () => {
-    handleClose()
-    setModalOpen(true)
-  }
+    handleClose();
+    setModalOpen(true);
+  };
 
-  const handleCreateSubject = async (newSubject) => {
-    try {
-      const response = await createSubject(newSubject).unwrap()
-      const createdSubject = response?.subject || newSubject
-      setCurrentSubject(createdSubject)
-      await refetch()
-    } catch (err) {
-      console.error("Failed to create subject:", err)
-    } finally {
-      setModalOpen(false)
-    }
-  }
+  const handleSubjectCreated = (newSubject) => {
+    setCurrentSubject(newSubject);
+    refetch();
+    setModalOpen(false);
+  };
 
   // Render different UI based on collapsed state
   if (collapsed) {
     return (
       <>
-        <CollapsedAvatar onClick={handleClick}>{currentSubject?.name?.charAt(0) || "?"}</CollapsedAvatar>
+        <CollapsedAvatar onClick={handleClick}>
+          {currentSubject?.name?.charAt(0) || "?"}
+        </CollapsedAvatar>
 
         <Popover
           id="subject-menu"
@@ -135,9 +127,13 @@ const TeamSwitcher = ({ collapsed = false }) => {
           </Box>
         </Popover>
 
-        <AddSubjectModal open={modalOpen} onClose={() => setModalOpen(false)} onCreate={handleCreateSubject} />
+        <AddSubjectModal 
+          open={modalOpen} 
+          onClose={() => setModalOpen(false)} 
+          onSuccess={handleSubjectCreated} 
+        />
       </>
-    )
+    );
   }
 
   // Regular expanded view
@@ -202,9 +198,13 @@ const TeamSwitcher = ({ collapsed = false }) => {
         </Box>
       </Popover>
 
-      <AddSubjectModal open={modalOpen} onClose={() => setModalOpen(false)} onCreate={handleCreateSubject} />
+      <AddSubjectModal 
+        open={modalOpen} 
+        onClose={() => setModalOpen(false)} 
+        onSuccess={handleSubjectCreated} 
+      />
     </>
-  )
-}
+  );
+};
 
-export default TeamSwitcher
+export default TeamSwitcher;
