@@ -37,8 +37,8 @@ const drawerWidth = 240;
 const collapsedDrawerWidth = 65;
 
 // Animation constants
-const animationDuration = "400ms"; // Slower animation
-const customEasing = "cubic-bezier(0.4, 0, 0.2, 1)"; // Smooth easing function
+const animationDuration = "400ms";
+const customEasing = "cubic-bezier(0.4, 0, 0.2, 1)";
 
 const SmoothDrawer = styled(Drawer)({
   '& .MuiDrawer-paper': {
@@ -53,6 +53,26 @@ const SmoothBox = styled(Box)({
   transition: `all ${animationDuration} ${customEasing}`,
   willChange: 'margin, width',
 });
+
+const SectionHeader = ({ title, collapsed }) => (
+  <Typography 
+    variant="overline" 
+    component="div" 
+    sx={{
+      px: collapsed ? 1 : 2,
+      py: 1,
+      color: 'text.secondary',
+      fontWeight: 'bold',
+      fontSize: '0.75rem',
+      textTransform: 'uppercase',
+      letterSpacing: '0.08333em',
+      textAlign: collapsed ? 'center' : 'left',
+      transition: `all ${animationDuration} ${customEasing}`,
+    }}
+  >
+    {collapsed ? title.charAt(0) : title}
+  </Typography>
+);
 
 const MainLayout = ({ children }) => {
   const matched = useMediaQuery("(min-width:900px)");
@@ -106,6 +126,10 @@ const MainLayout = ({ children }) => {
 
   if (user?.isAdmin) {
     drawerOption.push({
+      isHeader: true,
+      title: "Správca"
+    });
+    drawerOption.push({
       title: "Dashboard",
       navTo: "/",
       icon: <DashboardIcon />,
@@ -116,6 +140,10 @@ const MainLayout = ({ children }) => {
       icon: <GroupIcon />,
     });
     drawerOption.push({
+      isHeader: true,
+      title: "Funkcie"
+    });
+    drawerOption.push({
       title: "Predmety",
       navTo: "/subjects",
       icon: <SchoolIcon />,
@@ -123,6 +151,10 @@ const MainLayout = ({ children }) => {
   }
 
   drawerOption = drawerOption.concat([
+    {
+      isHeader: true,
+      title: "Obsah"
+    },
     {
       title: "Moduly",
       navTo: "/moduls",
@@ -183,11 +215,20 @@ const MainLayout = ({ children }) => {
           transform: 'translateZ(0)',
         }}>
           {drawerOption.map((item) => {
+            if (item.isHeader) {
+              return (
+                <React.Fragment key={item.title}>
+                  {!drawerCollapsed && <SectionHeader title={item.title} collapsed={drawerCollapsed} />}
+                </React.Fragment>
+              );
+            }
+            
             const NavItem = styled(ListItemButton)({
               backfaceVisibility: 'hidden',
               transform: 'translateZ(0)',
               transition: `background-color 150ms ease, padding ${animationDuration} ${customEasing}`,
             });
+            
             return (
               <ListItem 
                 key={item.title} 
