@@ -1,14 +1,17 @@
-import * as React from "react"
-import { Box, Button, Typography, Popover, List, ListItem, ListItemText, Divider, Avatar } from "@mui/material"
+import React from "react"
+import {
+  Box, Button, Typography, Popover, List, ListItem, ListItemText,
+  Divider, Avatar
+} from "@mui/material"
 import AddIcon from "@mui/icons-material/Add"
 import { styled } from "@mui/material/styles"
+import AddSubjectModal from "../../pages/admin/components/AddSubjectModal"
+import { useCreateSubjectMutation } from "@app/redux/api" // adjust path
 
-// Sample data - replace with your actual data later
 const sampleSubjects = [
   { id: 1, name: "Dizajn Hier" },
   { id: 2, name: "Priestorová akustika" },
   { id: 3, name: "Algoritmy a údajové Štruktúry" },
-  
 ]
 
 const TeamSwitcherButton = styled(Button)(({ theme }) => ({
@@ -35,8 +38,13 @@ const SubjectAvatar = styled(Avatar)(({ theme }) => ({
 
 const TeamSwitcher = () => {
   const [currentSubject, setCurrentSubject] = React.useState(sampleSubjects[0])
+  const [subjects, setSubjects] = React.useState(sampleSubjects)
+
   const [anchorEl, setAnchorEl] = React.useState(null)
   const open = Boolean(anchorEl)
+
+  const [modalOpen, setModalOpen] = React.useState(false)
+  const [createSubject] = useCreateSubjectMutation()
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget)
@@ -52,9 +60,23 @@ const TeamSwitcher = () => {
   }
 
   const handleAddSubject = () => {
-    // Placeholder for adding a new subject
-    console.log("Add new subject")
     handleClose()
+    setModalOpen(true)
+  }
+
+  const handleCreateSubject = async (newSubject) => {
+    try {
+      const response = await createSubject(newSubject).unwrap()
+      const createdSubject = response?.subject || newSubject // fallback
+
+      const updatedList = [...subjects, createdSubject]
+      setSubjects(updatedList)
+      setCurrentSubject(createdSubject)
+    } catch (err) {
+      console.error("Failed to create subject:", err)
+    } finally {
+      setModalOpen(false)
+    }
   }
 
   return (
@@ -67,9 +89,7 @@ const TeamSwitcher = () => {
       >
         <Box sx={{ display: "flex", alignItems: "center" }}>
           <SubjectAvatar>{currentSubject.name.charAt(0)}</SubjectAvatar>
-          <Typography variant="body2">
-            {currentSubject.name}
-          </Typography>
+          <Typography variant="body2">{currentSubject.name}</Typography>
         </Box>
       </TeamSwitcherButton>
 
@@ -89,7 +109,7 @@ const TeamSwitcher = () => {
       >
         <Box sx={{ width: 230, maxHeight: 350, overflow: "auto" }}>
           <List dense>
-            {sampleSubjects.map((subject) => (
+            {subjects.map((subject) => (
               <ListItem
                 key={subject.id}
                 button
@@ -108,6 +128,12 @@ const TeamSwitcher = () => {
           </List>
         </Box>
       </Popover>
+
+      <AddSubjectModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onCreate={handleCreateSubject}
+      />
     </>
   )
 }
