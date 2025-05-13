@@ -30,51 +30,13 @@ export const api = createApi({
         body: data
       })
     }),
-    addStudent: builder.mutation({
+    createUser: builder.mutation({
       query: (data) => ({
-        url: 'user/admin/addStudent',
+        url: '/admin/user',
         method: 'POST',
         body: data
       }),
       invalidatesTags: (result) => (result ? ['Users'] : [])
-    }),
-    addEmployeeOrAdmin: builder.mutation({
-      query: (data) => ({
-        url: 'user/admin/addEmployeeOrAdmin',
-        method: 'POST',
-        body: data
-      }),
-      invalidatesTags: (result) => (result ? ['Users'] : [])
-    }),
-    createCREOcard: builder.mutation({
-      query: (data) => ({
-        url: '/creocard/admin/addCREOcard',
-        method: 'POST',
-        body: data
-      }),
-      invalidatesTags: (result) => (result ? ['CREOcards'] : [])
-    }),
-    getCREOcards: builder.query({
-      query: () => ({
-        url: '/creocard/admin/getCREOcards',
-        method: 'GET'
-      }),
-      providesTags: ['CREOcards']
-    }),
-    createCREOcardHistory: builder.mutation({
-      query: (data) => ({
-        url: '/creocardhistory/admin/addCREOcardHistory',
-        method: 'POST',
-        body: data
-      }),
-      invalidatesTags: (result) => (result ? ['CREOcardHistory'] : [])
-    }),
-    getCREOcardHistory: builder.query({
-      query: (personalNumber) => ({
-        url: `/creocardhistory/admin/getCREOcardHistory/${personalNumber}`,
-        method: 'GET'
-      }),
-      providesTags: ['CREOcardHistory']
     }),
     updateUser: builder.mutation({
       query: (data) => ({
@@ -93,7 +55,7 @@ export const api = createApi({
     }),
     getUsersList: builder.query({
       query: () => ({
-        url: '/admin/getAllUser',
+        url: '/admin/getAllUsers',
         method: 'GET'
       }),
       providesTags: ['Users']
@@ -105,6 +67,7 @@ export const {
   useGetUserMeQuery,
   useLazyGetUserMeQuery,
   useLoginUserMutation,
+  useCreateUserMutation,
   useAddStudentMutation,
   useAddEmployeeOrAdminMutation,
   useCreateCREOcardMutation,

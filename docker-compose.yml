@@ -48,5 +48,5 @@ services:
             - ./volumes/backend:/data/db
             - ./apps/entry_point/api-mongo-init.js:/docker-entrypoint-initdb.d/api-mongo-init.js:ro
         ports:
-            # change of mongo db port from 29029 to 29030 bcs of conflict with other service
+            # change of mongo db port from 29029 to 29035 bcs of conflict with other service
             - '29035:27017'

@@ -3,7 +3,7 @@ const { throwError, errorFormatter } = require("../util/universal");
 
 const User = require("../models/user");
 const { validate, validated } = require("../util/validation");
-const { createUserShema, updateUserSchema } = require("../schemas/user.schema");
+const { createUserSchema, updateUserSchema } = require("../schemas/user.schema");
 
 exports.getAllUser = [
   async (req, res) => {
@@ -24,30 +24,50 @@ exports.getAllUser = [
 ];
 
 exports.createUser = [
-  validate(createUserShema),
+  validate(createUserSchema),
   async (req, res) => {
-    const { email, ...rest } = validated(req);
-
-    const existingUser = await User.findOne({ email });
-
-    if (existingUser) {
-      throwError(req.t("validation.email_already_exist"), 400);
-    }
-
-    if (rest.password !== rest.passwordConfirmation) {
-      throwError(req.t("validation.passwords_not_match"), 400);
-    }
-
-    const user = new User({ email, isActive: true, ...rest });
-    user.setPassword(rest.password);
-
     try {
-      await user.save();
-    } catch (err) {
-      throwError(`${req.t("messages.database_error")}: ${err.message}`, 500);
-    }
+      // Make sure validated data exists before destructuring
+      const validatedData = validated(req);
+      if (!validatedData) {
+        return res.status(400).json({ message: "Invalid request data" });
+      }
 
-    res.status(201).send({ email: user.email });
+      const { email, ...rest } = validatedData;
+
+      const existingUser = await User.findOne({ email });
+
+      if (existingUser) {
+        return res.status(400).json({ message: req.t("validation.email_already_exist") });
+      }
+
+      if (rest.password !== rest.passwordConfirmation) {
+        return res.status(400).json({ message: req.t("validation.passwords_not_match") });
+      }
+
+      const { passwordConfirmation, password, ...restData } = rest;
+
+      // Convert string boolean values to actual booleans if needed
+      const isAdmin = restData.isAdmin === 'true' || restData.isAdmin === true;
+      const isActive = restData.isActive === 'true' || restData.isActive === true;
+
+      const user = new User({
+        email,
+        isAdmin,
+        isActive: isActive !== undefined ? isActive : true,
+        ...restData
+      });
+
+      user.setPassword(password);
+      await user.save();
+
+      res.status(201).send({ email: user.email });
+    } catch (err) {
+      console.error("Error creating user:", err);
+      res.status(500).json({
+        message: `${req.t("messages.database_error")}: ${err.message}`
+      });
+    }
   },
 ];
 

@@ -3,7 +3,7 @@ import MinimalLayout from './components/layout/MinimalLayout';
 import Protected from './components/layout/Protected';
 import { RouteNotFound } from './components/RouteNotFound.component';
 import authRoutes from './pages/auth';
-import Dashboard from './pages/dashboard/Dashboard';
+import Dashboard from './pages/admin/dashboard/Dashboard';
 
 import adminRoutes from '@app/pages/admin';
 import Tests from './pages/tests/Tests';

@@ -1,39 +1,38 @@
 import React from 'react';
 
 import ErrorNotifier from '@app/components/ErrorNotifier';
-import { useAddStudentMutation, useAddEmployeeOrAdminMutation } from '@app/redux/api';
+import { useCreateUserMutation } from '@app/redux/api';
 import { joiResolver } from '@hookform/resolvers/joi';
 import {
   Button,
+  Checkbox,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   FormControl,
-  MenuItem,
-  Select,
-  TextField,
-  Typography
+  FormControlLabel,
+  TextField
 } from '@mui/material';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { createUserSchema } from '../schemas/createUser.schema';
 
 const AddUserModal = () => {
   const [open, setOpen] = React.useState(false);
-  const [userType, setUserType] = React.useState('student'); // Default userType: student
-  const [addStudent, { isLoading: isAddingStudent }] = useAddStudentMutation();
-  const [addEmployeeOrAdmin, { isLoading: isAddingEmployeeOrAdmin }] = useAddEmployeeOrAdminMutation();
+  const [addUser, { isLoading }] = useCreateUserMutation();
 
   const {
     register,
     handleSubmit,
-    control,
     formState: { errors },
-    setValue
   } = useForm({
     mode: 'onBlur',
     resolver: joiResolver(createUserSchema),
+    defaultValues: {
+      isActive: true,
+      isAdmin: false,
+    }
   });
 
   const handleClickOpen = () => {
@@ -46,28 +45,12 @@ const AddUserModal = () => {
 
   const onSubmit = async (data) => {
     try {
-      if (userType === 'student') {
-        const isValidISIC = /^[A-Za-z][0-9]{12}[A-Za-z]$/.test(data.password);
-        if (!isValidISIC) {
-          toast.error('Password must follow the ISIC format: Letter + 12 digits + Letter.');
-          return;
-        }
-        const response = await addStudent(data);
-        if (!response.error) {
-          toast.success('Student was successfully added.');
-          handleClose();
-        } else {
-          toast.error(`Error: ${response.error.data.message}`);
-        }
+      const response = await addUser(data);
+      if (!response.error) {
+        toast.success('User was successfully added.');
+        handleClose();
       } else {
-        data.userType = userType;
-        const response = await addEmployeeOrAdmin(data);
-        if (!response.error) {
-          toast.success('Employee was successfully added.');
-          handleClose();
-        } else {
-          toast.error(`Error: ${response.error.data.message}`);
-        }
+        toast.error(`Error: ${response.error.data.message}`);
       }
     } catch (error) {
       toast.error('An unexpected error occurred.');
@@ -87,7 +70,7 @@ const AddUserModal = () => {
       <Dialog
         open={open}
         onClose={handleClose}
-        component={'form'}
+        component="form"
         onSubmit={handleSubmit(onSubmit)}
       >
         <DialogContent
@@ -97,11 +80,12 @@ const AddUserModal = () => {
             gap: 2,
             mx: 'auto',
             minWidth: {
-              md: '30rem'
-            }
+              md: '30rem',
+            },
           }}
         >
           <DialogTitle>Pridaj používateľa</DialogTitle>
+
           <TextField
             label="Name"
             variant="outlined"
@@ -129,37 +113,21 @@ const AddUserModal = () => {
             fullWidth
           />
 
-          <TextField
-            label="Personal Number"
-            variant="outlined"
-            {...register('personalNumber')}
-            error={!!errors.personalNumber}
-            helperText={errors.personalNumber?.message}
-            fullWidth
+          <FormControlLabel
+            control={<Checkbox {...register('isActive')} />}
+            label="Is Active"
           />
+          {errors.isActive && (
+            <p style={{ color: 'red', fontSize: '0.875rem' }}>{errors.isActive.message}</p>
+          )}
 
-          <FormControl fullWidth>
-            <Typography>User Type</Typography>
-            <Controller
-              name="userType"
-              control={control}
-              defaultValue="student"
-              render={({ field }) => (
-                <Select
-                  {...field}
-                  value={userType}
-                  onChange={(e) => {
-                    setUserType(e.target.value);
-                    setValue('userType', e.target.value);
-                  }}
-                >
-                  <MenuItem value="student">Student</MenuItem>
-                  <MenuItem value="employee">Employee</MenuItem>
-                  <MenuItem value="admin">Admin</MenuItem>
-                </Select>
-              )}
-            />
-          </FormControl>
+          <FormControlLabel
+            control={<Checkbox {...register('isAdmin')} />}
+            label="Is Admin"
+          />
+          {errors.isAdmin && (
+            <p style={{ color: 'red', fontSize: '0.875rem' }}>{errors.isAdmin.message}</p>
+          )}
 
           <TextField
             label="Password"
@@ -167,11 +135,7 @@ const AddUserModal = () => {
             variant="outlined"
             {...register('password')}
             error={!!errors.password}
-            helperText={
-              userType === 'student'
-                ? 'Password must follow ISIC format: Letter + 12 digits + Letter.'
-                : errors.password?.message
-            }
+            helperText={errors.password?.message}
             fullWidth
           />
 
@@ -184,6 +148,7 @@ const AddUserModal = () => {
             helperText={errors.passwordConfirmation?.message}
             fullWidth
           />
+
           <ErrorNotifier />
 
           <DialogActions>
@@ -193,7 +158,7 @@ const AddUserModal = () => {
             <Button
               type="submit"
               variant="outlined"
-              disabled={isAddingStudent || isAddingEmployeeOrAdmin}
+              disabled={isLoading}
             >
               Pridaj
             </Button>

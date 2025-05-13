@@ -5,8 +5,8 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { Box, Grid2, IconButton, Paper, Tooltip, Typography } from '@mui/material';
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 import { toast } from 'react-toastify';
-import AddUserModal from './components/AddUserModal';
-import EditUserModal from './components/EditUserModal';
+import AddUserModal from '../components/AddUserModal';
+import EditUserModal from '../components/EditUserModal';
 
 const UsersList = () => {
   const { data, isLoading } = useGetUsersListQuery();

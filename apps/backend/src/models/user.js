@@ -11,6 +11,7 @@ const UserSchema = new mongoose.Schema(
     password: { type: String },
     salt: { type: String },
     name: { type: String, required: true },
+    surname: { type: String, required: true },
     isAdmin: { type: Boolean, default: false },
     isActive: { type: Boolean, default: true },
   },
@@ -23,7 +24,7 @@ const UserSchema = new mongoose.Schema(
 
 // Virtual full name (optional)
 UserSchema.virtual("fullName").get(function () {
-  return `${this.name}`.trim();
+  return `${this.name} ${this.surname}`.trim();
 });
 
 // Set password

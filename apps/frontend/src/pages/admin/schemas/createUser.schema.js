@@ -1,5 +1,6 @@
 import Joi from 'joi';
 
+
 export const createUserSchema = Joi.object({
   name: Joi.string().min(2).max(50).required().messages({
     'string.empty': 'Name is required',
@@ -18,36 +19,23 @@ export const createUserSchema = Joi.object({
       'string.empty': 'Email is required',
       'string.email': 'Email must be a valid email address',
     }),
-  personalNumber: Joi.string()
-    .pattern(/^[0-9]{6}$/)
-    .required()
-    .messages({
-      'string.empty': 'Personal number is required',
-      'string.pattern.base': 'Personal number must be exactly 6 digits',
-    }),
-  userType: Joi.string()
-    .valid('student', 'employee', 'admin')
-    .required()
-    .messages({
-      'any.only': 'User type must be either student, employee or admin',
-      'string.empty': 'User type is required',
-    }),
+
+  isActive: Joi.boolean().required().messages({
+    'boolean.base': 'isActive must be a boolean value',
+  }),
+
+  isAdmin: Joi.boolean().required().messages({
+    'boolean.base': 'isAdmin must be a boolean value',
+  }),
+
   password: Joi.string()
-    .when('userType', {
-      is: 'student',
-      then: Joi.string()
-        .pattern(/^[A-Za-z][0-9]{12}[A-Za-z]$/)
-        .required()
-        .messages({
-          'string.pattern.base':
-            'Password must follow the ISIC format: Letter + 12 digits + Letter',
-        }),
-      otherwise: Joi.string().min(8).max(128).required().messages({
-        'string.empty': 'Password is required',
-        'string.min': 'Password must be at least 8 characters',
-        'string.max': 'Password must not exceed 128 characters',
-      }),
+    .pattern(/^(?=.*[A-Z])(?=.*\d).{6,}$/)
+    .required()
+    .messages({
+      'string.pattern.base': 'Password must be at least 6 characters, include one uppercase letter and one number.',
+      'string.empty': 'Password is required',
     }),
+
   passwordConfirmation: Joi.string()
     .valid(Joi.ref('password'))
     .required()
@@ -60,31 +48,38 @@ export const createUserSchema = Joi.object({
 
 
 export const updateUserSchema = Joi.object({
-  name: Joi.string().min(2).max(50).required().messages({
-    'string.empty': 'Name is required',
+  name: Joi.string().min(2).max(50).messages({
     'string.min': 'Name must be at least 2 characters',
-    'string.max': 'Name must not exceed 50 characters'
+    'string.max': 'Name must not exceed 50 characters',
   }),
-  surname: Joi.string().min(2).max(50).required().messages({
-    'string.empty': 'Surname is required',
+  surname: Joi.string().min(2).max(50).messages({
     'string.min': 'Surname must be at least 2 characters',
-    'string.max': 'Surname must not exceed 50 characters'
+    'string.max': 'Surname must not exceed 50 characters',
   }),
   email: Joi.string()
     .email({ tlds: { allow: false } })
-    .required()
     .messages({
-      'string.empty': 'Email is required',
-      'string.email': 'Email must be a valid email address'
+      'string.email': 'Email must be a valid email address',
     }),
-  isActive: Joi.boolean().required().messages({
-    'boolean.base': 'isActive must be a boolean value'
+
+  isActive: Joi.boolean().messages({
+    'boolean.base': 'isActive must be a boolean value',
   }),
-  userType: Joi.string()
-    .valid('student', 'employee', 'admin')
-    .optional()
+
+  isAdmin: Joi.boolean().messages({
+    'boolean.base': 'isAdmin must be a boolean value',
+  }),
+
+  password: Joi.string()
+    .pattern(/^(?=.*[A-Z])(?=.*\d).{6,}$/)
     .messages({
-      'any.only': 'User type must be either student or employee',
-      'string.empty': 'User type is required if provided',
+      'string.pattern.base': 'Password must be at least 6 characters, include one uppercase letter and one number.',
+    }),
+
+  passwordConfirmation: Joi.string()
+    .valid(Joi.ref('password'))
+    .messages({
+      'any.only': 'Password confirmation does not match password',
     }),
 });
+
