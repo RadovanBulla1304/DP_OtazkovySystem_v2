@@ -8,7 +8,7 @@ const crypto = require("crypto");
 exports.Register = [
   validate(signupSchema),
   async (req, res) => {
-    const { email, password, passwordConfirmation, name } = validated(req);
+    const { email, password, passwordConfirmation, name, surname } = validated(req);
 
     // Check if passwords match
     if (password !== passwordConfirmation) {
@@ -30,6 +30,7 @@ exports.Register = [
     // Create and save the new user
     const user = new User({
       name,
+      surname,
       email,
       password: hashedPassword,
       isActive: true, // or false if you want email verification flow

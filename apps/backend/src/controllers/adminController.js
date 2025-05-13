@@ -27,6 +27,7 @@ exports.createUser = [
   validate(createUserSchema),
   async (req, res) => {
     try {
+      console.log('Request body:', req.body);
       // Make sure validated data exists before destructuring
       const validatedData = validated(req);
       if (!validatedData) {

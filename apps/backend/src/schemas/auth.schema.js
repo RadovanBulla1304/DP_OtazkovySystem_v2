@@ -14,6 +14,9 @@ const signupSchema = Joi.object({
   name: Joi.string().min(2).required().messages({
     "string.empty": "validation.empty_name",
   }),
+  surname: Joi.string().min(2).required().messages({
+    "string.empty": "validation.empty_surname",
+  }),
   email: Joi.string().email({ tlds: { allow: false } }).required(),
   password: Joi.string().required(),
   passwordConfirmation: Joi.string().required(),
