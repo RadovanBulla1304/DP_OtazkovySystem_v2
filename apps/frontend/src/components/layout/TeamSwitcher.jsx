@@ -5,11 +5,10 @@ import { styled } from "@mui/material/styles"
 
 // Sample data - replace with your actual data later
 const sampleSubjects = [
-  { id: 1, name: "Matematika" },
-  { id: 2, name: "Fyzika" },
-  { id: 3, name: "Informatika" },
-  { id: 4, name: "Angličtina" },
-  { id: 5, name: "Dejepis" },
+  { id: 1, name: "Dizajn Hier" },
+  { id: 2, name: "Priestorová akustika" },
+  { id: 3, name: "Algoritmy a údajové Štruktúry" },
+  
 ]
 
 const TeamSwitcherButton = styled(Button)(({ theme }) => ({
@@ -68,7 +67,7 @@ const TeamSwitcher = () => {
       >
         <Box sx={{ display: "flex", alignItems: "center" }}>
           <SubjectAvatar>{currentSubject.name.charAt(0)}</SubjectAvatar>
-          <Typography variant="body2" noWrap>
+          <Typography variant="body2">
             {currentSubject.name}
           </Typography>
         </Box>

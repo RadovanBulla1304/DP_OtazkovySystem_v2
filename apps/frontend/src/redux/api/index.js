@@ -59,7 +59,14 @@ export const api = createApi({
         method: 'GET'
       }),
       providesTags: ['Users']
-    })
+    }),
+    createSubject: builder.mutation({
+      query: (data) => ({
+        url: '/admin/createSubject',
+        method: 'POST',
+        body: data
+      })
+    }),
   })
 });
 
@@ -76,5 +83,6 @@ export const {
   useGetCREOcardHistoryQuery,
   useUpdateUserMutation,
   useRemoveUserMutation,
-  useGetUsersListQuery
+  useGetUsersListQuery,
+  useCreateSubjectMutation,
 } = api;

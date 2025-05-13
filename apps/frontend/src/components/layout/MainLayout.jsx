@@ -148,6 +148,9 @@ const MainLayout = ({ children }) => {
 
         {/* Add margin-top: auto to push this to the bottom */}
         <Box sx={{ px: 2, mt: "auto", mb: 2 }}>
+          <Typography variant="subtitle2" sx={{ mb: 1 }}>
+            Zvoľ predmet:
+          </Typography>
           <TeamSwitcher />
         </Box>
       </Stack>

@@ -1,9 +1,12 @@
 const { body, validationResult, matchedData } = require("express-validator");
 const { throwError, errorFormatter } = require("../util/universal");
 
+const Subject = require("../models/subject");
 const User = require("../models/user");
+
 const { validate, validated } = require("../util/validation");
 const { createUserSchema, updateUserSchema } = require("../schemas/user.schema");
+const { createSubject } = require("../schemas/subject.schema");
 
 exports.getAllUser = [
   async (req, res) => {
@@ -121,3 +124,17 @@ exports.remove = async (req, res) => {
     throwError(req.t("messages.record_not_exists"), 404);
   }
 };
+
+exports.createSubject = [
+  validate(createSubject), // Validate the request body using the createSubject schema
+  async (req, res) => {
+    const matched = validated(req); // Extract validated data
+    try {
+      const subject = new Subject(matched); // Create a new Subject instance
+      await subject.save(); // Save the subject to the database
+      res.status(201).json(subject); // Respond with the created subject
+    } catch (err) {
+      throwError(`Error creating subject: ${err.message}`, 500); // Handle errors
+    }
+  },
+];
