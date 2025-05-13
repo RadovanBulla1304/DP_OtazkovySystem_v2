@@ -24,6 +24,7 @@ services:
             MONGO_DATABASE_URL2: mongodb://mongo:27017/otazkovySystem
             MONGO_DATABASE_URL: mongodb://mongoUser:hatatitla123*+465@mongo:27017/otazkovySystem?authSource=admin
             TOKEN_KEY: e3c9cfe5c8c1ceab90b84e56f1ce8d8e0fcd9485
+            SALT_KEY: e3f38a23a13c8fe9b83f9fdf33cd9a7f7ef9b21de88b1f7b2c1efb9f1094ccf0
             PORT: 5000
     frontend:
         build:

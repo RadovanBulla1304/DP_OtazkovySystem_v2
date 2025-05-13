@@ -173,7 +173,7 @@ const MainLayout = ({ children }) => {
             <MenuIcon />
           </IconButton>
           <Typography component="h1" variant="h6" color="inherit" noWrap sx={{ flexGrow: 1 }}>
-            Správa predmetov
+            Otázkový systém
           </Typography>
           <Button color="inherit" onClick={openProfileMenu} startIcon={<AccountCircleIcon />}>
             {matched && replaceDiacritics(user?.fullName || '')}

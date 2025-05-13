@@ -1,8 +1,10 @@
 const express = require("express");
 const router = express.Router();
-const { SignIn, checkUiVersion } = require("../controllers/publicController");
+const { SignIn, Register, checkUiVersion } = require("../controllers/publicController");
 
 router.post("/signin", SignIn);
+router.post("/register", Register); // 👈 Add this line for register
+
 router.post("/activation/:email/:hash", (req, res) => {
   res.status(404).send();
 });

@@ -24,16 +24,16 @@ app.use(middleware.handle(i18next));
 // LOCALIZATION END
 
 app.use(express.json({ limit: "50mb" }));
-
 app.use(json());
-app.use(authMiddleware);
 
-app.use("/public", require("./src/routes/public"));
+// Public routes should not use authMiddleware
+app.use("/public", require("./src/routes/public")); // This is for public routes like signin and register
+
+// Protected routes should use authMiddleware
+app.use(authMiddleware); // Apply auth middleware after public routes
+
 app.use("/user", require("./src/routes/user"));
 app.use("/admin", require("./src/routes/admin"));
-
-app.use("/creocard", require("./src/routes/CREOcard"));
-app.use("/creocardHistory", require("./src/routes/CREOcardHistory"));
 
 app.use(function (req, res, next) {
   throwError("Hľadaná stránka neexistuje", 404);
