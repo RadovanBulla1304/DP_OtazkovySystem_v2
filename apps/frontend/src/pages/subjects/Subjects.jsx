@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useGetAllSubjectsQuery } from '@app/redux/api';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
   Card, 
   CardContent, 
@@ -8,24 +8,44 @@ import {
   Grid, 
   CircularProgress,
   Box,
-  Button
+  Button,
+  IconButton
 } from '@mui/material';
 import AddSubjectModal from '../admin/components/AddSubjectModal';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 const Subjects = () => {
   const { data: subjects, isLoading, isError, refetch } = useGetAllSubjectsQuery();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const navigate = useNavigate();
 
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(false);
 
   const handleSubjectCreated = async (newSubject) => {
     try {
-      await refetch(); // Refresh the subjects list
+      await refetch();
       handleCloseModal();
     } catch (error) {
       console.error('Error handling subject creation:', error);
     }
+  };
+
+  const handleCardClick = (subjectId) => {
+    navigate(`/subjects/${subjectId}`);
+  };
+
+  const handleEdit = (e, subjectId) => {
+    e.stopPropagation();
+    navigate(`/subjects/${subjectId}/edit`);
+  };
+
+  const handleDelete = (e, subjectId) => {
+    e.stopPropagation();
+    // Add your delete logic here
+    console.log('Delete subject', subjectId);
+    // Example: deleteSubject(subjectId).then(() => refetch());
   };
 
   if (isLoading) {
@@ -60,13 +80,24 @@ const Subjects = () => {
       <AddSubjectModal 
         open={isModalOpen} 
         onClose={handleCloseModal}
-        onSuccess={handleSubjectCreated}  // Changed from onCreate to onSuccess
+        onSuccess={handleSubjectCreated}
       />
 
       <Grid container spacing={3}>
         {subjects?.map((subject) => (
           <Grid item xs={12} sm={6} md={4} lg={3} key={subject._id}>
-            <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <Card 
+              sx={{ 
+                height: '100%', 
+                display: 'flex', 
+                flexDirection: 'column',
+                cursor: 'pointer',
+                '&:hover': {
+                  boxShadow: 3,
+                }
+              }}
+              onClick={() => handleCardClick(subject._id)}
+            >
               <CardContent sx={{ flexGrow: 1 }}>
                 <Typography gutterBottom variant="h5" component="div">
                   {subject.name}
@@ -78,14 +109,26 @@ const Subjects = () => {
                   Vytvorené: {new Date(subject.createdAt).toLocaleDateString()}
                 </Typography>
               </CardContent>
-              <Box sx={{ p: 2, display: 'flex', justifyContent: 'flex-end' }}>
-                <Button 
-                  size="small" 
-                  component={Link}
-                  to={`/subjects/${subject._id}`}
+              <Box sx={{ 
+                p: 2, 
+                display: 'flex', 
+                justifyContent: 'flex-end',
+                gap: 1
+              }}>
+                <IconButton 
+                  aria-label="edit"
+                  onClick={(e) => handleEdit(e, subject._id)}
+                  color="primary"
                 >
-                  Zobraziť podrobnosti
-                </Button>
+                  <EditIcon />
+                </IconButton>
+                <IconButton 
+                  aria-label="delete"
+                  onClick={(e) => handleDelete(e, subject._id)}
+                  color="error"
+                >
+                  <DeleteIcon />
+                </IconButton>
               </Box>
             </Card>
           </Grid>

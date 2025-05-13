@@ -64,7 +64,7 @@ export const api = createApi({
     // SUBJECTS
     createSubject: builder.mutation({
       query: (data) => ({
-        url: '/admin/createSubject',
+        url: '/admin/subject',
         method: 'POST',
         body: data
       })
@@ -73,6 +73,13 @@ export const api = createApi({
       query: () => ({
         url: '/admin/getAllSubjects',
         method: 'GET'
+      })
+    }),
+    editSubject: builder.mutation({
+      query: (data) => ({
+        url: `/admin/subject/${data.subjectId}`,
+        method: 'PUT',
+        body: data.data
       })
     }),
   })
@@ -94,4 +101,5 @@ export const {
   useGetUsersListQuery,
   useCreateSubjectMutation,
   useGetAllSubjectsQuery,
+  useEditSubjectMutation,
 } = api;
