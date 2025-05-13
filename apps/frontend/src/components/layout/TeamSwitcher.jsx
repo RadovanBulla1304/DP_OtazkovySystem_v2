@@ -4,6 +4,8 @@ import {
   Divider, Avatar
 } from "@mui/material"
 import AddIcon from "@mui/icons-material/Add"
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
+
 import { styled } from "@mui/material/styles"
 import AddSubjectModal from "../../pages/admin/components/AddSubjectModal"
 import { useCreateSubjectMutation } from "@app/redux/api" // adjust path
@@ -86,12 +88,15 @@ const TeamSwitcher = () => {
         aria-controls={open ? "subject-menu" : undefined}
         aria-haspopup="true"
         aria-expanded={open ? "true" : undefined}
-      >
-        <Box sx={{ display: "flex", alignItems: "center" }}>
-          <SubjectAvatar>{currentSubject.name.charAt(0)}</SubjectAvatar>
-          <Typography variant="body2">{currentSubject.name}</Typography>
-        </Box>
-      </TeamSwitcherButton>
+    >
+    <Box sx={{ display: "flex", alignItems: "center", width: "100%" }}>
+        <SubjectAvatar>{currentSubject.name.charAt(0)}</SubjectAvatar>
+        <Typography variant="body2" sx={{ flexGrow: 1 }}>
+        {currentSubject.name}
+        </Typography>
+        <ExpandMoreIcon fontSize="small" />
+    </Box>
+    </TeamSwitcherButton>
 
       <Popover
         id="subject-menu"
