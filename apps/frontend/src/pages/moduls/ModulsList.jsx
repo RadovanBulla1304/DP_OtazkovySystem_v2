@@ -18,14 +18,11 @@ const ModulsList = () => {
   const columns = [
     { field: 'title', headerName: 'Názov modulu', flex: 1 },
     {
-      field: 'subjectName',
+      field: 'subject',
       headerName: 'Predmet',
       flex: 1,
-      renderCell: (params) => {
-        console.log('Params:', params);
-        // Add null check for params.row and params.row.subject
-        return params.row.subject?.name || '-';
-      }
+      valueGetter: (value, row) => row.subject?.name || '-',
+      renderCell: (params) => params.row.subject?.name || '-'
     },
     {
       field: 'date_start',
