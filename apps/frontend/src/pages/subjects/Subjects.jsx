@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useGetAllSubjectsQuery, useDeleteModulMutation } from '@app/redux/api'; // Import the mutation hook
+import { useGetAllSubjectsQuery, useDeleteSubjectMutation } from '@app/redux/api'; // Import the mutation hook
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   Card, 
@@ -17,7 +17,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 
 const Subjects = () => {
   const { data: subjects, isLoading, isError, refetch } = useGetAllSubjectsQuery();
-  const [deleteModul] = useDeleteModulMutation(); // Use the mutation hook
+  const [deleteModul] = useDeleteSubjectMutation(); // Use the mutation hook
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
 
