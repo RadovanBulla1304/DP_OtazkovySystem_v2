@@ -88,6 +88,12 @@ export const api = createApi({
         method: 'DELETE'
       })
     }),
+    getSubjectById: builder.query({
+      query: (subjectId) => ({
+        url: `/subject/${subjectId}`,
+        method: 'GET'
+      })
+    }),
     // MODULES
     createModul: builder.mutation({
       query: (data) => ({
@@ -161,6 +167,7 @@ export const {
   useGetAllSubjectsQuery,
   useEditSubjectMutation,
   useDeleteSubjectMutation,
+  useGetSubjectByIdQuery,
   // MODULS
   useCreateModulMutation,
   useGetAllModulsQuery,
