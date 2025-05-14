@@ -64,3 +64,16 @@ exports.deleteSubject = [
         }
     },
 ];
+exports.getSubjectById = [
+    async (req, res) => {
+        try {
+            const subject = await Subject.findById(req.params.id, { __v: 0 }); // Find the subject by ID and exclude the __v field
+            if (!subject) {
+                return res.status(404).json({ message: req.t("messages.record_not_exists") }); // Handle not found
+            }
+            res.status(200).json(subject); // Respond with the found subject
+        } catch (err) {
+            throwError(`${req.t("messages.database_error")}: ${err.message}`, 500); // Handle errors
+        }
+    },
+];
