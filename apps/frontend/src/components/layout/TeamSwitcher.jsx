@@ -48,8 +48,15 @@ const TeamSwitcher = ({ collapsed = false }) => {
   const open = Boolean(anchorEl);
 
   React.useEffect(() => {
-    if (subjects.length > 0 && !currentSubject) {
-      setCurrentSubject(subjects[0]);
+    if (subjects.length > 0) {
+      // If current subject exists in the subjects list, keep it
+      const subjectExists = subjects.some(subj => subj.id === currentSubject?.id);
+      if (!subjectExists) {
+        setCurrentSubject(subjects[0]);
+      }
+    } else {
+      // No subjects left, reset current subject
+      setCurrentSubject(null);
     }
   }, [subjects, currentSubject]);
 
