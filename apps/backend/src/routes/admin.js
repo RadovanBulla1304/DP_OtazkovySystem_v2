@@ -4,7 +4,6 @@ const {
   editUser,
   removeUser,
   createUser,
-
 } = require("../controllers/adminController");
 
 const router = express.Router();

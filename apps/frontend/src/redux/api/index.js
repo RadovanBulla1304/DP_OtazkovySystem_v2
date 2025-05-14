@@ -82,24 +82,87 @@ export const api = createApi({
         body: data.data
       })
     }),
+
+    // MODULES
+    createModul: builder.mutation({
+      query: (data) => ({
+        url: '/modul',
+        method: 'POST',
+        body: data
+      }),
+      invalidatesTags: ['Moduls']
+    }),
+
+    getAllModuls: builder.query({
+      query: () => ({
+        url: '/modul',
+        method: 'GET'
+      }),
+      providesTags: ['Moduls']
+    }),
+
+    getModulById: builder.query({
+      query: (modulId) => ({
+        url: `/modul/${modulId}`,
+        method: 'GET'
+      }),
+      providesTags: (result, error, arg) => [{ type: 'Moduls', id: arg }]
+    }),
+
+    getModulsBySubject: builder.query({
+      query: (subjectId) => ({
+        url: `/modul/subject/${subjectId}`,
+        method: 'GET'
+      }),
+      providesTags: (result, error, arg) => [
+        { type: 'Moduls', id: `SUBJECT-${arg}` },
+        'Moduls'
+      ]
+    }),
+
+    editModul: builder.mutation({
+      query: ({ modulId, data }) => ({
+        url: `/modul/${modulId}`,
+        method: 'PUT',
+        body: data
+      }),
+      invalidatesTags: (result, error, arg) => [
+        { type: 'Moduls', id: arg.modulId },
+        { type: 'Moduls', id: `SUBJECT-${result?.subject}` }
+      ]
+    }),
+
+    deleteModul: builder.mutation({
+      query: (modulId) => ({
+        url: `/modul/${modulId}`,
+        method: 'DELETE'
+      }),
+      invalidatesTags: ['Moduls']
+    })
   })
 });
 
 export const {
+  // USERS
   useGetUserMeQuery,
   useLazyGetUserMeQuery,
   useLoginUserMutation,
   useCreateUserMutation,
-  useAddStudentMutation,
-  useAddEmployeeOrAdminMutation,
-  useCreateCREOcardMutation,
-  useGetCREOcardsQuery,
-  useCreateCREOcardHistoryMutation,
-  useGetCREOcardHistoryQuery,
   useUpdateUserMutation,
   useRemoveUserMutation,
   useGetUsersListQuery,
+  // SUBJECTS
   useCreateSubjectMutation,
   useGetAllSubjectsQuery,
   useEditSubjectMutation,
+  // MODULS
+  useCreateModulMutation,
+  useGetAllModulsQuery,
+  useLazyGetAllModulsQuery,
+  useGetModulByIdQuery,
+  useLazyGetModulByIdQuery,
+  useGetModulsBySubjectQuery,
+  useLazyGetModulsBySubjectQuery,
+  useEditModulMutation,
+  useDeleteModulMutation
 } = api;
