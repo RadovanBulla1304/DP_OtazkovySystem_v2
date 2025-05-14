@@ -8,9 +8,9 @@ import authRoutes from './pages/auth';
 import adminRoutes from '@app/pages/admin';
 import Moduls from './pages/moduls/ModulsList';
 import MyQuestions from './pages/my-questions/MyQuestions';
+import SubjectDetail from './pages/subjects/SubjectDetail';
 import Subjects from './pages/subjects/Subjects';
 import Tests from './pages/tests/Tests';
-
 export const router = createBrowserRouter([
   {
     element: <MinimalLayout />,
@@ -43,6 +43,10 @@ export const router = createBrowserRouter([
       {
         path: '/subjects',
         element: <Subjects />
+      },
+      {
+        path: '/subjects/:subjectId',
+        element: <SubjectDetail />
       },
       {
         path: 'admin',

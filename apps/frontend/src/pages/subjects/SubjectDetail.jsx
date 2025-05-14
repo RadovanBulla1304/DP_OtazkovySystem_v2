@@ -71,7 +71,7 @@ const SubjectDetail = () => {
       field: 'date_start',
       headerName: 'Začiatok',
       flex: 1,
-      valueGetter: (params) => {
+      renderCell: (params) => {
         return params.row?.date_start ? dayjs(params.row.date_start).format('DD.MM.YYYY') : '-';
       }
     },
@@ -79,7 +79,7 @@ const SubjectDetail = () => {
       field: 'date_end',
       headerName: 'Koniec',
       flex: 1,
-      valueGetter: (params) => {
+      renderCell: (params) => {
         return params.row?.date_end ? dayjs(params.row.date_end).format('DD.MM.YYYY') : '-';
       }
     },
@@ -87,7 +87,7 @@ const SubjectDetail = () => {
       field: 'duration_days',
       headerName: 'Trvanie (dni)',
       flex: 1,
-      valueGetter: (params) => {
+      renderCell: (params) => {
         return params.row?.duration_days !== undefined ? params.row.duration_days : '-';
       }
     },
