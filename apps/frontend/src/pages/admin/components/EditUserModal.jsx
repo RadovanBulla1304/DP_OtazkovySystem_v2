@@ -65,7 +65,7 @@ const EditUserModal = ({ userData }) => {
   return (
     <>
       <Tooltip title="Uprav používateľa" key={'edit'}>
-        <IconButton onClick={handleClickOpen}>
+        <IconButton color='primary' onClick={handleClickOpen}>
           <EditIcon />
         </IconButton>
       </Tooltip>

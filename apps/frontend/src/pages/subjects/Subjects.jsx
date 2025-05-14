@@ -1,35 +1,60 @@
-import React, { useState } from 'react';
-import { useGetAllSubjectsQuery, useDeleteSubjectMutation } from '@app/redux/api'; // Import the mutation hook
-import { Link, useNavigate } from 'react-router-dom';
-import { 
-  Card, 
-  CardContent, 
-  Typography, 
-  Grid, 
-  CircularProgress,
+import { useDeleteSubjectMutation, useGetAllSubjectsQuery } from '@app/redux/api'; // Import the mutation hook
+import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+import {
   Box,
   Button,
-  IconButton
+  Card,
+  CardContent,
+  CircularProgress,
+  Grid,
+  IconButton,
+  Typography
 } from '@mui/material';
+import Tooltip from '@mui/material/Tooltip';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import AddModulModal from '../admin/components/AddModulModal'; // Import the new component
 import AddSubjectModal from '../admin/components/AddSubjectModal';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
 
 const Subjects = () => {
   const { data: subjects, isLoading, isError, refetch } = useGetAllSubjectsQuery();
   const [deleteModul] = useDeleteSubjectMutation(); // Use the mutation hook
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSubjectModalOpen, setIsSubjectModalOpen] = useState(false);
+  const [isModulModalOpen, setIsModulModalOpen] = useState(false);
+  const [selectedSubjectId, setSelectedSubjectId] = useState(null);
   const navigate = useNavigate();
 
-  const handleOpenModal = () => setIsModalOpen(true);
-  const handleCloseModal = () => setIsModalOpen(false);
+  const handleOpenSubjectModal = () => setIsSubjectModalOpen(true);
+  const handleCloseSubjectModal = () => setIsSubjectModalOpen(false);
 
-  const handleSubjectCreated = async (newSubject) => {
+  const handleOpenModulModal = (e, subjectId) => {
+    e.stopPropagation(); // Prevent card click
+    setSelectedSubjectId(subjectId);
+    setIsModulModalOpen(true);
+  };
+
+  const handleCloseModulModal = () => {
+    setIsModulModalOpen(false);
+    setSelectedSubjectId(null);
+  };
+
+  const handleSubjectCreated = async () => {
     try {
       await refetch();
-      handleCloseModal();
+      handleCloseSubjectModal();
     } catch (error) {
       console.error('Error handling subject creation:', error);
+    }
+  };
+
+  const handleModulCreated = async () => {
+    try {
+      await refetch();
+      handleCloseModulModal();
+    } catch (error) {
+      console.error('Error handling modul creation:', error);
     }
   };
 
@@ -72,32 +97,35 @@ const Subjects = () => {
     <div style={{ padding: '20px' }}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
         <Typography variant="h4">Predmety</Typography>
-        <Button 
-          variant="contained" 
-          color="primary"
-          onClick={handleOpenModal}
-        >
+        <Button variant="contained" color="primary" onClick={handleOpenSubjectModal}>
           Pridať predmet
         </Button>
       </Box>
 
-      <AddSubjectModal 
-        open={isModalOpen} 
-        onClose={handleCloseModal}
+      <AddSubjectModal
+        open={isSubjectModalOpen}
+        onClose={handleCloseSubjectModal}
         onSuccess={handleSubjectCreated}
+      />
+
+      <AddModulModal
+        open={isModulModalOpen}
+        onClose={handleCloseModulModal}
+        subjectId={selectedSubjectId}
+        onSuccess={handleModulCreated}
       />
 
       <Grid container spacing={3}>
         {subjects?.map((subject) => (
           <Grid item xs={12} sm={6} md={4} lg={3} key={subject._id}>
-            <Card 
-              sx={{ 
-                height: '100%', 
-                display: 'flex', 
+            <Card
+              sx={{
+                height: '100%',
+                display: 'flex',
                 flexDirection: 'column',
                 cursor: 'pointer',
                 '&:hover': {
-                  boxShadow: 3,
+                  boxShadow: 3
                 }
               }}
               onClick={() => handleCardClick(subject._id)}
@@ -113,26 +141,41 @@ const Subjects = () => {
                   Vytvorené: {new Date(subject.createdAt).toLocaleDateString()}
                 </Typography>
               </CardContent>
-              <Box sx={{ 
-                p: 2, 
-                display: 'flex', 
-                justifyContent: 'flex-end',
-                gap: 1
-              }}>
-                <IconButton 
-                  aria-label="edit"
-                  onClick={(e) => handleEdit(e, subject._id)}
-                  color="primary"
-                >
-                  <EditIcon />
-                </IconButton>
-                <IconButton 
-                  aria-label="delete"
-                  onClick={(e) => handleDelete(e, subject._id)} // Call handleDelete
-                  color="error"
-                >
-                  <DeleteIcon />
-                </IconButton>
+              <Box
+                sx={{
+                  p: 2,
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  gap: 1
+                }}
+              >
+                <Tooltip title="Pridať modul">
+                  <IconButton
+                    aria-label="add"
+                    onClick={(e) => handleOpenModulModal(e, subject._id)}
+                    color="primary"
+                  >
+                    <AddIcon />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Upraviť predmet">
+                  <IconButton
+                    aria-label="edit"
+                    onClick={(e) => handleEdit(e, subject._id)}
+                    color="primary"
+                  >
+                    <EditIcon />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Vymazať predmet">
+                  <IconButton
+                    aria-label="delete"
+                    onClick={(e) => handleDelete(e, subject._id)}
+                    color="error"
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </Tooltip>
               </Box>
             </Card>
           </Grid>

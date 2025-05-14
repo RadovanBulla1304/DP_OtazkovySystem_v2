@@ -15,7 +15,7 @@ const UsersList = () => {
   const onRemoveHandler = async (id) => {
     const response = await removeUser(id);
     if (!response.error) {
-      toast.success('Uzivatel bol uspesne odstraneny');
+      toast.success('Užívateľ bol úspešne odstránený');
     } else {
       toast.error('Chyba pri odstranovani pouzivatela: ' + response.error?.data?.message);
     }
@@ -38,7 +38,7 @@ const UsersList = () => {
       headerName: 'Ucet aktivny',
       flex: 1,
       renderCell: (value) => {
-        return value.row.isActive ? <CenteredCheckIcon /> : null;
+        return value.row.isActive ? <CenteredCheckIcon/> : null;
       }
     },
     {
@@ -54,7 +54,7 @@ const UsersList = () => {
             onAccept={() => onRemoveHandler(params.row._id)}
           >
             <Tooltip title="Odstran pouzivatela">
-              <IconButton>
+              <IconButton color='error'>
                 <DeleteIcon />
               </IconButton>
             </Tooltip>

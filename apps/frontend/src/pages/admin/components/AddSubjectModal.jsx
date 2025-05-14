@@ -1,35 +1,51 @@
-// AddSubjectModal.jsx
-import React, { useState } from "react";
-import { useCreateSubjectMutation } from "@app/redux/api";
+import { useCreateSubjectMutation } from '@app/redux/api';
+import { joiResolver } from '@hookform/resolvers/joi';
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
+  Alert,
   Button,
   CircularProgress,
-  Alert
-} from "@mui/material";
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  TextField
+} from '@mui/material';
+import PropTypes from 'prop-types';
+import React from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import { createSubjectSchema } from '../schemas/subject.schema';
 
 const AddSubjectModal = ({ open, onClose, onSuccess }) => {
-  const [subjectName, setSubjectName] = useState("");
   const [createSubject, { isLoading, error }] = useCreateSubjectMutation();
+  const [submitAttempted, setSubmitAttempted] = React.useState(false);
 
-  const handleSubmit = async () => {
-    if (!subjectName.trim()) return;
-    
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isSubmitted },
+    reset
+  } = useForm({
+    resolver: joiResolver(createSubjectSchema),
+    defaultValues: {
+      name: ''
+    }
+  });
+
+  const handleFormSubmit = async (data) => {
+    setSubmitAttempted(true);
     try {
-      const result = await createSubject({ name: subjectName.trim() }).unwrap();
-      setSubjectName("");
+      const result = await createSubject({ name: data.name.trim() }).unwrap();
+      reset();
+      setSubmitAttempted(false);
       onSuccess?.(result);
     } catch (err) {
-      console.error("Failed to create subject:", err);
+      console.error('Failed to create subject:', err);
     }
   };
 
   const handleClose = () => {
-    setSubjectName("");
+    reset();
+    setSubmitAttempted(false);
     onClose();
   };
 
@@ -42,29 +58,38 @@ const AddSubjectModal = ({ open, onClose, onSuccess }) => {
             Chyba pri vytváraní predmetu
           </Alert>
         )}
-        <TextField
-          autoFocus
-          fullWidth
-          label="Názov predmetu"
-          value={subjectName}
-          onChange={(e) => setSubjectName(e.target.value)}
-          disabled={isLoading}
+        <Controller
+          name="name"
+          control={control}
+          render={({ field }) => (
+            <TextField
+              {...field}
+              autoFocus
+              fullWidth
+              label="Názov predmetu"
+              error={(submitAttempted || isSubmitted) && !!errors.name}
+              helperText={(submitAttempted || isSubmitted) && errors.name?.message}
+              disabled={isLoading}
+            />
+          )}
         />
       </DialogContent>
       <DialogActions>
         <Button onClick={handleClose} disabled={isLoading}>
           Zrušiť
         </Button>
-        <Button 
-          onClick={handleSubmit} 
-          variant="contained"
-          disabled={isLoading || !subjectName.trim()}
-        >
-          {isLoading ? <CircularProgress size={24} /> : "Pridať"}
+        <Button onClick={handleSubmit(handleFormSubmit)} variant="contained" disabled={isLoading}>
+          {isLoading ? <CircularProgress size={24} /> : 'Pridať'}
         </Button>
       </DialogActions>
     </Dialog>
   );
+};
+
+AddSubjectModal.propTypes = {
+  open: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onSuccess: PropTypes.func
 };
 
 export default AddSubjectModal;
