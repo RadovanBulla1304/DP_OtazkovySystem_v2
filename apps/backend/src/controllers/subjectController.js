@@ -51,3 +51,16 @@ exports.editSubject = [
         }
     },
 ];
+exports.deleteSubject = [
+    async (req, res) => {
+        try {
+            const subject = await Subject.findOneAndDelete({ _id: req.params.id }); // Find and delete the subject by ID
+            if (!subject) {
+                return res.status(404).json({ message: req.t("messages.record_not_exists") }); // Handle not found
+            }
+            res.status(200).json({ message: req.t("messages.record_deleted") }); // Respond with success message
+        } catch (err) {
+            throwError(`${req.t("messages.database_error")}: ${err.message}`, 500); // Handle errors
+        }
+    },
+];

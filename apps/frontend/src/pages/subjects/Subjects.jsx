@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useGetAllSubjectsQuery } from '@app/redux/api';
+import { useGetAllSubjectsQuery, useDeleteModulMutation } from '@app/redux/api'; // Import the mutation hook
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   Card, 
@@ -17,6 +17,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 
 const Subjects = () => {
   const { data: subjects, isLoading, isError, refetch } = useGetAllSubjectsQuery();
+  const [deleteModul] = useDeleteModulMutation(); // Use the mutation hook
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -41,11 +42,14 @@ const Subjects = () => {
     navigate(`/subjects/${subjectId}/edit`);
   };
 
-  const handleDelete = (e, subjectId) => {
+  const handleDelete = async (e, subjectId) => {
     e.stopPropagation();
-    // Add your delete logic here
-    console.log('Delete subject', subjectId);
-    // Example: deleteSubject(subjectId).then(() => refetch());
+    try {
+      await deleteModul(subjectId); // Call the delete API
+      await refetch(); // Refetch the subjects after deletion
+    } catch (error) {
+      console.error('Error deleting subject:', error);
+    }
   };
 
   if (isLoading) {
@@ -124,7 +128,7 @@ const Subjects = () => {
                 </IconButton>
                 <IconButton 
                   aria-label="delete"
-                  onClick={(e) => handleDelete(e, subject._id)}
+                  onClick={(e) => handleDelete(e, subject._id)} // Call handleDelete
                   color="error"
                 >
                   <DeleteIcon />
