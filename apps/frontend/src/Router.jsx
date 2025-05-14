@@ -2,14 +2,14 @@ import { createBrowserRouter } from 'react-router-dom';
 import MinimalLayout from './components/layout/MinimalLayout';
 import Protected from './components/layout/Protected';
 import { RouteNotFound } from './components/RouteNotFound.component';
-import authRoutes from './pages/auth';
 import Dashboard from './pages/admin/dashboard/Dashboard';
+import authRoutes from './pages/auth';
 
 import adminRoutes from '@app/pages/admin';
-import Tests from './pages/tests/Tests';
-import Moduls from './pages/moduls/Moduls';
+import Moduls from './pages/moduls/ModulsList';
 import MyQuestions from './pages/my-questions/MyQuestions';
 import Subjects from './pages/subjects/Subjects';
+import Tests from './pages/tests/Tests';
 
 export const router = createBrowserRouter([
   {
