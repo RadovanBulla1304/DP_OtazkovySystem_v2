@@ -4,7 +4,8 @@ import {
   useDeleteSubjectMutation,
   useGetModulsBySubjectQuery,
   useGetSubjectByIdQuery,
-  useGetUsersListQuery
+  useGetUsersListQuery,
+  useUnasignUserFromSubjectMutation
 } from '@app/redux/api';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -26,12 +27,6 @@ import {
   Grid,
   Link,
   Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   Tooltip,
   Typography
 } from '@mui/material';
@@ -52,6 +47,8 @@ const SubjectDetail = () => {
   const [deleteSubject] = useDeleteSubjectMutation();
   const [deleteAllModulsBySubject] = useDeleteAllModulsBySubjectMutation();
   const [deleteModul] = useDeleteModulMutation();
+  const [unasignUserFromSubject, { isLoading: isUnassigning }] =
+    useUnasignUserFromSubjectMutation();
 
   // State for modals and dialogs
   const [isModulModalOpen, setIsModulModalOpen] = useState(false);
@@ -66,6 +63,9 @@ const SubjectDetail = () => {
   const [modulToDelete, setModulToDelete] = useState(null);
   const [isDeleteModulDialogOpen, setIsDeleteModulDialogOpen] = useState(false);
   const [isDeletingModul, setIsDeletingModul] = useState(false);
+
+  // Assigned users selection state
+  const [selectedAssignedUserIds, setSelectedAssignedUserIds] = useState([]);
 
   // Fetch subject details
   const {
@@ -196,6 +196,25 @@ const SubjectDetail = () => {
     }
   };
 
+  // Unassign users handler
+  const handleUnassignUsers = async () => {
+    if (!selectedAssignedUserIds.length) return;
+    try {
+      await unasignUserFromSubject({
+        subjectId,
+        userId:
+          selectedAssignedUserIds.length === 1
+            ? selectedAssignedUserIds[0]
+            : selectedAssignedUserIds
+      }).unwrap();
+      toast.success('Používateľ(ia) boli odobraní z predmetu');
+      setSelectedAssignedUserIds([]);
+      await refetchSubject();
+    } catch (error) {
+      toast.error('Chyba pri odoberaní používateľov z predmetu', error);
+    }
+  };
+
   // Define columns for the modules table
   const columns = [
     {
@@ -270,6 +289,27 @@ const SubjectDetail = () => {
           </Button>
         </Box>
       )
+    }
+  ];
+
+  // Columns for assigned users DataGrid
+  const assignedUsersColumns = [
+    { field: 'name', headerName: 'Meno', flex: 1, minWidth: 120 },
+    { field: 'surname', headerName: 'Priezvisko', flex: 1, minWidth: 120 },
+    { field: 'email', headerName: 'Email', flex: 1, minWidth: 180 },
+    {
+      field: 'isAdmin',
+      headerName: 'Admin účet',
+      flex: 1,
+      minWidth: 100,
+      renderCell: (params) => (params.row.isAdmin ? 'Áno' : 'Nie')
+    },
+    {
+      field: 'isActive',
+      headerName: 'Aktívny účet',
+      flex: 1,
+      minWidth: 100,
+      renderCell: (params) => (params.row.isActive ? 'Áno' : 'Nie')
     }
   ];
 
@@ -402,42 +442,41 @@ const SubjectDetail = () => {
 
       {/* Assigned Users Table */}
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h5" sx={{ mb: 2 }}>
-          Priradení používatelia
-        </Typography>
-        <Paper sx={{ width: '100%', overflowX: 'auto' }}>
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Meno</TableCell>
-                  <TableCell>Priezvisko</TableCell>
-                  <TableCell>Email</TableCell>
-                  <TableCell>Admin účet</TableCell>
-                  <TableCell>Aktívny účet</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {assignedUsersInfo.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={5} align="center">
-                      Žiadni používatelia nie sú priradení k tomuto predmetu.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  assignedUsersInfo.map((user) => (
-                    <TableRow key={user._id}>
-                      <TableCell>{user.name}</TableCell>
-                      <TableCell>{user.surname}</TableCell>
-                      <TableCell>{user.email}</TableCell>
-                      <TableCell>{user.isAdmin ? 'Áno' : 'Nie'}</TableCell>
-                      <TableCell>{user.isActive ? 'Áno' : 'Nie'}</TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Typography variant="h5">Priradení používatelia</Typography>
+          <Button
+            variant="contained"
+            color="error"
+            disabled={selectedAssignedUserIds.length === 0 || isUnassigning}
+            onClick={handleUnassignUsers}
+          >
+            Odstrániť priradenie používateľov
+          </Button>
+        </Box>
+        <Paper sx={{ height: 400, width: '100%' }}>
+          <DataGrid
+            rows={assignedUsersInfo}
+            columns={assignedUsersColumns}
+            getRowId={(row) => row._id}
+            checkboxSelection
+            isRowSelectable={() => true}
+            onRowSelectionModelChange={(ids) => setSelectedAssignedUserIds(ids)}
+            rowSelectionModel={selectedAssignedUserIds}
+            pageSizeOptions={[5, 10, 25]}
+            initialState={{
+              pagination: {
+                paginationModel: { pageSize: 10 }
+              }
+            }}
+            disableRowSelectionOnClick
+            slots={{ toolbar: GridToolbar }}
+            slotProps={{
+              toolbar: {
+                showQuickFilter: true,
+                quickFilterProps: { debounceMs: 500 }
+              }
+            }}
+          />
         </Paper>
       </Box>
 
