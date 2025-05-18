@@ -32,8 +32,8 @@ import dayjs from 'dayjs';
 import { useState } from 'react';
 import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom';
 import AddModulModal from '../admin/components/AddModulModal';
+import EditModulModal from '../admin/components/EditModulModal';
 import EditSubjectModal from '../admin/components/EditSubjectModal';
-
 const SubjectDetail = () => {
   const { subjectId } = useParams();
   const navigate = useNavigate();
@@ -48,6 +48,8 @@ const SubjectDetail = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  const [editModulModalOpen, setEditModulModalOpen] = useState(false);
+  const [modulToEdit, setModulToEdit] = useState(null);
   // Fetch subject details
   const {
     data: subject,
@@ -55,6 +57,22 @@ const SubjectDetail = () => {
     isError: isSubjectError,
     refetch: refetchSubject
   } = useGetSubjectByIdQuery(subjectId);
+
+  // Handler for opening EditModulModal
+  const handleOpenEditModulModal = (modul) => {
+    setModulToEdit(modul);
+    setEditModulModalOpen(true);
+  };
+
+  const handleCloseEditModulModal = () => {
+    setEditModulModalOpen(false);
+    setModulToEdit(null);
+  };
+  const handleEditModulSuccess = async () => {
+    await refetchModules();
+    setEditModulModalOpen(false);
+    setModulToEdit(null);
+  };
 
   // Fetch modules for this subject
   const {
@@ -204,7 +222,7 @@ const SubjectDetail = () => {
             color="primary"
             startIcon={<EditIcon />}
             sx={{ minWidth: 100 }}
-            onClick={() => navigate(`/moduls/${params.row._id}/edit`)}
+            onClick={() => handleOpenEditModulModal(params.row)}
           >
             Upraviť
           </Button>
@@ -346,6 +364,12 @@ const SubjectDetail = () => {
         onClose={handleCloseModulModal}
         subjectId={subjectId}
         onCreated={handleModulCreated}
+      />
+      <EditModulModal
+        open={editModulModalOpen}
+        onClose={handleCloseEditModulModal}
+        onSuccess={handleEditModulSuccess}
+        modul={modulToEdit}
       />
 
       {/* Edit Subject Modal */}
