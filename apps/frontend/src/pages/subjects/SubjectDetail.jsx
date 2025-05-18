@@ -1,5 +1,11 @@
-import { useGetModulsBySubjectQuery, useGetSubjectByIdQuery } from '@app/redux/api';
+import {
+  useDeleteAllModulsBySubjectMutation,
+  useDeleteSubjectMutation,
+  useGetModulsBySubjectQuery,
+  useGetSubjectByIdQuery
+} from '@app/redux/api';
 import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import {
@@ -9,10 +15,16 @@ import {
   Card,
   CardContent,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Divider,
   Grid,
   Link,
   Paper,
+  Tooltip,
   Typography
 } from '@mui/material';
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
@@ -24,7 +36,15 @@ import AddModulModal from '../admin/components/AddModulModal';
 const SubjectDetail = () => {
   const { subjectId } = useParams();
   const navigate = useNavigate();
+
+  // Delete mutations
+  const [deleteSubject] = useDeleteSubjectMutation();
+  const [deleteAllModulsBySubject] = useDeleteAllModulsBySubjectMutation();
+
+  // State for modals and dialogs
   const [isModulModalOpen, setIsModulModalOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Fetch subject details
   const {
@@ -62,6 +82,48 @@ const SubjectDetail = () => {
 
   const handleEditSubject = () => {
     navigate(`/subjects/${subjectId}/edit`);
+  };
+
+  // Confirm delete dialog handlers
+  const handleOpenDeleteDialog = () => {
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setIsDeleteDialogOpen(false);
+  };
+
+  const handleConfirmDelete = async () => {
+    setIsDeleting(true);
+    try {
+      // First delete all modules of this subject
+      const modulesResponse = await deleteAllModulsBySubject(subjectId);
+
+      if (modulesResponse.error) {
+        console.error('Error deleting modules:', modulesResponse.error);
+        alert('Chyba pri odstraňovaní modulov.');
+        setIsDeleting(false);
+        setIsDeleteDialogOpen(false);
+        return;
+      }
+
+      // Then delete the subject
+      const subjectResponse = await deleteSubject(subjectId);
+
+      if (subjectResponse.error) {
+        console.error('Error deleting subject:', subjectResponse.error);
+        alert('Chyba pri odstraňovaní predmetu.');
+      } else {
+        alert('Predmet a všetky jeho moduly boli úspešne odstránené.');
+        navigate('/subjects');
+      }
+    } catch (error) {
+      console.error('Error during deletion:', error);
+      alert('Chyba pri odstraňovaní predmetu a modulov.');
+    } finally {
+      setIsDeleting(false);
+      setIsDeleteDialogOpen(false);
+    }
   };
 
   // Define columns for the modules table
@@ -139,8 +201,7 @@ const SubjectDetail = () => {
     }
   ];
 
-  // Loading state
-  if (isSubjectLoading || isModulesLoading) {
+  if (isSubjectLoading || isModulesLoading || isDeleting) {
     return (
       <Box display="flex" justifyContent="center" mt={4}>
         <CircularProgress />
@@ -148,7 +209,6 @@ const SubjectDetail = () => {
     );
   }
 
-  // Error state
   if (isSubjectError || isModulesError) {
     return (
       <Box display="flex" justifyContent="center" mt={4}>
@@ -157,7 +217,6 @@ const SubjectDetail = () => {
     );
   }
 
-  // If subject not found
   if (!subject) {
     return (
       <Box display="flex" justifyContent="center" mt={4}>
@@ -201,6 +260,16 @@ const SubjectDetail = () => {
               >
                 Pridať modul
               </Button>
+              <Tooltip title="Vymazať predmet">
+                <Button
+                  variant="contained"
+                  color="error"
+                  startIcon={<DeleteIcon />}
+                  onClick={handleOpenDeleteDialog}
+                >
+                  Vymazať
+                </Button>
+              </Tooltip>
             </Box>
           </Box>
 
@@ -250,7 +319,8 @@ const SubjectDetail = () => {
             slots={{ toolbar: GridToolbar }}
             slotProps={{
               toolbar: {
-                showQuickFilter: true
+                showQuickFilter: true,
+                quickFilterProps: { debounceMs: 500 }
               }
             }}
             disableRowSelectionOnClick
@@ -263,8 +333,37 @@ const SubjectDetail = () => {
         open={isModulModalOpen}
         onClose={handleCloseModulModal}
         subjectId={subjectId}
-        onSuccess={handleModulCreated}
+        onCreated={handleModulCreated}
       />
+
+      {/* Confirmation Dialog for Delete */}
+      <Dialog
+        open={isDeleteDialogOpen}
+        onClose={handleCloseDeleteDialog}
+        aria-labelledby="delete-subject-dialog-title"
+        aria-describedby="delete-subject-dialog-description"
+      >
+        <DialogTitle id="delete-subject-dialog-title">Vymazať predmet?</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="delete-subject-dialog-description">
+            Naozaj chcete odstrániť predmet <strong>{subject.name}</strong> a všetky jeho moduly?
+            Táto akcia je nevratná.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDeleteDialog} disabled={isDeleting}>
+            Zrušiť
+          </Button>
+          <Button
+            onClick={handleConfirmDelete}
+            color="error"
+            variant="contained"
+            disabled={isDeleting}
+          >
+            {isDeleting ? 'Mazanie...' : 'Vymazať'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

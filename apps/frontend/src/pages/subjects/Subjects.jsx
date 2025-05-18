@@ -1,39 +1,37 @@
-import { useDeleteSubjectMutation, useGetAllSubjectsQuery } from '@app/redux/api'; // Import the mutation hook
-import AddIcon from '@mui/icons-material/Add';
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
+import ConfirmationDialog from '@app/components/ConfirmationDialog';
 import {
-  Box,
-  Button,
-  Card,
-  CardContent,
-  CircularProgress,
-  Grid,
-  IconButton,
-  Typography
-} from '@mui/material';
-import Tooltip from '@mui/material/Tooltip';
+  useDeleteAllModulsBySubjectMutation,
+  useDeleteSubjectMutation,
+  useGetAllSubjectsQuery
+} from '@app/redux/api';
+import { Box, Button, Card, CardContent, CircularProgress, Grid, Typography } from '@mui/material';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import AddModulModal from '../admin/components/AddModulModal'; // Import the new component
+import { toast } from 'react-toastify';
+import AddModulModal from '../admin/components/AddModulModal';
 import AddSubjectModal from '../admin/components/AddSubjectModal';
 
 const Subjects = () => {
   const { data: subjects, isLoading, isError, refetch } = useGetAllSubjectsQuery();
-  const [deleteModul] = useDeleteSubjectMutation(); // Use the mutation hook
+  const [deleteSubject] = useDeleteSubjectMutation();
+  const [deleteAllModulsBySubject] = useDeleteAllModulsBySubjectMutation();
+
   const [isSubjectModalOpen, setIsSubjectModalOpen] = useState(false);
   const [isModulModalOpen, setIsModulModalOpen] = useState(false);
   const [selectedSubjectId, setSelectedSubjectId] = useState(null);
+  const [subjectToDelete, setSubjectToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const navigate = useNavigate();
 
   const handleOpenSubjectModal = () => setIsSubjectModalOpen(true);
   const handleCloseSubjectModal = () => setIsSubjectModalOpen(false);
 
-  const handleOpenModulModal = (e, subjectId) => {
-    e.stopPropagation(); // Prevent card click
-    setSelectedSubjectId(subjectId);
-    setIsModulModalOpen(true);
-  };
+  // const handleOpenModulModal = (e, subjectId) => {
+  //   e.stopPropagation();
+  //   setSelectedSubjectId(subjectId);
+  //   setIsModulModalOpen(true);
+  // };
 
   const handleCloseModulModal = () => {
     setIsModulModalOpen(false);
@@ -62,22 +60,45 @@ const Subjects = () => {
     navigate(`/subjects/${subjectId}`);
   };
 
-  const handleEdit = (e, subjectId) => {
-    e.stopPropagation();
-    navigate(`/subjects/${subjectId}/edit`);
-  };
+  // const handleEdit = (e, subjectId) => {
+  //   e.stopPropagation();
+  //   navigate(`/subjects/${subjectId}/edit`);
+  // };
 
-  const handleDelete = async (e, subjectId) => {
-    e.stopPropagation();
+  const confirmDelete = async (subject) => {
     try {
-      await deleteModul(subjectId); // Call the delete API
-      await refetch(); // Refetch the subjects after deletion
+      setIsDeleting(true);
+      console.log('Deleting all modules for subject:', subject._id);
+
+      // First delete all modules associated with the subject
+      const modulesResponse = await deleteAllModulsBySubject(subject._id);
+
+      if (modulesResponse.error) {
+        toast.error('Chyba pri odstraňovaní modulov: ' + modulesResponse.error?.data?.message);
+        setIsDeleting(false);
+        return;
+      }
+
+      console.log('Modules deleted, now deleting subject:', subject._id);
+
+      // Then delete the subject itself
+      const subjectResponse = await deleteSubject(subject._id);
+
+      if (subjectResponse.error) {
+        toast.error('Chyba pri odstraňovaní predmetu: ' + subjectResponse.error?.data?.message);
+      } else {
+        toast.success('Predmet a všetky jeho moduly boli úspešne odstránené');
+        await refetch();
+      }
     } catch (error) {
-      console.error('Error deleting subject:', error);
+      console.error('Error during deletion process:', error);
+      toast.error('Chyba pri odstraňovaní predmetu a modulov');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
-  if (isLoading) {
+  if (isLoading || isDeleting) {
     return (
       <Box display="flex" justifyContent="center" mt={4}>
         <CircularProgress />
@@ -88,7 +109,7 @@ const Subjects = () => {
   if (isError) {
     return (
       <Box display="flex" justifyContent="center" mt={4}>
-        <Typography color="error">Error načítavania predmetov</Typography>
+        <Typography color="error">Chyba načítavania predmetov</Typography>
       </Box>
     );
   }
@@ -148,39 +169,25 @@ const Subjects = () => {
                   justifyContent: 'flex-end',
                   gap: 1
                 }}
-              >
-                <Tooltip title="Pridať modul">
-                  <IconButton
-                    aria-label="add"
-                    onClick={(e) => handleOpenModulModal(e, subject._id)}
-                    color="primary"
-                  >
-                    <AddIcon />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title="Upraviť predmet">
-                  <IconButton
-                    aria-label="edit"
-                    onClick={(e) => handleEdit(e, subject._id)}
-                    color="primary"
-                  >
-                    <EditIcon />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title="Vymazať predmet">
-                  <IconButton
-                    aria-label="delete"
-                    onClick={(e) => handleDelete(e, subject._id)}
-                    color="error"
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </Tooltip>
-              </Box>
+              ></Box>
             </Card>
           </Grid>
         ))}
       </Grid>
+
+      {/* Use ConfirmationDialog as a wrapper with children */}
+      {subjectToDelete && (
+        <ConfirmationDialog
+          title={`Naozaj chcete odstrániť predmet ${subjectToDelete.name} a všetky jeho moduly?`}
+          onAccept={() => {
+            console.log('Delete confirmed for subject:', subjectToDelete._id);
+            confirmDelete(subjectToDelete);
+            setSubjectToDelete(null);
+          }}
+        >
+          <div style={{ display: 'none' }} />
+        </ConfirmationDialog>
+      )}
     </div>
   );
 };

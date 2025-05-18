@@ -73,7 +73,8 @@ export const api = createApi({
     getAllSubjects: builder.query({
       query: () => ({
         url: '/subject',
-        method: 'GET'
+        method: 'GET',
+        providesTags: ['Subjects'],
       })
     }),
     editSubject: builder.mutation({
@@ -87,7 +88,8 @@ export const api = createApi({
       query: (subjectId) => ({
         url: `/subject/${subjectId}`,
         method: 'DELETE'
-      })
+      }),
+      invalidatesTags: ['Subjects'],
     }),
     getSubjectById: builder.query({
       query: (subjectId) => ({
