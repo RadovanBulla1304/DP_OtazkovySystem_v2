@@ -226,14 +226,14 @@ const SubjectDetail = () => {
             width: '100%'
           }}
         >
-          <Button
+          {/* <Button
             variant="outlined"
             size="small"
             sx={{ minWidth: 80 }}
             onClick={() => navigate(`/moduls/${params.row._id}`)}
           >
             Detail
-          </Button>
+          </Button> */}
           <Button
             variant="contained"
             size="small"

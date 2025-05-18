@@ -97,6 +97,13 @@ export const api = createApi({
         method: 'GET'
       })
     }),
+    asignUserToSubject: builder.mutation({
+      query: (data) => ({
+        url: '/subject/assign-user',
+        method: 'POST',
+        body: data
+      })
+    }),
     // MODULES
     createModul: builder.mutation({
       query: (data) => ({
