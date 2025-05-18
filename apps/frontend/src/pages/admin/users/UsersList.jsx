@@ -2,15 +2,23 @@ import ConfirmationDialog from '@app/components/ConfirmationDialog';
 import CenteredCheckIcon from '@app/components/table/CenteredCheckIcon';
 import { useGetUsersListQuery, useRemoveUserMutation } from '@app/redux/api';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Box, Grid2, IconButton, Paper, Tooltip, Typography } from '@mui/material';
+import { Box, Button, Grid2, IconButton, Paper, Tooltip, Typography } from '@mui/material';
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
+import { useState } from 'react';
 import { toast } from 'react-toastify';
 import AddUserModal from '../components/AddUserModal';
+import AssignToSubject from '../components/AssignToSubject';
 import EditUserModal from '../components/EditUserModal';
 
 const UsersList = () => {
   const { data, isLoading } = useGetUsersListQuery();
   const [removeUser] = useRemoveUserMutation();
+
+  // State for selected users
+  const [selectedUserIds, setSelectedUserIds] = useState([]);
+
+  // State for assign modal
+  const [assignModalOpen, setAssignModalOpen] = useState(false);
 
   const onRemoveHandler = async (id) => {
     const response = await removeUser(id);
@@ -38,7 +46,7 @@ const UsersList = () => {
       headerName: 'Ucet aktivny',
       flex: 1,
       renderCell: (value) => {
-        return value.row.isActive ? <CenteredCheckIcon/> : null;
+        return value.row.isActive ? <CenteredCheckIcon /> : null;
       }
     },
     {
@@ -54,7 +62,7 @@ const UsersList = () => {
             onAccept={() => onRemoveHandler(params.row._id)}
           >
             <Tooltip title="Odstran pouzivatela">
-              <IconButton color='error'>
+              <IconButton color="error">
                 <DeleteIcon />
               </IconButton>
             </Tooltip>
@@ -69,6 +77,19 @@ const UsersList = () => {
     console.log(params);
   };
 
+  // Handler for opening assign modal
+  const handleOpenAssignModal = () => {
+    setAssignModalOpen(true);
+  };
+
+  const handleCloseAssignModal = () => {
+    setAssignModalOpen(false);
+  };
+
+  const handleAssignSuccess = () => {
+    setSelectedUserIds([]);
+  };
+
   return (
     <Box py={2}>
       <Grid2 py={1} px={1} container spacing={1}>
@@ -77,8 +98,17 @@ const UsersList = () => {
             Používatelia
           </Typography>
         </Grid2>
-        <Grid2 size={{ xs: 12, sm: 3 }} justifyContent={'flex-end'} display={'flex'}>
+        <Grid2 size={{ xs: 12, sm: 3 }} justifyContent={'flex-end'} display={'flex'} gap={1}>
           <AddUserModal />
+          <Button
+            variant="contained"
+            color="primary"
+            disabled={selectedUserIds.length === 0}
+            sx={{ ml: 1 }}
+            onClick={handleOpenAssignModal}
+          >
+            Prirad k predmetu
+          </Button>
         </Grid2>
       </Grid2>
       <Paper sx={{ mt: 2 }}>
@@ -96,7 +126,10 @@ const UsersList = () => {
               }
             }
           }}
-          isRowSelectable={() => false}
+          checkboxSelection
+          isRowSelectable={() => true}
+          onRowSelectionModelChange={(ids) => setSelectedUserIds(ids)}
+          rowSelectionModel={selectedUserIds}
           slots={{
             toolbar: GridToolbar
           }}
@@ -111,6 +144,12 @@ const UsersList = () => {
           }}
         />
       </Paper>
+      <AssignToSubject
+        open={assignModalOpen}
+        onClose={handleCloseAssignModal}
+        userIds={selectedUserIds}
+        onSuccess={handleAssignSuccess}
+      />
     </Box>
   );
 };

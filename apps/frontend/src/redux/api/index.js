@@ -189,6 +189,7 @@ export const {
   useEditSubjectMutation,
   useDeleteSubjectMutation,
   useGetSubjectByIdQuery,
+  useAsignUserToSubjectMutation,
   // MODULS
   useCreateModulMutation,
   useGetAllModulsQuery,
