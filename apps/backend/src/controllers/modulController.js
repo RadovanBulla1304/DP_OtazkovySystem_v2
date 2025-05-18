@@ -76,6 +76,23 @@ exports.getModulsBySubject = [
         }
     }
 ];
+exports.deleteAllModulsBySubject = [
+    async (req, res) => {
+        try {
+            const subjectId = req.params.subjectId;
+
+            // Soft delete all moduls with the given subject
+            const result = await Modul.updateMany(
+                { subject: subjectId, deleted: false },
+                { $set: { deleted: true } }
+            );
+
+            res.status(200).json({ message: "All moduls for the subject deleted successfully", modifiedCount: result.modifiedCount });
+        } catch (err) {
+            throwError(`Error deleting moduls by subject: ${err.message}`, 500);
+        }
+    }
+];
 
 exports.editModul = [
     validate(editModul),

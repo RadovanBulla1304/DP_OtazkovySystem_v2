@@ -1,5 +1,6 @@
 import * as authService from '@app/pages/auth/authService';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+// import { use } from 'react';
 
 const baseQuery = fetchBaseQuery({
   baseUrl: '/api',
@@ -149,6 +150,17 @@ export const api = createApi({
         method: 'DELETE'
       }),
       invalidatesTags: ['Moduls']
+    }),
+
+    deleteAllModulsBySubject: builder.mutation({
+      query: (subjectId) => ({
+        url: `/modul/subject/${subjectId}`,
+        method: 'DELETE'
+      }),
+      invalidatesTags: (result, error, arg) => [
+        { type: 'Moduls', id: `SUBJECT-${arg}` },
+        'Moduls'
+      ]
     })
   })
 });
@@ -177,5 +189,6 @@ export const {
   useGetModulsBySubjectQuery,
   useLazyGetModulsBySubjectQuery,
   useEditModulMutation,
-  useDeleteModulMutation
+  useDeleteModulMutation,
+  useDeleteAllModulsBySubjectMutation,
 } = api;

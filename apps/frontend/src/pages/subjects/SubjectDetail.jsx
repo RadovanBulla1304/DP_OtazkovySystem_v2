@@ -66,11 +66,17 @@ const SubjectDetail = () => {
 
   // Define columns for the modules table
   const columns = [
-    { field: 'title', headerName: 'Názov modulu', flex: 1 },
+    {
+      field: 'title',
+      headerName: 'Názov modulu',
+      flex: 1,
+      headerAlign: 'center'
+    },
     {
       field: 'date_start',
       headerName: 'Začiatok',
       flex: 1,
+      headerAlign: 'center',
       renderCell: (params) => {
         return params.row?.date_start ? dayjs(params.row.date_start).format('DD.MM.YYYY') : '-';
       }
@@ -79,6 +85,7 @@ const SubjectDetail = () => {
       field: 'date_end',
       headerName: 'Koniec',
       flex: 1,
+      headerAlign: 'center',
       renderCell: (params) => {
         return params.row?.date_end ? dayjs(params.row.date_end).format('DD.MM.YYYY') : '-';
       }
@@ -87,6 +94,7 @@ const SubjectDetail = () => {
       field: 'duration_days',
       headerName: 'Trvanie (dni)',
       flex: 1,
+      headerAlign: 'center',
       renderCell: (params) => {
         return params.row?.duration_days !== undefined ? params.row.duration_days : '-';
       }
@@ -95,20 +103,33 @@ const SubjectDetail = () => {
       field: 'actions',
       headerName: 'Akcie',
       flex: 1,
+      headerAlign: 'center',
       sortable: false,
       renderCell: (params) => (
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 1,
+            height: '100%',
+            width: '100%'
+          }}
+        >
           <Button
             variant="outlined"
             size="small"
+            sx={{ minWidth: 80 }}
             onClick={() => navigate(`/moduls/${params.row._id}`)}
           >
             Detail
           </Button>
           <Button
-            variant="outlined"
+            variant="contained"
             size="small"
             color="primary"
+            startIcon={<EditIcon />}
+            sx={{ minWidth: 100 }}
             onClick={() => navigate(`/moduls/${params.row._id}/edit`)}
           >
             Upraviť
