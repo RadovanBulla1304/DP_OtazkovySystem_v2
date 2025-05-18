@@ -75,22 +75,28 @@ exports.asignUserToSubject = [
                 return res.status(400).json({ message: "subjectId and userId are required." });
             }
 
-            // Find subject and user
+            // Find subject
             const subject = await Subject.findById(subjectId);
             if (!subject) {
                 return res.status(404).json({ message: req.t("messages.record_not_exists") || "Subject not found" });
             }
 
-            const user = await User.findById(userId);
-            if (!user) {
-                return res.status(404).json({ message: req.t("messages.record_not_exists") || "User not found" });
+            // Support multiple userIds
+            const userIds = Array.isArray(userId) ? userId : [userId];
+
+            // Validate all users exist
+            const users = await User.find({ _id: { $in: userIds } });
+            if (users.length !== userIds.length) {
+                return res.status(404).json({ message: req.t("messages.record_not_exists") || "One or more users not found" });
             }
 
-            // Add user to assignedUsers if not already present
-            if (!subject.assignedUsers.includes(userId)) {
-                subject.assignedUsers.push(userId);
-                await subject.save();
-            }
+            // Add users to assignedUsers if not already present
+            userIds.forEach(id => {
+                if (!subject.assignedUsers.includes(id)) {
+                    subject.assignedUsers.push(id);
+                }
+            });
+            await subject.save();
 
             res.status(200).json({ message: "Používateľ bol priradený k predmetu.", subject });
         } catch (err) {
