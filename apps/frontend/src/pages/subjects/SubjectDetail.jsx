@@ -3,7 +3,8 @@ import {
   useDeleteModulMutation,
   useDeleteSubjectMutation,
   useGetModulsBySubjectQuery,
-  useGetSubjectByIdQuery
+  useGetSubjectByIdQuery,
+  useGetUsersListQuery
 } from '@app/redux/api';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -25,12 +26,18 @@ import {
   Grid,
   Link,
   Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   Tooltip,
   Typography
 } from '@mui/material';
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 import dayjs from 'dayjs';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import AddModulModal from '../admin/components/AddModulModal';
@@ -75,6 +82,21 @@ const SubjectDetail = () => {
     isError: isModulesError,
     refetch: refetchModules
   } = useGetModulsBySubjectQuery(subjectId);
+
+  // Fetch all users for assigned users table
+  const {
+    data: users = [],
+    isLoading: isUsersLoading,
+    isError: isUsersError
+  } = useGetUsersListQuery();
+
+  // Prepare assigned users info
+  const assignedUsersInfo = useMemo(() => {
+    if (!subject || !users) return [];
+    return (subject.assignedUsers || [])
+      .map((userId) => users.find((u) => u._id === userId))
+      .filter(Boolean);
+  }, [subject, users]);
 
   // Handlers for modul modal
   const handleOpenModulModal = () => setIsModulModalOpen(true);
@@ -226,14 +248,6 @@ const SubjectDetail = () => {
             width: '100%'
           }}
         >
-          {/* <Button
-            variant="outlined"
-            size="small"
-            sx={{ minWidth: 80 }}
-            onClick={() => navigate(`/moduls/${params.row._id}`)}
-          >
-            Detail
-          </Button> */}
           <Button
             variant="contained"
             size="small"
@@ -259,7 +273,7 @@ const SubjectDetail = () => {
     }
   ];
 
-  if (isSubjectLoading || isModulesLoading || isDeleting) {
+  if (isSubjectLoading || isModulesLoading || isDeleting || isUsersLoading) {
     return (
       <Box display="flex" justifyContent="center" mt={4}>
         <CircularProgress />
@@ -267,7 +281,7 @@ const SubjectDetail = () => {
     );
   }
 
-  if (isSubjectError || isModulesError) {
+  if (isSubjectError || isModulesError || isUsersError) {
     return (
       <Box display="flex" justifyContent="center" mt={4}>
         <Typography color="error">Chyba pri načítaní údajov</Typography>
@@ -383,6 +397,47 @@ const SubjectDetail = () => {
             }}
             disableRowSelectionOnClick
           />
+        </Paper>
+      </Box>
+
+      {/* Assigned Users Table */}
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h5" sx={{ mb: 2 }}>
+          Priradení používatelia
+        </Typography>
+        <Paper sx={{ width: '100%', overflowX: 'auto' }}>
+          <TableContainer>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Meno</TableCell>
+                  <TableCell>Priezvisko</TableCell>
+                  <TableCell>Email</TableCell>
+                  <TableCell>Admin účet</TableCell>
+                  <TableCell>Aktívny účet</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {assignedUsersInfo.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} align="center">
+                      Žiadni používatelia nie sú priradení k tomuto predmetu.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  assignedUsersInfo.map((user) => (
+                    <TableRow key={user._id}>
+                      <TableCell>{user.name}</TableCell>
+                      <TableCell>{user.surname}</TableCell>
+                      <TableCell>{user.email}</TableCell>
+                      <TableCell>{user.isAdmin ? 'Áno' : 'Nie'}</TableCell>
+                      <TableCell>{user.isActive ? 'Áno' : 'Nie'}</TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
         </Paper>
       </Box>
 

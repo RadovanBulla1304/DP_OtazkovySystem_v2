@@ -5,7 +5,8 @@ const {
     editSubject,
     deleteSubject,
     getSubjectById,
-    asignUserToSubject
+    asignUserToSubject,
+    unasignUserFromSubject
 } = require("../controllers/subjectController");
 
 const router = express.Router();
@@ -15,5 +16,6 @@ router.post("/", createSubject);
 router.get("/", getAllSubjects);
 router.get("/:id", getSubjectById);
 router.post("/assign-user", asignUserToSubject);
+router.post("/unassign-user", unasignUserFromSubject);
 router.delete("/:id", deleteSubject);
 module.exports = router;

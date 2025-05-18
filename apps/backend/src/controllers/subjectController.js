@@ -104,6 +104,37 @@ exports.asignUserToSubject = [
         }
     }
 ];
+exports.unasignUserFromSubject = [
+    async (req, res) => {
+        try {
+            const { subjectId, userId } = req.body;
+
+            // Validate IDs
+            if (!subjectId || !userId) {
+                return res.status(400).json({ message: "subjectId and userId are required." });
+            }
+
+            // Find subject
+            const subject = await Subject.findById(subjectId);
+            if (!subject) {
+                return res.status(404).json({ message: req.t("messages.record_not_exists") || "Subject not found" });
+            }
+
+            // Support multiple userIds
+            const userIds = Array.isArray(userId) ? userId : [userId];
+
+            // Remove users from assignedUsers
+            subject.assignedUsers = subject.assignedUsers.filter(
+                (id) => !userIds.includes(id.toString())
+            );
+            await subject.save();
+
+            res.status(200).json({ message: "Používateľ bol odobraný z predmetu.", subject });
+        } catch (err) {
+            throwError(`${req.t("messages.database_error")}: ${err.message}`, 500);
+        }
+    }
+];
 exports.getSubjectById = [
     async (req, res) => {
         try {

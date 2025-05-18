@@ -104,6 +104,13 @@ export const api = createApi({
         body: data
       })
     }),
+    unasignUserFromSubject: builder.mutation({
+      query: (data) => ({
+        url: '/subject/unassign-user',
+        method: 'POST',
+        body: data
+      })
+    }),
     // MODULES
     createModul: builder.mutation({
       query: (data) => ({
@@ -190,6 +197,7 @@ export const {
   useDeleteSubjectMutation,
   useGetSubjectByIdQuery,
   useAsignUserToSubjectMutation,
+  useUnasignUserFromSubjectMutation,
   // MODULS
   useCreateModulMutation,
   useGetAllModulsQuery,
