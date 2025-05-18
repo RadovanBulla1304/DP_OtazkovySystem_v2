@@ -32,6 +32,7 @@ import dayjs from 'dayjs';
 import { useState } from 'react';
 import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom';
 import AddModulModal from '../admin/components/AddModulModal';
+import EditSubjectModal from '../admin/components/EditSubjectModal';
 
 const SubjectDetail = () => {
   const { subjectId } = useParams();
@@ -44,6 +45,7 @@ const SubjectDetail = () => {
   // State for modals and dialogs
   const [isModulModalOpen, setIsModulModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
   // Fetch subject details
@@ -80,8 +82,18 @@ const SubjectDetail = () => {
     }
   };
 
+  // Edit subject modal handlers
   const handleEditSubject = () => {
-    navigate(`/subjects/${subjectId}/edit`);
+    setIsEditModalOpen(true);
+  };
+
+  const handleCloseEditModal = () => {
+    setIsEditModalOpen(false);
+  };
+
+  const handleEditSuccess = async () => {
+    await refetchSubject();
+    setIsEditModalOpen(false);
   };
 
   // Confirm delete dialog handlers
@@ -334,6 +346,14 @@ const SubjectDetail = () => {
         onClose={handleCloseModulModal}
         subjectId={subjectId}
         onCreated={handleModulCreated}
+      />
+
+      {/* Edit Subject Modal */}
+      <EditSubjectModal
+        open={isEditModalOpen}
+        onClose={handleCloseEditModal}
+        onSuccess={handleEditSuccess}
+        subject={subject}
       />
 
       {/* Confirmation Dialog for Delete */}
