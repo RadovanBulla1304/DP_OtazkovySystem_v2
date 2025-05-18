@@ -10,7 +10,6 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  FormControl,
   FormControlLabel,
   TextField
 } from '@mui/material';
@@ -25,13 +24,13 @@ const AddUserModal = () => {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors }
   } = useForm({
     mode: 'onBlur',
     resolver: joiResolver(createUserSchema),
     defaultValues: {
       isActive: true,
-      isAdmin: false,
+      isAdmin: false
     }
   });
 
@@ -53,26 +52,21 @@ const AddUserModal = () => {
         toast.error(`Error: ${response.error.data.message}`);
       }
     } catch (error) {
-      toast.error('An unexpected error occurred.');
+      toast.error('An unexpected error occurred.', error);
     }
   };
 
   return (
     <>
       <Button
-        sx={{ m: 1, minWidth: '15rem' }}
+        sx={{ m: 1, minWidth: '10rem' }}
         variant="contained"
         onClick={handleClickOpen}
         fullWidth
       >
         Pridaj používateľa
       </Button>
-      <Dialog
-        open={open}
-        onClose={handleClose}
-        component="form"
-        onSubmit={handleSubmit(onSubmit)}
-      >
+      <Dialog open={open} onClose={handleClose} component="form" onSubmit={handleSubmit(onSubmit)}>
         <DialogContent
           sx={{
             display: 'flex',
@@ -80,8 +74,8 @@ const AddUserModal = () => {
             gap: 2,
             mx: 'auto',
             minWidth: {
-              md: '30rem',
-            },
+              md: '30rem'
+            }
           }}
         >
           <DialogTitle>Pridaj používateľa</DialogTitle>
@@ -113,18 +107,12 @@ const AddUserModal = () => {
             fullWidth
           />
 
-          <FormControlLabel
-            control={<Checkbox {...register('isActive')} />}
-            label="Is Active"
-          />
+          <FormControlLabel control={<Checkbox {...register('isActive')} />} label="Is Active" />
           {errors.isActive && (
             <p style={{ color: 'red', fontSize: '0.875rem' }}>{errors.isActive.message}</p>
           )}
 
-          <FormControlLabel
-            control={<Checkbox {...register('isAdmin')} />}
-            label="Is Admin"
-          />
+          <FormControlLabel control={<Checkbox {...register('isAdmin')} />} label="Is Admin" />
           {errors.isAdmin && (
             <p style={{ color: 'red', fontSize: '0.875rem' }}>{errors.isAdmin.message}</p>
           )}
@@ -155,11 +143,7 @@ const AddUserModal = () => {
             <Button onClick={handleClose} color="error" variant="outlined">
               Zruš
             </Button>
-            <Button
-              type="submit"
-              variant="outlined"
-              disabled={isLoading}
-            >
+            <Button type="submit" variant="outlined" disabled={isLoading}>
               Pridaj
             </Button>
           </DialogActions>

@@ -99,16 +99,16 @@ const UsersList = () => {
           </Typography>
         </Grid2>
         <Grid2 size={{ xs: 12, sm: 3 }} justifyContent={'flex-end'} display={'flex'} gap={1}>
-          <AddUserModal />
           <Button
-            variant="contained"
+            variant="outlined"
             color="primary"
             disabled={selectedUserIds.length === 0}
-            sx={{ ml: 1 }}
+            sx={{ m: 1, minWidth: 150 }}
             onClick={handleOpenAssignModal}
           >
-            Prirad k predmetu
+            Priraď k predmetu
           </Button>
+          <AddUserModal />
         </Grid2>
       </Grid2>
       <Paper sx={{ mt: 2 }}>
