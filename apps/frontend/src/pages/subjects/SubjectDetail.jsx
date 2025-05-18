@@ -1,5 +1,6 @@
 import {
   useDeleteAllModulsBySubjectMutation,
+  useDeleteModulMutation,
   useDeleteSubjectMutation,
   useGetModulsBySubjectQuery,
   useGetSubjectByIdQuery
@@ -31,9 +32,11 @@ import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 import dayjs from 'dayjs';
 import { useState } from 'react';
 import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import AddModulModal from '../admin/components/AddModulModal';
 import EditModulModal from '../admin/components/EditModulModal';
 import EditSubjectModal from '../admin/components/EditSubjectModal';
+
 const SubjectDetail = () => {
   const { subjectId } = useParams();
   const navigate = useNavigate();
@@ -41,6 +44,7 @@ const SubjectDetail = () => {
   // Delete mutations
   const [deleteSubject] = useDeleteSubjectMutation();
   const [deleteAllModulsBySubject] = useDeleteAllModulsBySubjectMutation();
+  const [deleteModul] = useDeleteModulMutation();
 
   // State for modals and dialogs
   const [isModulModalOpen, setIsModulModalOpen] = useState(false);
@@ -50,6 +54,12 @@ const SubjectDetail = () => {
 
   const [editModulModalOpen, setEditModulModalOpen] = useState(false);
   const [modulToEdit, setModulToEdit] = useState(null);
+
+  // Modul delete dialog state
+  const [modulToDelete, setModulToDelete] = useState(null);
+  const [isDeleteModulDialogOpen, setIsDeleteModulDialogOpen] = useState(false);
+  const [isDeletingModul, setIsDeletingModul] = useState(false);
+
   // Fetch subject details
   const {
     data: subject,
@@ -57,22 +67,6 @@ const SubjectDetail = () => {
     isError: isSubjectError,
     refetch: refetchSubject
   } = useGetSubjectByIdQuery(subjectId);
-
-  // Handler for opening EditModulModal
-  const handleOpenEditModulModal = (modul) => {
-    setModulToEdit(modul);
-    setEditModulModalOpen(true);
-  };
-
-  const handleCloseEditModulModal = () => {
-    setEditModulModalOpen(false);
-    setModulToEdit(null);
-  };
-  const handleEditModulSuccess = async () => {
-    await refetchModules();
-    setEditModulModalOpen(false);
-    setModulToEdit(null);
-  };
 
   // Fetch modules for this subject
   const {
@@ -82,13 +76,9 @@ const SubjectDetail = () => {
     refetch: refetchModules
   } = useGetModulsBySubjectQuery(subjectId);
 
-  const handleOpenModulModal = () => {
-    setIsModulModalOpen(true);
-  };
-
-  const handleCloseModulModal = () => {
-    setIsModulModalOpen(false);
-  };
+  // Handlers for modul modal
+  const handleOpenModulModal = () => setIsModulModalOpen(true);
+  const handleCloseModulModal = () => setIsModulModalOpen(false);
 
   const handleModulCreated = async () => {
     try {
@@ -101,27 +91,16 @@ const SubjectDetail = () => {
   };
 
   // Edit subject modal handlers
-  const handleEditSubject = () => {
-    setIsEditModalOpen(true);
-  };
-
-  const handleCloseEditModal = () => {
-    setIsEditModalOpen(false);
-  };
-
+  const handleEditSubject = () => setIsEditModalOpen(true);
+  const handleCloseEditModal = () => setIsEditModalOpen(false);
   const handleEditSuccess = async () => {
     await refetchSubject();
     setIsEditModalOpen(false);
   };
 
-  // Confirm delete dialog handlers
-  const handleOpenDeleteDialog = () => {
-    setIsDeleteDialogOpen(true);
-  };
-
-  const handleCloseDeleteDialog = () => {
-    setIsDeleteDialogOpen(false);
-  };
+  // Confirm delete subject dialog handlers
+  const handleOpenDeleteDialog = () => setIsDeleteDialogOpen(true);
+  const handleCloseDeleteDialog = () => setIsDeleteDialogOpen(false);
 
   const handleConfirmDelete = async () => {
     setIsDeleting(true);
@@ -153,6 +132,45 @@ const SubjectDetail = () => {
     } finally {
       setIsDeleting(false);
       setIsDeleteDialogOpen(false);
+    }
+  };
+
+  // Edit modul modal handlers
+  const handleOpenEditModulModal = (modul) => {
+    setModulToEdit(modul);
+    setEditModulModalOpen(true);
+  };
+  const handleCloseEditModulModal = () => {
+    setEditModulModalOpen(false);
+    setModulToEdit(null);
+  };
+  const handleEditModulSuccess = async () => {
+    await refetchModules();
+    setEditModulModalOpen(false);
+    setModulToEdit(null);
+  };
+
+  // Delete modul handlers
+  const handleOpenDeleteModulDialog = (modul) => {
+    setModulToDelete(modul);
+    setIsDeleteModulDialogOpen(true);
+  };
+  const handleCloseDeleteModulDialog = () => {
+    setIsDeleteModulDialogOpen(false);
+    setModulToDelete(null);
+  };
+  const handleConfirmDeleteModul = async () => {
+    setIsDeletingModul(true);
+    try {
+      await deleteModul(modulToDelete._id).unwrap();
+      toast.success('Modul bol úspešne odstránený');
+      await refetchModules();
+    } catch (error) {
+      toast.error('Chyba pri odstraňovaní modulu', error);
+    } finally {
+      setIsDeletingModul(false);
+      setIsDeleteModulDialogOpen(false);
+      setModulToDelete(null);
     }
   };
 
@@ -225,6 +243,16 @@ const SubjectDetail = () => {
             onClick={() => handleOpenEditModulModal(params.row)}
           >
             Upraviť
+          </Button>
+          <Button
+            variant="contained"
+            size="small"
+            color="error"
+            startIcon={<DeleteIcon />}
+            sx={{ minWidth: 100 }}
+            onClick={() => handleOpenDeleteModulDialog(params.row)}
+          >
+            Vymazať
           </Button>
         </Box>
       )
@@ -365,6 +393,7 @@ const SubjectDetail = () => {
         subjectId={subjectId}
         onCreated={handleModulCreated}
       />
+      {/* Edit Modul Modal */}
       <EditModulModal
         open={editModulModalOpen}
         onClose={handleCloseEditModulModal}
@@ -380,7 +409,7 @@ const SubjectDetail = () => {
         subject={subject}
       />
 
-      {/* Confirmation Dialog for Delete */}
+      {/* Confirmation Dialog for Delete Subject */}
       <Dialog
         open={isDeleteDialogOpen}
         onClose={handleCloseDeleteDialog}
@@ -405,6 +434,35 @@ const SubjectDetail = () => {
             disabled={isDeleting}
           >
             {isDeleting ? 'Mazanie...' : 'Vymazať'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Confirmation Dialog for Delete Modul */}
+      <Dialog
+        open={isDeleteModulDialogOpen}
+        onClose={handleCloseDeleteModulDialog}
+        aria-labelledby="delete-modul-dialog-title"
+        aria-describedby="delete-modul-dialog-description"
+      >
+        <DialogTitle id="delete-modul-dialog-title">Vymazať modul?</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="delete-modul-dialog-description">
+            Naozaj chcete odstrániť modul <strong>{modulToDelete?.title}</strong>? Táto akcia je
+            nevratná.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDeleteModulDialog} disabled={isDeletingModul}>
+            Zrušiť
+          </Button>
+          <Button
+            onClick={handleConfirmDeleteModul}
+            color="error"
+            variant="contained"
+            disabled={isDeletingModul}
+          >
+            {isDeletingModul ? 'Mazanie...' : 'Vymazať'}
           </Button>
         </DialogActions>
       </Dialog>
