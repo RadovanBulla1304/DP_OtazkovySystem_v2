@@ -5,6 +5,9 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import GroupIcon from '@mui/icons-material/Group';
 import MenuIcon from '@mui/icons-material/Menu';
+import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
+import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
+import SchoolIcon from '@mui/icons-material/School';
 import ViewModuleIcon from '@mui/icons-material/ViewModule';
 import { Button, Container, ListItemButton, Stack, Tooltip, useMediaQuery } from '@mui/material';
 import AppBar from '@mui/material/AppBar';
@@ -16,46 +19,72 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
+import { styled } from '@mui/material/styles';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
+import PropTypes from 'prop-types';
 import * as React from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 
 import logoExpanded from '@app/assets/UNIZA_TEXT_A.png';
 import logoCollapsed from '@app/assets/UNIZA_TEXT_B.png';
 import * as authService from '@app/pages/auth/authService';
 import { useGetUserMeQuery } from '@app/redux/api';
 import { replaceDiacritics } from '@app/utils/common.util';
-import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
-import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
-import SchoolIcon from '@mui/icons-material/School';
-import { styled } from '@mui/material/styles';
-import PropTypes from 'prop-types';
-import { useNavigate } from 'react-router-dom';
 import ProfileMenu from './profile-menu.component';
 import TeamSwitcher from './TeamSwitcher';
+
 const drawerWidth = 240;
 const collapsedDrawerWidth = 65;
 
 // Animation constants
-const animationDuration = '400ms';
-const customEasing = 'cubic-bezier(0.4, 0, 0.2, 1)';
+const animationDuration = '300ms';
+const customEasing = 'cubic-bezier(0.4, 0, 0.2, 1)'; // Material Design recommended easing
 
-const SmoothDrawer = styled(Drawer)({
+// Styled components with optimized transitions
+const SmoothDrawer = styled(Drawer)(({ theme }) => ({
   '& .MuiDrawer-paper': {
-    transition: `transform ${animationDuration} ${customEasing}, width ${animationDuration} ${customEasing}`,
-    willChange: 'transform, width',
+    transition: `
+      width ${animationDuration} ${customEasing},
+      transform ${animationDuration} ${customEasing}
+    `,
+    willChange: 'width, transform',
     overflowX: 'hidden',
-    boxShadow: '2px 0 8px rgba(0,0,0,0.1)'
+    boxShadow: theme.shadows[4],
+    borderRight: 'none',
+    transform: 'translateZ(0)',
+    backfaceVisibility: 'hidden',
+    contain: 'strict'
+  }
+}));
+
+const SmoothBox = styled(Box)({
+  transition: `margin ${animationDuration} ${customEasing}, width ${animationDuration} ${customEasing}`,
+  willChange: 'margin, width',
+  transform: 'translateZ(0)'
+});
+
+const LogoContainer = styled(Box)({
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  height: 64,
+  minHeight: 64,
+  overflow: 'hidden',
+  position: 'relative',
+  '& img': {
+    position: 'absolute',
+    transition: `
+      opacity ${animationDuration} ${customEasing},
+      transform ${animationDuration} ${customEasing}
+    `,
+    willChange: 'opacity, transform',
+    transform: 'translateZ(0)',
+    backfaceVisibility: 'hidden'
   }
 });
 
-const SmoothBox = styled(Box)({
-  transition: `all ${animationDuration} ${customEasing}`,
-  willChange: 'margin, width'
-});
-
-const SectionHeader = ({ title, collapsed }) => (
+const SectionHeader = React.memo(({ title, collapsed }) => (
   <Typography
     variant="overline"
     component="div"
@@ -68,12 +97,37 @@ const SectionHeader = ({ title, collapsed }) => (
       textTransform: 'uppercase',
       letterSpacing: '0.08333em',
       textAlign: collapsed ? 'center' : 'left',
-      transition: `all ${animationDuration} ${customEasing}`
+      whiteSpace: 'nowrap',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      transition: `all ${animationDuration} ${customEasing}`,
+      willChange: 'opacity, transform',
+      transform: 'translateZ(0)',
+      backfaceVisibility: 'hidden'
     }}
   >
     {collapsed ? title.charAt(0) : title}
   </Typography>
-);
+));
+SectionHeader.displayName = 'SectionHeader';
+
+const NavItem = styled(ListItemButton)(({ theme }) => ({
+  position: 'relative',
+  overflow: 'hidden',
+  transition: `
+    background-color 150ms ease,
+    padding-left ${animationDuration} ${customEasing},
+    padding-right ${animationDuration} ${customEasing}
+  `,
+  willChange: 'padding, transform',
+  backfaceVisibility: 'hidden',
+  '&:hover': {
+    backgroundColor: theme.palette.action.hover
+  },
+  '&.active': {
+    backgroundColor: theme.palette.action.selected
+  }
+}));
 
 const MainLayout = ({ children }) => {
   const matched = useMediaQuery('(min-width:900px)');
@@ -85,13 +139,19 @@ const MainLayout = ({ children }) => {
   const [profileMenuAnchorEl, setProfileAnchorEl] = React.useState(null);
   const profileMenuOpen = Boolean(profileMenuAnchorEl);
 
-  if (!user) {
-    navigate('/auth/login');
-  }
+  React.useEffect(() => {
+    if (!user) {
+      navigate('/auth/login');
+    }
+  }, [user, navigate]);
 
   const handleDrawerClose = () => {
     setIsClosing(true);
     setMobileOpen(false);
+  };
+
+  DrawerContent.propTypes = {
+    drawerCollapsed: PropTypes.bool.isRequired
   };
 
   const handleDrawerTransitionEnd = () => {
@@ -105,7 +165,7 @@ const MainLayout = ({ children }) => {
   };
 
   const toggleDrawerCollapse = () => {
-    setDrawerCollapsed(!drawerCollapsed);
+    setDrawerCollapsed((prev) => !prev);
   };
 
   const openProfileMenu = (event) => {
@@ -126,219 +186,34 @@ const MainLayout = ({ children }) => {
   let drawerOption = [];
 
   if (user?.isAdmin) {
-    drawerOption.push({
-      isHeader: true,
-      title: 'Správca'
-    });
-    drawerOption.push({
-      title: 'Dashboard',
-      navTo: '/',
-      icon: <DashboardIcon />
-    });
-    drawerOption.push({
-      title: 'Používatelia',
-      navTo: '/admin/users',
-      icon: <GroupIcon />
-    });
-    drawerOption.push({
-      isHeader: true,
-      title: 'Funkcie'
-    });
-    drawerOption.push({
-      title: 'Predmety',
-      navTo: '/subjects',
-      icon: <SchoolIcon />
-    });
+    drawerOption.push(
+      { isHeader: true, title: 'Správca' },
+      { title: 'Dashboard', navTo: '/', icon: <DashboardIcon /> },
+      { title: 'Používatelia', navTo: '/admin/users', icon: <GroupIcon /> },
+      { isHeader: true, title: 'Funkcie' },
+      { title: 'Predmety', navTo: '/subjects', icon: <SchoolIcon /> }
+    );
   }
 
   drawerOption = drawerOption.concat([
-    {
-      isHeader: true,
-      title: 'Obsah'
-    },
-    {
-      title: 'Moduly',
-      navTo: '/moduls',
-      icon: <ViewModuleIcon />
-    },
-    {
-      title: 'Zoznam otázok',
-      navTo: '/questions',
-      icon: <QuestionMarkIcon />
-    },
-    {
-      title: 'Moje otázky',
-      navTo: '/my-questions',
-      icon: <QuestionAnswerIcon />
-    },
-    {
-      title: 'Testy',
-      navTo: '/tests',
-      icon: <AvTimerIcon />
-    }
+    { isHeader: true, title: 'Obsah' },
+    { title: 'Moduly', navTo: '/moduls', icon: <ViewModuleIcon /> },
+    { title: 'Zoznam otázok', navTo: '/questions', icon: <QuestionMarkIcon /> },
+    { title: 'Moje otázky', navTo: '/my-questions', icon: <QuestionAnswerIcon /> },
+    { title: 'Testy', navTo: '/tests', icon: <AvTimerIcon /> }
   ]);
-
-  const TeamSwitcherWrapper = ({ collapsed }) => {
-    return <TeamSwitcher collapsed={collapsed} />;
-  };
-
-  TeamSwitcherWrapper.propTypes = {
-    collapsed: PropTypes.bool.isRequired
-  };
-
-  const drawer = (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100%',
-        backfaceVisibility: 'hidden',
-        transform: 'translateZ(0)'
-      }}
-    >
-      <Toolbar
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          px: 0,
-          height: '64px',
-          minHeight: '64px !important',
-          transition: `all ${animationDuration} ${customEasing}`
-        }}
-      >
-        <Link to="/" style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-          <img
-            src={drawerCollapsed ? logoCollapsed : logoExpanded}
-            alt="uniza logo"
-            style={{
-              height: drawerCollapsed ? '36px' : '50px',
-              transition: `height ${animationDuration} ${customEasing}`,
-              maxWidth: drawerCollapsed ? 'unset' : '100%',
-              objectFit: 'contain',
-              backfaceVisibility: 'hidden'
-            }}
-          />
-        </Link>
-      </Toolbar>
-      <Stack justifyContent={'space-between'} direction={'column'} flexGrow={2}>
-        <List
-          component="nav"
-          sx={{
-            backfaceVisibility: 'hidden',
-            transform: 'translateZ(0)'
-          }}
-        >
-          {drawerOption.map((item) => {
-            if (item.isHeader) {
-              return (
-                <React.Fragment key={item.title}>
-                  {!drawerCollapsed && (
-                    <SectionHeader title={item.title} collapsed={drawerCollapsed} />
-                  )}
-                </React.Fragment>
-              );
-            }
-
-            const NavItem = styled(ListItemButton)({
-              backfaceVisibility: 'hidden',
-              transform: 'translateZ(0)',
-              transition: `background-color 150ms ease, padding ${animationDuration} ${customEasing}`
-            });
-
-            return (
-              <ListItem
-                key={item.title}
-                disablePadding
-                sx={{
-                  backfaceVisibility: 'hidden'
-                }}
-              >
-                <Tooltip title={drawerCollapsed ? item.title : ''} placement="right">
-                  <NavItem
-                    onClick={handleDrawerClose}
-                    component={NavLink}
-                    to={item.navTo}
-                    style={({ isActive }) => {
-                      return {
-                        backgroundColor: isActive ? '#ffeecc' : '',
-                        paddingLeft: drawerCollapsed ? '20px' : '16px',
-                        paddingRight: drawerCollapsed ? '20px' : '16px'
-                      };
-                    }}
-                  >
-                    <ListItemIcon
-                      sx={{
-                        minWidth: drawerCollapsed ? 'unset' : '56px',
-                        justifyContent: 'center',
-                        transition: `min-width ${animationDuration} ${customEasing}`
-                      }}
-                    >
-                      {item.icon}
-                    </ListItemIcon>
-                    {!drawerCollapsed && (
-                      <ListItemText
-                        primary={item.title}
-                        sx={{
-                          transition: `opacity ${animationDuration} ${customEasing}`,
-                          opacity: drawerCollapsed ? 0 : 1
-                        }}
-                      />
-                    )}
-                  </NavItem>
-                </Tooltip>
-              </ListItem>
-            );
-          })}
-        </List>
-
-        <Box
-          sx={{
-            px: 2,
-            mt: 'auto',
-            mb: 2,
-            backfaceVisibility: 'hidden',
-            transform: 'translateZ(0)',
-            transition: `all ${animationDuration} ${customEasing}`
-          }}
-        >
-          {!drawerCollapsed && (
-            <Typography
-              variant="subtitle2"
-              sx={{
-                mb: 1,
-                transition: `opacity ${animationDuration} ${customEasing}`,
-                opacity: drawerCollapsed ? 0 : 1
-              }}
-            >
-              Zvoľ predmet:
-            </Typography>
-          )}
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: drawerCollapsed ? 'center' : 'flex-start',
-              width: '100%'
-            }}
-          >
-            <TeamSwitcherWrapper collapsed={drawerCollapsed} />
-          </Box>
-        </Box>
-      </Stack>
-    </div>
-  );
 
   const currentDrawerWidth = drawerCollapsed ? collapsedDrawerWidth : drawerWidth;
 
   return (
-    <Box sx={{ display: 'flex', width: '100vw' }}>
+    <Box sx={{ display: 'flex', width: '100vw', overflow: 'hidden' }}>
       <CssBaseline />
       <AppBar
         position="fixed"
         sx={{
           width: { md: `calc(100% - ${currentDrawerWidth}px)` },
-          ml: { md: 0 },
-          transition: `margin ${animationDuration} ${customEasing}, width ${animationDuration} ${customEasing}`
+          transition: `margin ${animationDuration} ${customEasing}, width ${animationDuration} ${customEasing}`,
+          willChange: 'margin, width'
         }}
       >
         <Toolbar>
@@ -380,7 +255,8 @@ const MainLayout = ({ children }) => {
         sx={{
           width: { md: currentDrawerWidth },
           flexShrink: { md: 0 },
-          transition: `width ${animationDuration} ${customEasing}`
+          transition: `width ${animationDuration} ${customEasing}`,
+          willChange: 'width'
         }}
         aria-label="nav menu"
       >
@@ -390,31 +266,31 @@ const MainLayout = ({ children }) => {
           onTransitionEnd={handleDrawerTransitionEnd}
           onClose={handleDrawerClose}
           ModalProps={{
-            keepMounted: true
+            keepMounted: true,
+            BackdropProps: {
+              transitionDuration: animationDuration
+            }
           }}
           sx={{
             display: { xs: 'block', md: 'none' },
             '& .MuiDrawer-paper': {
-              boxSizing: 'border-box',
               width: drawerWidth
             }
           }}
         >
-          {drawer}
+          <DrawerContent drawerCollapsed={false} />
         </SmoothDrawer>
         <SmoothDrawer
           variant="permanent"
           sx={{
             display: { xs: 'none', md: 'flex' },
             '& .MuiDrawer-paper': {
-              boxSizing: 'border-box',
-              width: currentDrawerWidth,
-              overflowX: 'hidden'
+              width: currentDrawerWidth
             }
           }}
           open
         >
-          {drawer}
+          <DrawerContent drawerCollapsed={drawerCollapsed} />
         </SmoothDrawer>
       </Box>
       <SmoothBox
@@ -424,7 +300,7 @@ const MainLayout = ({ children }) => {
           width: { md: `calc(100% - ${currentDrawerWidth}px)` },
           height: '100vh',
           overflow: 'auto',
-          ml: { md: 0 }
+          willChange: 'margin, width'
         }}
       >
         <Toolbar />
@@ -434,6 +310,147 @@ const MainLayout = ({ children }) => {
       </SmoothBox>
     </Box>
   );
+
+  function DrawerContent({ drawerCollapsed }) {
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+          overflow: 'hidden',
+          transform: 'translateZ(0)',
+          backfaceVisibility: 'hidden'
+        }}
+      >
+        <LogoContainer>
+          <Link
+            to="/"
+            style={{
+              width: '100%',
+              height: '100%',
+              display: 'flex',
+              justifyContent: 'center',
+              padding: '5px'
+            }}
+          >
+            <img
+              src={logoExpanded}
+              alt="uniza logo expanded"
+              style={{
+                height: '50px',
+                width: 'auto',
+                opacity: drawerCollapsed ? 0 : 1,
+                transform: drawerCollapsed ? 'translateX(-100%)' : 'translateX(0)'
+              }}
+              draggable={false}
+            />
+            <img
+              src={logoCollapsed}
+              alt="uniza logo collapsed"
+              style={{
+                height: '50px',
+                width: 'auto',
+                opacity: drawerCollapsed ? 1 : 0,
+                transform: drawerCollapsed ? 'translateX(0)' : 'translateX(100%)'
+              }}
+              draggable={false}
+            />
+          </Link>
+        </LogoContainer>
+        <Stack justifyContent="space-between" direction="column" flexGrow={2}>
+          <List component="nav" sx={{ overflow: 'hidden' }}>
+            {drawerOption.map((item, index) => {
+              if (item.isHeader) {
+                return (
+                  <React.Fragment key={`header-${index}`}>
+                    {!drawerCollapsed && (
+                      <SectionHeader title={item.title} collapsed={drawerCollapsed} />
+                    )}
+                  </React.Fragment>
+                );
+              }
+
+              return (
+                <ListItem key={item.title} disablePadding sx={{ overflow: 'hidden' }}>
+                  <Tooltip title={drawerCollapsed ? item.title : ''} placement="right">
+                    <NavItem
+                      component={NavLink}
+                      to={item.navTo}
+                      sx={{
+                        pl: drawerCollapsed ? '20px' : '16px',
+                        pr: drawerCollapsed ? '20px' : '16px'
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{
+                          minWidth: drawerCollapsed ? 'unset' : '56px',
+                          justifyContent: 'center',
+                          transition: `min-width ${animationDuration} ${customEasing}`
+                        }}
+                      >
+                        {item.icon}
+                      </ListItemIcon>
+                      {!drawerCollapsed && (
+                        <ListItemText
+                          primary={item.title}
+                          sx={{
+                            transition: `opacity ${animationDuration} ${customEasing}`,
+                            opacity: drawerCollapsed ? 0 : 1,
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis'
+                          }}
+                        />
+                      )}
+                    </NavItem>
+                  </Tooltip>
+                </ListItem>
+              );
+            })}
+          </List>
+
+          {!user?.isAdmin && (
+            <Box
+              sx={{
+                px: 2,
+                mt: 'auto',
+                mb: 2,
+                transition: `all ${animationDuration} ${customEasing}`,
+                willChange: 'transform, opacity',
+                transform: 'translateZ(0)'
+              }}
+            >
+              {!drawerCollapsed && (
+                <Typography
+                  variant="subtitle2"
+                  sx={{
+                    mb: 1,
+                    transition: `opacity ${animationDuration} ${customEasing}`,
+                    opacity: drawerCollapsed ? 0 : 1,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis'
+                  }}
+                >
+                  Zvoľ predmet:
+                </Typography>
+              )}
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: drawerCollapsed ? 'center' : 'flex-start',
+                  width: '100%'
+                }}
+              >
+                <TeamSwitcher collapsed={drawerCollapsed} />
+              </Box>
+            </Box>
+          )}
+        </Stack>
+      </Box>
+    );
+  }
 };
 
 MainLayout.propTypes = {
