@@ -1,3 +1,4 @@
+import { useCreateQuestionMutation } from '@app/redux/api'; // <-- import your mutation
 import AddIcon from '@mui/icons-material/Add';
 import {
   Box,
@@ -16,73 +17,86 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 
-const DEFAULT_ANSWERS = ['', '', '', ''];
+const DEFAULT_OPTIONS = ['', '', '', ''];
 
-const AddQuestionModal = ({ disabled = false }) => {
+const AddQuestionModal = ({ disabled = false, modulId, createdBy }) => {
   const [open, setOpen] = React.useState(false);
-  const [answers, setAnswers] = React.useState(DEFAULT_ANSWERS);
+  const [options, setOptions] = React.useState(DEFAULT_OPTIONS);
   const [correctIndex, setCorrectIndex] = React.useState(0);
+
+  const [createQuestion, { isLoading }] = useCreateQuestionMutation();
 
   const {
     register,
     handleSubmit,
-    control,
     formState: { errors },
     reset
   } = useForm({
     mode: 'onBlur',
     defaultValues: {
-      question: '',
-      answers: DEFAULT_ANSWERS,
+      text: '',
+      options: DEFAULT_OPTIONS,
       correct: 0
     }
   });
 
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
+  const handleClickOpen = () => setOpen(true);
 
   const handleClose = () => {
     setOpen(false);
     reset();
-    setAnswers(DEFAULT_ANSWERS);
+    setOptions(DEFAULT_OPTIONS);
     setCorrectIndex(0);
   };
 
-  const onSubmit = async (data) => {
-    // Here you would send data to your API
-    toast.success('Otázka bola úspešne pridaná');
-    handleClose();
-  };
-
-  const handleAnswerChange = (idx, value) => {
-    const newAnswers = [...answers];
-    newAnswers[idx] = value;
-    setAnswers(newAnswers);
+  const handleOptionChange = (idx, value) => {
+    const newOptions = [...options];
+    newOptions[idx] = value;
+    setOptions(newOptions);
   };
 
   const handleRadioChange = (event) => {
     setCorrectIndex(Number(event.target.value));
   };
 
+  const onSubmit = async (data) => {
+    // Prepare data for backend schema
+    const payload = {
+      text: data.text,
+      options: {
+        a: options[0],
+        b: options[1],
+        c: options[2],
+        d: options[3]
+      },
+      correct: ['a', 'b', 'c', 'd'][correctIndex],
+      modul: modulId, // pass modulId as prop
+      createdBy // pass createdBy as prop (optional)
+    };
+
+    try {
+      await createQuestion(payload).unwrap();
+      toast.success('Otázka bola úspešne pridaná');
+      handleClose();
+    } catch (err) {
+      toast.error('Chyba pri pridávaní otázky');
+    }
+  };
+
   return (
     <>
       <Tooltip title="Pridať otázku" key={'addQuestion'}>
-        <IconButton color="primary" onClick={handleClickOpen} disabled={disabled}>
-          <AddIcon />
-        </IconButton>
+        <span>
+          <IconButton color="primary" onClick={handleClickOpen} disabled={disabled}>
+            <AddIcon />
+          </IconButton>
+        </span>
       </Tooltip>
       <Dialog
         open={open}
         onClose={handleClose}
         component="form"
-        onSubmit={handleSubmit((formData) =>
-          onSubmit({
-            ...formData,
-            answers,
-            correct: correctIndex
-          })
-        )}
+        onSubmit={handleSubmit(onSubmit)}
         PaperProps={{
           sx: { borderRadius: 3 }
         }}
@@ -102,9 +116,9 @@ const AddQuestionModal = ({ disabled = false }) => {
             variant="outlined"
             multiline
             minRows={3}
-            {...register('question', { required: 'Pole je povinné' })}
-            error={!!errors.question}
-            helperText={errors.question?.message}
+            {...register('text', { required: 'Pole je povinné' })}
+            error={!!errors.text}
+            helperText={errors.text?.message}
             fullWidth
             sx={{
               bgcolor: '#fff',
@@ -121,9 +135,9 @@ const AddQuestionModal = ({ disabled = false }) => {
               gap: 2
             }}
           >
-            {answers.map((answer, idx) => (
+            {['a', 'b', 'c', 'd'].map((key, idx) => (
               <Box
-                key={idx}
+                key={key}
                 sx={{
                   display: 'flex',
                   alignItems: 'center',
@@ -132,10 +146,10 @@ const AddQuestionModal = ({ disabled = false }) => {
               >
                 <Radio value={idx} checked={correctIndex === idx} sx={{ p: 1 }} />
                 <TextField
-                  label={`Odpoveď ${idx + 1}`}
+                  label={`Odpoveď ${key.toUpperCase()}`}
                   variant="outlined"
-                  value={answer}
-                  onChange={(e) => handleAnswerChange(idx, e.target.value)}
+                  value={options[idx]}
+                  onChange={(e) => handleOptionChange(idx, e.target.value)}
                   fullWidth
                   sx={{
                     bgcolor: '#fff',
@@ -151,7 +165,7 @@ const AddQuestionModal = ({ disabled = false }) => {
           <Button onClick={handleClose} color="error" variant="outlined">
             Zruš
           </Button>
-          <Button type="submit" variant="contained">
+          <Button type="submit" variant="contained" disabled={isLoading}>
             Pridaj
           </Button>
         </DialogActions>
