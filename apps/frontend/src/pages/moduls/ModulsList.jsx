@@ -1,12 +1,18 @@
-import { useGetAllModulsQuery } from '@app/redux/api'; // <- Replace with your actual import
-
-import { Box, Paper, Typography } from '@mui/material';
+import { useCurrentSubjectId } from '@app/hooks/useCurrentSubjectId'; // path as created above
+import { useGetModulsBySubjectQuery } from '@app/redux/api';
+import ListIcon from '@mui/icons-material/List';
+import { Box, IconButton, Paper, Tooltip, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid'; // Changed from Unstable_Grid to standard Grid
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 import dayjs from 'dayjs';
 import { useEffect } from 'react';
+import AddQuestionModal from '../admin/components/AddQuestionModal';
 const ModulsList = () => {
-  const { data = [], isLoading } = useGetAllModulsQuery();
+  const subjectId = useCurrentSubjectId();
+  console.log('Current subject ID:', subjectId);
+  const { data = [], isLoading } = useGetModulsBySubjectQuery(subjectId, {
+    skip: !subjectId
+  });
 
   useEffect(() => {
     console.log('Raw data from API:', data);
@@ -18,13 +24,13 @@ const ModulsList = () => {
 
   const columns = [
     { field: 'title', headerName: 'Názov modulu', flex: 1 },
-    {
-      field: 'subject',
-      headerName: 'Predmet',
-      flex: 1,
-      valueGetter: (value, row) => row.subject?.name || '-',
-      renderCell: (params) => params.row.subject?.name || '-'
-    },
+    // {
+    //   field: 'subject',
+    //   headerName: 'Predmet',
+    //   flex: 1,
+    //   valueGetter: (value, row) => row.subject?.name || '-',
+    //   renderCell: (params) => params.row.subject?.name || '-'
+    // },
     {
       field: 'date_start',
       headerName: 'Začiatok',
@@ -51,6 +57,23 @@ const ModulsList = () => {
         // Add null check for params.row and params.row.duration_days
         return params.row.duration_days !== undefined ? params.row.duration_days : '-';
       }
+    },
+    {
+      field: 'actions',
+      type: 'actions',
+      headerName: 'Akcie',
+      getActions: (params) => {
+        return [
+          <>
+            <AddQuestionModal key={'addQuestion'} />
+            <Tooltip title="Zoznam otázok" key={'showQuestion'}>
+              <IconButton color="secondary">
+                <ListIcon />
+              </IconButton>
+            </Tooltip>
+          </>
+        ];
+      }
     }
   ];
 
@@ -60,18 +83,13 @@ const ModulsList = () => {
         <Grid xs={12} sm={9}>
           <Typography variant="h4">Moduly</Typography>
         </Grid>
-        {/* Optional: Add Button for Adding New Modul */}
-        {/* <Grid xs={12} sm={3} justifyContent="flex-end" display="flex">
-          <AddModulModal />
-        </Grid> */}
       </Grid>
-
       <Paper sx={{ mt: 2 }}>
         <DataGrid
           loading={isLoading}
-          rows={validData} // Use the filtered valid data
+          rows={validData}
           columns={columns}
-          getRowId={(row) => row._id || Math.random().toString()} // Fallback ID if _id is missing
+          getRowId={(row) => row._id || Math.random().toString()}
           pageSizeOptions={[10, 20, 50]}
           initialState={{
             density: 'compact',

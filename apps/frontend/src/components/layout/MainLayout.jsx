@@ -197,9 +197,18 @@ const MainLayout = ({ children }) => {
 
   drawerOption = drawerOption.concat([
     { isHeader: true, title: 'Obsah' },
-    { title: 'Moduly', navTo: '/moduls', icon: <ViewModuleIcon /> },
+    { title: 'Moduly', navTo: '/moduls', icon: <ViewModuleIcon /> }
+  ]);
+  if (!user?.isAdmin) {
+    drawerOption.push({
+      title: 'Moje otázky',
+      navTo: '/my-questions',
+      icon: <QuestionAnswerIcon />
+    });
+  }
+  drawerOption = drawerOption.concat([
     { title: 'Zoznam otázok', navTo: '/questions', icon: <QuestionMarkIcon /> },
-    { title: 'Moje otázky', navTo: '/my-questions', icon: <QuestionAnswerIcon /> },
+
     { title: 'Testy', navTo: '/tests', icon: <AvTimerIcon /> }
   ]);
 
@@ -410,7 +419,7 @@ const MainLayout = ({ children }) => {
             })}
           </List>
 
-          {!user?.isAdmin && (
+          {/* {!user?.isAdmin && (
             <Box
               sx={{
                 px: 2,
@@ -446,7 +455,43 @@ const MainLayout = ({ children }) => {
                 <TeamSwitcher collapsed={drawerCollapsed} />
               </Box>
             </Box>
-          )}
+          )} */}
+
+          <Box
+            sx={{
+              px: 2,
+              mt: 'auto',
+              mb: 2,
+              transition: `all ${animationDuration} ${customEasing}`,
+              willChange: 'transform, opacity',
+              transform: 'translateZ(0)'
+            }}
+          >
+            {!drawerCollapsed && (
+              <Typography
+                variant="subtitle2"
+                sx={{
+                  mb: 1,
+                  transition: `opacity ${animationDuration} ${customEasing}`,
+                  opacity: drawerCollapsed ? 0 : 1,
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis'
+                }}
+              >
+                Zvoľ predmet:
+              </Typography>
+            )}
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: drawerCollapsed ? 'center' : 'flex-start',
+                width: '100%'
+              }}
+            >
+              <TeamSwitcher collapsed={drawerCollapsed} />
+            </Box>
+          </Box>
         </Stack>
       </Box>
     );

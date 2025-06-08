@@ -11,5 +11,6 @@
     "paths": {
       "@app/*": ["src/*"]
     }
-  }
+  },
+  "checkJs": false
 }

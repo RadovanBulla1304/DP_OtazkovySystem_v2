@@ -22,40 +22,16 @@ export const router = createBrowserRouter([
     ]
   },
   {
-    element: <Protected />,
+    element: <Protected />, // <MainLayout> is already inside Protected!
     children: [
-      {
-        path: '/',
-        element: <Dashboard />
-      },
-      {
-        path: '/moduls',
-        element: <Moduls />
-      },
-      {
-        path: '/tests',
-        element: <Tests />
-      },
-      {
-        path: '/my-questions',
-        element: <MyQuestions />
-      },
-      {
-        path: '/subjects',
-        element: <Subjects />
-      },
-      {
-        path: '/subjects/:subjectId',
-        element: <SubjectDetail />
-      },
-      {
-        path: 'admin',
-        children: adminRoutes
-      },
-      {
-        path: '*',
-        element: <RouteNotFound />
-      }
+      { path: '/', element: <Dashboard /> },
+      { path: '/moduls', element: <Moduls /> },
+      { path: '/tests', element: <Tests /> },
+      { path: '/my-questions', element: <MyQuestions /> },
+      { path: '/subjects', element: <Subjects /> },
+      { path: '/subjects/:subjectId', element: <SubjectDetail /> },
+      { path: 'admin', children: adminRoutes },
+      { path: '*', element: <RouteNotFound /> }
     ]
   },
   {
