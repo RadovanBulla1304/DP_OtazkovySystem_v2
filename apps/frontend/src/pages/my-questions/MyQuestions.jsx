@@ -55,9 +55,17 @@ const MyQuestions = () => {
       pass = pass && q.modul === filter.modulId;
     }
     if (filter.subjectId) {
-      // Find the module for this question and check its subject
-      const modul = allModuls.find((m) => m._id === q.modul);
-      pass = pass && modul && modul.subject === filter.subjectId;
+      // Find all module IDs for this subject
+      const subjectModulIds = allModuls
+        .filter((m) => {
+          // m.subject can be an object or string, handle both
+          if (typeof m.subject === 'object' && m.subject !== null) {
+            return m.subject._id === filter.subjectId || m.subject === filter.subjectId;
+          }
+          return m.subject === filter.subjectId;
+        })
+        .map((m) => m._id);
+      pass = pass && subjectModulIds.includes(q.modul);
     }
     return pass;
   });
@@ -141,6 +149,7 @@ const MyQuestions = () => {
                       alignItems: 'center',
                       mb: 1,
                       pl: 1,
+                      padding: 1,
                       bgcolor: q.correct === key ? 'primary.light' : 'background.paper',
                       borderRadius: 2
                     }}
