@@ -68,7 +68,7 @@ const ModulsList = () => {
         const isEnded = params.row.date_end && dayjs().isAfter(dayjs(params.row.date_end), 'day');
         return [
           <>
-            <AddQuestionModal key={'addQuestion'} disabled={isEnded} />
+            <AddQuestionModal key={'addQuestion'} disabled={isEnded} modulId={params.row._id} />
             <Tooltip title="Zoznam otázok" key={'showQuestion'}>
               <IconButton color="secondary">
                 <ListIcon />
