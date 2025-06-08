@@ -234,6 +234,16 @@ export const api = createApi({
         { type: 'Questions', id: arg }
       ]
     }),
+    getQuestionByUserId: builder.query({
+      query: (userId) => ({
+        url: `/question/user/${userId}`,
+        method: 'GET'
+      }),
+      providesTags: (result, error, arg) => [
+        { type: 'Questions', id: `USER-${arg}` },
+        'Questions'
+      ]
+    }),
 
   })
 });
@@ -274,5 +284,6 @@ export const {
   useGetQuestionsBySubjectIdQuery,
   useLazyGetQuestionsBySubjectIdQuery,
   useGetQuestionByIdQuery,
-  useLazyGetQuestionByIdQuery
+  useLazyGetQuestionByIdQuery,
+  useGetQuestionByUserIdQuery,
 } = api;
