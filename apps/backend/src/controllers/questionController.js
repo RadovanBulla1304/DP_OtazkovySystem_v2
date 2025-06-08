@@ -30,6 +30,17 @@ exports.getQuestionById = async (req, res) => {
     }
 };
 /**
+ * GET questions by user ID (createdBy)
+ */
+exports.getQuestionsByUserId = async (req, res) => {
+    try {
+        const questions = await Question.find({ createdBy: req.params.userId });
+        res.status(200).json(questions);
+    } catch (err) {
+        throwError(`Error fetching questions by user: ${err.message}`, 500);
+    }
+};
+/**
  * GET questions by module ID
  */
 exports.getQuestionsByModuleId = async (req, res) => {

@@ -1,3 +1,4 @@
+import * as authService from '@app/pages/auth/authService';
 import { useCreateQuestionMutation } from '@app/redux/api'; // <-- import your mutation
 import AddIcon from '@mui/icons-material/Add';
 import {
@@ -23,7 +24,7 @@ const AddQuestionModal = ({ disabled = false, modulId, createdBy }) => {
   const [open, setOpen] = React.useState(false);
   const [options, setOptions] = React.useState(DEFAULT_OPTIONS);
   const [correctIndex, setCorrectIndex] = React.useState(0);
-
+  const auth = authService.getUserFromStorage();
   const [createQuestion, { isLoading }] = useCreateQuestionMutation();
 
   const {
@@ -71,7 +72,7 @@ const AddQuestionModal = ({ disabled = false, modulId, createdBy }) => {
       },
       correct: ['a', 'b', 'c', 'd'][correctIndex],
       modul: modulId, // pass modulId as prop
-      createdBy // pass createdBy as prop (optional)
+      createdBy: auth.id // pass createdBy as prop (optional)
     };
 
     try {

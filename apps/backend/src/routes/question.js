@@ -6,7 +6,8 @@ const {
     getAllQuestions,
     getQuestionById,
     getQuestionsByModuleId,
-    getQuestionsBySubjectId
+    getQuestionsBySubjectId,
+    getQuestionsByUserId
 } = require("../controllers/questionController");
 
 const router = express.Router();
@@ -14,6 +15,7 @@ const router = express.Router();
 
 router.get("/subject/:subjectId", getQuestionsBySubjectId); // Get questions by subject ID
 router.get("/module/:moduleId", getQuestionsByModuleId);    // Get questions by module ID
+router.get("/user/:userId", getQuestionsByUserId);          // Get questions by user ID
 router.get("/:id", getQuestionById);                        // Get a question by ID
 router.get("/", getAllQuestions);                           // Get all questions
 router.post("/", createQuestion);                           // Create a new question
