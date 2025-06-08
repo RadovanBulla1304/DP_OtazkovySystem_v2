@@ -152,7 +152,7 @@ const MyQuestions = () => {
                       display: 'flex',
                       alignItems: 'center',
                       mb: 1,
-                      pl: 1,
+                      p: 1,
                       bgcolor: q.correct === key ? 'primary.light' : 'background.paper',
                       borderRadius: 2
                     }}
