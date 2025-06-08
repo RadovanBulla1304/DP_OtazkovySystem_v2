@@ -16,7 +16,7 @@ const baseQuery = fetchBaseQuery({
 export const api = createApi({
   reducerPath: 'api',
   baseQuery,
-  tagTypes: ['Users'],
+  tagTypes: ['Users', 'Subjects', 'Moduls', 'Questions'],
   endpoints: (builder) => ({
     // USERS
     getUserMe: builder.query({
@@ -177,6 +177,33 @@ export const api = createApi({
         { type: 'Moduls', id: `SUBJECT-${arg}` },
         'Moduls'
       ]
+    }),
+
+    // QUESTIONS
+    createQuestion: builder.mutation({
+      query: (data) => ({
+        url: '/question',
+        method: 'POST',
+        body: data
+      }),
+      invalidatesTags: ['Questions']
+    }),
+    getQuestionsByModul: builder.query({
+      query: (modulId) => ({
+        url: `/question/modul/${modulId}`,
+        method: 'GET'
+      }),
+      providesTags: (result, error, arg) => [
+        { type: 'Questions', id: `MODUL-${arg}` },
+        'Questions'
+      ]
+    }),
+    deleteQuestion: builder.mutation({
+      query: (questionId) => ({
+        url: `/question/${questionId}`,
+        method: 'DELETE'
+      }),
+      invalidatesTags: ['Questions']
     })
   })
 });
@@ -209,4 +236,9 @@ export const {
   useEditModulMutation,
   useDeleteModulMutation,
   useDeleteAllModulsBySubjectMutation,
+  // QUESTIONS
+  useCreateQuestionMutation,
+  useGetQuestionsByModulQuery,
+  useLazyGetQuestionsByModulQuery,
+  useDeleteQuestionMutation
 } = api;

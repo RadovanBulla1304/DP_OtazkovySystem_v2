@@ -26,7 +26,12 @@ const ModuleSchema = new mongoose.Schema(
         createdBy: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User"
-        }
+        },
+        questions: [{ // <-- Add this field
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Question",
+            default: []
+        }]
     },
     {
         timestamps: true,
