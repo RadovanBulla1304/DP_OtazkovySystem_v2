@@ -1,3 +1,4 @@
+import { useCurrentSubject } from '@app/hooks/useCurrentSubject'; // path as created above
 import { useCurrentSubjectId } from '@app/hooks/useCurrentSubjectId'; // path as created above
 import { useGetModulsBySubjectQuery } from '@app/redux/api';
 import ListIcon from '@mui/icons-material/List';
@@ -8,6 +9,7 @@ import dayjs from 'dayjs';
 import { useEffect } from 'react';
 import AddQuestionModal from '../admin/components/AddQuestionModal';
 const ModulsList = () => {
+  const currentSubject = useCurrentSubject();
   const subjectId = useCurrentSubjectId();
   console.log('Current subject ID:', subjectId);
   const { data = [], isLoading } = useGetModulsBySubjectQuery(subjectId, {
@@ -63,9 +65,10 @@ const ModulsList = () => {
       type: 'actions',
       headerName: 'Akcie',
       getActions: (params) => {
+        const isEnded = params.row.date_end && dayjs().isAfter(dayjs(params.row.date_end), 'day');
         return [
           <>
-            <AddQuestionModal key={'addQuestion'} />
+            <AddQuestionModal key={'addQuestion'} disabled={isEnded} />
             <Tooltip title="Zoznam otázok" key={'showQuestion'}>
               <IconButton color="secondary">
                 <ListIcon />
@@ -81,7 +84,9 @@ const ModulsList = () => {
     <Box py={2}>
       <Grid py={1} px={1} container spacing={1}>
         <Grid xs={12} sm={9}>
-          <Typography variant="h4">Moduly</Typography>
+          <Typography variant="h4">
+            Moduly{currentSubject ? ` – ${currentSubject.name}` : ''}
+          </Typography>
         </Grid>
       </Grid>
       <Paper sx={{ mt: 2 }}>

@@ -51,12 +51,18 @@ const CollapsedAvatar = styled(Avatar)(({ theme }) => ({
 }));
 
 const TeamSwitcher = ({ collapsed = false }) => {
-  const { data: subjects = [], isLoading, refetch } = useGetAllSubjectsQuery();
+  const { data: allSubjects = [], isLoading, refetch } = useGetAllSubjectsQuery();
   const user = authService.getUserFromStorage();
   const [currentSubject, setCurrentSubject] = React.useState(null);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [modalOpen, setModalOpen] = React.useState(false);
   const open = Boolean(anchorEl);
+
+  // Filter subjects based on user assignment
+  const subjects = React.useMemo(() => {
+    if (user?.isAdmin) return allSubjects;
+    return allSubjects.filter((subj) => subj.assignedUsers?.includes(user._id));
+  }, [allSubjects, user]);
 
   React.useEffect(() => {
     const id = localStorage.getItem('currentSubjectId');

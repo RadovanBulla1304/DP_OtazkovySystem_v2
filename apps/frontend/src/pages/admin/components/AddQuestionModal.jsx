@@ -18,7 +18,7 @@ import { toast } from 'react-toastify';
 
 const DEFAULT_ANSWERS = ['', '', '', ''];
 
-const AddQuestionModal = () => {
+const AddQuestionModal = ({ disabled = false }) => {
   const [open, setOpen] = React.useState(false);
   const [answers, setAnswers] = React.useState(DEFAULT_ANSWERS);
   const [correctIndex, setCorrectIndex] = React.useState(0);
@@ -68,7 +68,7 @@ const AddQuestionModal = () => {
   return (
     <>
       <Tooltip title="Pridať otázku" key={'addQuestion'}>
-        <IconButton color="primary" onClick={handleClickOpen}>
+        <IconButton color="primary" onClick={handleClickOpen} disabled={disabled}>
           <AddIcon />
         </IconButton>
       </Tooltip>
@@ -87,7 +87,7 @@ const AddQuestionModal = () => {
           sx: { borderRadius: 3 }
         }}
       >
-        <DialogTitle sx={{ pb: 0, fontWeight: 600 }}>Pridaj otázku</DialogTitle>
+        <DialogTitle sx={{ pb: 0, fontWeight: 600, marginBottom: 2 }}>Pridaj otázku</DialogTitle>
         <DialogContent
           sx={{
             display: 'flex',
