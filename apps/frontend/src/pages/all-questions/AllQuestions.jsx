@@ -134,7 +134,7 @@ const AllQuestions = () => {
                 }
                 subheader={
                   <Typography variant="caption" color="text.secondary">
-                    Modul ID: {q.modul}
+                    Modul: {subjectModuls.find((m) => m._id === q.modul)?.title || q.modul}
                   </Typography>
                 }
               />

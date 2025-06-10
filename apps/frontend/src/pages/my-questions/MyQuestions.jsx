@@ -47,6 +47,12 @@ const MyQuestions = () => {
     skip: !userId
   });
 
+  // Helper to get module name by id
+  const getModulName = (modulId) => {
+    const modul = subjectModuls.find((m) => m._id === modulId);
+    return modul ? modul.title : modulId;
+  };
+
   // Filtering logic
   const filteredQuestions = questions.filter((q) => {
     let pass = true;
@@ -129,9 +135,20 @@ const MyQuestions = () => {
                   </Typography>
                 }
                 subheader={
-                  <Typography variant="caption" color="text.secondary">
-                    Modul ID: {q.modul}
-                  </Typography>
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">
+                      Modul: {getModulName(q.modul)}
+                    </Typography>
+                    {auth.isAdmin && (
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ display: 'block' }}
+                      >
+                        Modul ID: {q.modul}
+                      </Typography>
+                    )}
+                  </Box>
                 }
               />
               <CardContent>
