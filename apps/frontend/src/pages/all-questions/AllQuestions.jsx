@@ -1,4 +1,4 @@
-import { useCurrentSubject } from '@app/hooks/useCurrentSubject'; // adjust path as needed
+import { useCurrentSubject } from '@app/hooks/useCurrentSubject';
 import {
   useGetModulsBySubjectQuery,
   useGetQuestionsByModulQuery,
@@ -19,6 +19,7 @@ import {
   Typography
 } from '@mui/material';
 import React from 'react';
+import RateQuestionModal from '../admin/components/RateQuestionModal';
 
 const answerLetterToLabel = { a: 'A', b: 'B', c: 'C', d: 'D' };
 
@@ -171,6 +172,9 @@ const AllQuestions = () => {
                 <Typography variant="caption" color="text.secondary">
                   Vytvorené: {new Date(q.createdAt).toLocaleString()}
                 </Typography>
+                <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
+                  <RateQuestionModal questionId={q._id} questionCreatorId={q.createdBy} />
+                </Box>
               </CardContent>
             </Card>
           </Grid>

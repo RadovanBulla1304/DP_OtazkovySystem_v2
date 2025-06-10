@@ -14,13 +14,14 @@ import {
   TextField,
   Tooltip
 } from '@mui/material';
+import PropTypes from 'prop-types';
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 
 const DEFAULT_OPTIONS = ['', '', '', ''];
 
-const AddQuestionModal = ({ disabled = false, modulId, createdBy }) => {
+const AddQuestionModal = ({ disabled = false, modulId }) => {
   const [open, setOpen] = React.useState(false);
   const [options, setOptions] = React.useState(DEFAULT_OPTIONS);
   const [correctIndex, setCorrectIndex] = React.useState(0);
@@ -80,7 +81,7 @@ const AddQuestionModal = ({ disabled = false, modulId, createdBy }) => {
       toast.success('Otázka bola úspešne pridaná');
       handleClose();
     } catch (err) {
-      toast.error('Chyba pri pridávaní otázky');
+      toast.error('Chyba pri pridávaní otázky', err?.data?.message || 'Skúste to neskôr');
     }
   };
 
@@ -175,4 +176,9 @@ const AddQuestionModal = ({ disabled = false, modulId, createdBy }) => {
   );
 };
 
+AddQuestionModal.propTypes = {
+  disabled: PropTypes.bool,
+  modulId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  createdBy: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+};
 export default AddQuestionModal;

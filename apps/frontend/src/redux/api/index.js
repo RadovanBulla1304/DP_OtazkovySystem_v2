@@ -16,7 +16,7 @@ const baseQuery = fetchBaseQuery({
 export const api = createApi({
   reducerPath: 'api',
   baseQuery,
-  tagTypes: ['Users'],
+  tagTypes: ['Users', 'Subjects', 'Moduls', 'Questions', 'QuestionRatings'],
   endpoints: (builder) => ({
     // USERS
     getUserMe: builder.query({
@@ -245,6 +245,50 @@ export const api = createApi({
       ]
     }),
 
+    // QUESTION RATINGS
+    createQuestionRating: builder.mutation({
+      query: (data) => ({
+        url: '/questionRating',
+        method: 'POST',
+        body: data
+      }),
+      invalidatesTags: ['QuestionRatings']
+    }),
+    editQuestionRating: builder.mutation({
+      query: ({ id, data }) => ({
+        url: `/questionRating/${id}`,
+        method: 'PUT',
+        body: data
+      }),
+      invalidatesTags: ['QuestionRatings']
+    }),
+    deleteQuestionRating: builder.mutation({
+      query: (id) => ({
+        url: `/questionRating/${id}`,
+        method: 'DELETE'
+      }),
+      invalidatesTags: ['QuestionRatings']
+    }),
+    getRatingsByQuestionId: builder.query({
+      query: (questionId) => ({
+        url: `/questionRating/question/${questionId}`,
+        method: 'GET'
+      }),
+      providesTags: (result, error, arg) => [
+        { type: 'QuestionRatings', id: `QUESTION-${arg}` },
+        'QuestionRatings'
+      ]
+    }),
+    getRatingsByUserId: builder.query({
+      query: (userId) => ({
+        url: `/questionRating/user/${userId}`,
+        method: 'GET'
+      }),
+      providesTags: (result, error, arg) => [
+        { type: 'QuestionRatings', id: `USER-${arg}` },
+        'QuestionRatings'
+      ]
+    }),
   })
 });
 
@@ -286,4 +330,10 @@ export const {
   useGetQuestionByIdQuery,
   useLazyGetQuestionByIdQuery,
   useGetQuestionByUserIdQuery,
+  // QUESTION RATINGS
+  useCreateQuestionRatingMutation,
+  useEditQuestionRatingMutation,
+  useDeleteQuestionRatingMutation,
+  useGetRatingsByQuestionIdQuery,
+  useGetRatingsByUserIdQuery,
 } = api;
