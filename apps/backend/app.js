@@ -36,6 +36,7 @@ app.use("/user", require("./src/routes/user"));
 app.use("/subject", require("./src/routes/subject"));
 app.use("/modul", require("./src/routes/modul"));
 app.use("/question", require("./src/routes/question"));
+app.use("/questionRating", require("./src/routes/questionRating"));
 app.use("/admin", require("./src/routes/admin"));
 
 app.use(function (req, res, next) {
