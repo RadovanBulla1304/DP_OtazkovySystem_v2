@@ -1,6 +1,9 @@
 import { useCurrentSubject } from '@app/hooks/useCurrentSubject'; // adjust path as needed
-import * as authService from '@app/pages/auth/authService';
-import { useGetModulsBySubjectQuery, useGetQuestionByUserIdQuery } from '@app/redux/api';
+import {
+  useGetModulsBySubjectQuery,
+  useGetQuestionsByModulQuery,
+  useGetQuestionsBySubjectIdQuery
+} from '@app/redux/api';
 import {
   Box,
   Card,
@@ -19,15 +22,12 @@ import React from 'react';
 
 const answerLetterToLabel = { a: 'A', b: 'B', c: 'C', d: 'D' };
 
-const MyQuestions = () => {
-  const auth = authService.getUserFromStorage();
-  const userId = auth.id;
-
+const AllQuestions = () => {
   // Get current subject from team switcher
   const currentSubject = useCurrentSubject();
   const subjectId = currentSubject?._id || currentSubject?.id || '';
 
-  // Filter state
+  // Filters
   const [filter, setFilter] = React.useState({
     date: '',
     modulId: ''
@@ -38,49 +38,53 @@ const MyQuestions = () => {
     skip: !subjectId
   });
 
-  // Fetch all user's questions
+  // Fetch questions for the selected subject
   const {
-    data: questions = [],
-    isLoading,
-    error
-  } = useGetQuestionByUserIdQuery(userId, {
-    skip: !userId
+    data: subjectQuestions = [],
+    isLoading: loadingQuestions,
+    error: errorQuestions
+  } = useGetQuestionsBySubjectIdQuery(subjectId, {
+    skip: !subjectId
   });
 
+  // Fetch questions for the selected module (if module is selected)
+  const { data: modulQuestions = [], isLoading: loadingModulQuestions } =
+    useGetQuestionsByModulQuery(filter.modulId, {
+      skip: !filter.modulId
+    });
+
   // Filtering logic
-  const filteredQuestions = questions.filter((q) => {
-    let pass = true;
-    if (subjectId) {
-      pass = pass && subjectModuls.some((m) => m._id === q.modul);
-    }
-    if (filter.modulId) {
-      pass = pass && q.modul === filter.modulId;
-    }
-    if (filter.date) {
-      pass = pass && q.createdAt.slice(0, 10) === filter.date;
-    }
-    return pass;
-  });
+  let questions = [];
+  if (filter.modulId) {
+    questions = modulQuestions;
+  } else if (subjectId) {
+    questions = subjectQuestions;
+  }
+
+  // Filter by date if set
+  const filteredQuestions = filter.date
+    ? questions.filter((q) => q.createdAt.slice(0, 10) === filter.date)
+    : questions;
 
   if (!subjectId) {
     return (
       <Box sx={{ p: 3 }}>
         <Typography variant="h4" sx={{ mb: 3 }}>
-          Moje otázky
+          Všetky otázky
         </Typography>
         <Typography>Najprv vyberte predmet v team switcheri.</Typography>
       </Box>
     );
   }
 
-  if (isLoading) return <Typography>Načítavam...</Typography>;
-  if (error) return <Typography color="error">Chyba pri načítaní otázok.</Typography>;
-  if (!questions.length) return <Typography>Nemáte žiadne otázky.</Typography>;
+  if (loadingQuestions || loadingModulQuestions) return <Typography>Načítavam...</Typography>;
+  if (errorQuestions) return <Typography color="error">Chyba pri načítaní otázok.</Typography>;
+  if (!questions.length) return <Typography>Žiadne otázky pre tento predmet/modul.</Typography>;
 
   return (
     <Box sx={{ p: 3 }}>
       <Typography variant="h4" sx={{ mb: 3 }}>
-        Moje otázky
+        Všetky otázky
       </Typography>
 
       {/* Filters */}
@@ -143,21 +147,21 @@ const MyQuestions = () => {
                       alignItems: 'center',
                       mb: 1,
                       p: 1,
-                      bgcolor: q.correct === key ? 'primary.light' : 'background.paper',
+                      bgcolor: 'background.paper',
                       borderRadius: 2
                     }}
                   >
                     <Chip
                       label={answerLetterToLabel[key]}
-                      color={q.correct === key ? 'primary' : 'default'}
+                      color="default"
                       size="small"
                       sx={{ mr: 1 }}
                     />
                     <Typography
                       variant="body1"
                       sx={{
-                        fontWeight: q.correct === key ? 700 : 400,
-                        color: q.correct === key ? 'primary.main' : 'text.primary'
+                        fontWeight: 400,
+                        color: 'text.primary'
                       }}
                     >
                       {value}
@@ -176,4 +180,4 @@ const MyQuestions = () => {
   );
 };
 
-export default MyQuestions;
+export default AllQuestions;

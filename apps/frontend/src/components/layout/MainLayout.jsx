@@ -207,7 +207,7 @@ const MainLayout = ({ children }) => {
     });
   }
   drawerOption = drawerOption.concat([
-    { title: 'Zoznam otázok', navTo: '/questions', icon: <QuestionMarkIcon /> },
+    { title: 'Zoznam otázok', navTo: '/all-questions', icon: <QuestionMarkIcon /> },
 
     { title: 'Testy', navTo: '/tests', icon: <AvTimerIcon /> }
   ]);

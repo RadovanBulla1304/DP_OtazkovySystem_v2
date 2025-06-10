@@ -190,7 +190,7 @@ export const api = createApi({
     }),
     getQuestionsByModul: builder.query({
       query: (modulId) => ({
-        url: `/question/modul/${modulId}`,
+        url: `/question/module/${modulId}`,
         method: 'GET'
       }),
       providesTags: (result, error, arg) => [
