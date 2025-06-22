@@ -40,6 +40,13 @@ export const api = createApi({
       }),
       invalidatesTags: (result) => (result ? ['Users'] : [])
     }),
+    getUserById: builder.query({
+      query: (userId) => ({
+        url: `/user/${userId}`,
+        method: 'GET'
+      }),
+      providesTags: ['Users']
+    }),
     updateUser: builder.mutation({
       query: (data) => ({
         url: `/admin/user/${data.userId}`,
@@ -297,6 +304,7 @@ export const {
   useGetUserMeQuery,
   useLazyGetUserMeQuery,
   useLoginUserMutation,
+  useGetUserByIdQuery,
   useCreateUserMutation,
   useUpdateUserMutation,
   useRemoveUserMutation,

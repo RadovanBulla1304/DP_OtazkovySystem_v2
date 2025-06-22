@@ -181,9 +181,9 @@ const MyQuestions = () => {
                     </Typography>
                   </Box>
                 ))}
-                <Typography variant="caption" color="text.secondary">
+                {/* <Typography variant="caption" color="text.secondary">
                   Vytvorené: {new Date(q.createdAt).toLocaleString()}
-                </Typography>
+                </Typography> */}
               </CardContent>
             </Card>
           </Grid>

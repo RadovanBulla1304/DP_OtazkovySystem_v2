@@ -3,6 +3,7 @@ const {
   SignOut,
   getCurrentUser,
   changePassword,
+  getUserById,
   edit,
   addStudent,
   addEmployeeOrAdmin,
@@ -11,6 +12,7 @@ const {
 const router = express.Router();
 
 router.get("/current", getCurrentUser);
+router.get("/:id", getUserById);
 router.post("/signout", SignOut);
 router.post("/change-password", changePassword);
 router.put("/", edit);

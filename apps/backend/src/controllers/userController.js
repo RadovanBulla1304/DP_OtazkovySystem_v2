@@ -30,6 +30,20 @@ exports.getCurrentUser = [
   },
 ];
 
+exports.getUserById = [
+  async (req, res) => {
+    const { id } = req.params;
+    try {
+      const user = await User.findOne({ _id: id });
+      if (!user) {
+        return res.status(404).send({ message: req.t("messages.user_not_found") });
+      }
+      res.status(200).send(user);
+    } catch (err) {
+      throwError(`${req.t("messages.database_error")}: ${err.message}`, 500);
+    }
+  },
+];
 exports.edit = [
   validate(editUserSchema),
   async (req, res) => {

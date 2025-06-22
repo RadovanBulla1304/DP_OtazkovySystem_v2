@@ -4,6 +4,18 @@ const { createQuestionRating, editQuestionRating } = require("../schemas/questio
 
 const QuestionRating = require("../models/questionRating");
 
+
+/**
+ * GET all question ratings
+ */
+exports.getAllRatings = async (req, res) => {
+    try {
+        const ratings = await QuestionRating.find();
+        res.status(200).json(ratings);
+    } catch (err) {
+        throwError(`Error fetching all ratings: ${err.message}`, 500);
+    }
+};
 /**
  * GET all ratings for a question
  */

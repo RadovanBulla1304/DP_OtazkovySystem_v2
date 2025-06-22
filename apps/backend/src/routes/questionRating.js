@@ -4,7 +4,8 @@ const {
     editQuestionRating,
     deleteQuestionRating,
     getRatingsByQuestionId,
-    getRatingsByUserId
+    getRatingsByUserId,
+    getAllRatings,
 } = require("../controllers/questionRatingController");
 
 const router = express.Router();
@@ -18,6 +19,7 @@ router.get("/user/:userId", getRatingsByUserId);
 // Create a new question rating
 router.post("/", createQuestionRating);
 
+router.get("/", getAllRatings);
 // Edit a question rating by ID
 router.put("/:id", editQuestionRating);
 
