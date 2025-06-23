@@ -19,6 +19,23 @@ const createUserSchema = Joi.object({
       'string.email': 'Email must be a valid email address',
     }),
 
+  groupNumber: Joi.string().min(1).max(50).required().messages({
+    'string.empty': 'Group number is required',
+    'string.min': 'Group number must be at least 1 character',
+    'string.max': 'Group number must not exceed 50 characters',
+  }),
+
+  studentNumber: Joi.string().min(1).max(50).required().messages({
+    'string.empty': 'Student number is required',
+    'string.min': 'Student number must be at least 1 character',
+    'string.max': 'Student number must not exceed 50 characters',
+  }),
+
+  role: Joi.string().valid('student', 'teacher').required().messages({
+    'any.only': 'Role must be either student or teacher',
+    'string.empty': 'Role is required',
+  }),
+
   isActive: Joi.boolean().required().messages({
     'boolean.base': 'isActive must be a boolean value',
   }),
@@ -59,6 +76,20 @@ const updateUserSchema = Joi.object({
       'string.email': 'Email must be a valid email address',
     }),
 
+  groupNumber: Joi.string().min(1).max(50).messages({
+    'string.min': 'Group number must be at least 1 character',
+    'string.max': 'Group number must not exceed 50 characters',
+  }),
+
+  studentNumber: Joi.string().min(1).max(50).messages({
+    'string.min': 'Student number must be at least 1 character',
+    'string.max': 'Student number must not exceed 50 characters',
+  }),
+
+  role: Joi.string().valid('student', 'teacher').messages({
+    'any.only': 'Role must be either student or teacher',
+  }),
+
   isActive: Joi.boolean().messages({
     'boolean.base': 'isActive must be a boolean value',
   }),
@@ -79,7 +110,6 @@ const updateUserSchema = Joi.object({
       'any.only': 'Password confirmation does not match password',
     }),
 });
-
 
 module.exports = {
   createUserSchema,

@@ -1,13 +1,17 @@
+import logoExpanded from '@app/assets/UNIZA_TEXT_A.png';
+import logoCollapsed from '@app/assets/UNIZA_TEXT_B.png';
+import * as authService from '@app/pages/auth/authService';
+import { useGetUserMeQuery } from '@app/redux/api';
+import { replaceDiacritics } from '@app/utils/common.util';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import AvTimerIcon from '@mui/icons-material/AvTimer';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import DashboardIcon from '@mui/icons-material/Dashboard';
-import GroupIcon from '@mui/icons-material/Group';
 import MenuIcon from '@mui/icons-material/Menu';
 import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
-import SchoolIcon from '@mui/icons-material/School';
 import ViewModuleIcon from '@mui/icons-material/ViewModule';
 import { Button, Container, ListItemButton, Stack, Tooltip, useMediaQuery } from '@mui/material';
 import AppBar from '@mui/material/AppBar';
@@ -25,12 +29,6 @@ import Typography from '@mui/material/Typography';
 import PropTypes from 'prop-types';
 import * as React from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-
-import logoExpanded from '@app/assets/UNIZA_TEXT_A.png';
-import logoCollapsed from '@app/assets/UNIZA_TEXT_B.png';
-import * as authService from '@app/pages/auth/authService';
-import { useGetUserMeQuery } from '@app/redux/api';
-import { replaceDiacritics } from '@app/utils/common.util';
 import ProfileMenu from './profile-menu.component';
 import TeamSwitcher from './TeamSwitcher';
 
@@ -188,16 +186,18 @@ const MainLayout = ({ children }) => {
   if (user?.isAdmin) {
     drawerOption.push(
       { isHeader: true, title: 'Správca' },
-      { title: 'Dashboard', navTo: '/', icon: <DashboardIcon /> },
-      { title: 'Používatelia', navTo: '/admin/users', icon: <GroupIcon /> },
-      { isHeader: true, title: 'Funkcie' },
-      { title: 'Predmety', navTo: '/subjects', icon: <SchoolIcon /> }
+      { title: 'Dashboard', navTo: '/', icon: <DashboardIcon /> }
+      // { title: 'Používatelia', navTo: '/admin/users', icon: <GroupIcon /> },
+      // { isHeader: true, title: 'Funkcie' },
+      // { title: 'Predmety', navTo: '/subjects', icon: <SchoolIcon /> }
     );
   }
 
   drawerOption = drawerOption.concat([
     { isHeader: true, title: 'Obsah' },
-    { title: 'Moduly', navTo: '/moduls', icon: <ViewModuleIcon /> }
+    // { title: 'Moduly', navTo: '/moduls', icon: <ViewModuleIcon /> },
+    { title: 'Projekty', navTo: '/moduls', icon: <AccountTreeIcon /> },
+    { title: 'Fórum', navTo: '/moduls', icon: <ViewModuleIcon /> }
   ]);
   if (!user?.isAdmin) {
     drawerOption.push({
@@ -207,8 +207,7 @@ const MainLayout = ({ children }) => {
     });
   }
   drawerOption = drawerOption.concat([
-    { title: 'Zoznam otázok', navTo: '/all-questions', icon: <QuestionMarkIcon /> },
-
+    { title: 'Otázky', navTo: '/all-questions', icon: <QuestionMarkIcon /> },
     { title: 'Testy', navTo: '/tests', icon: <AvTimerIcon /> }
   ]);
 

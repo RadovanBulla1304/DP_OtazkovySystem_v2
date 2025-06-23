@@ -7,13 +7,26 @@ const HASH_DIGEST = "sha512";
 
 const UserSchema = new mongoose.Schema(
   {
-    email: { type: String, required: true, unique: true },
+    email: { type: String, required: true, unique: true }, //Email uzivatela v tvare "meno.priezvko@uniza.sk" - ucitel, "priezvisko<cislo>@stud.uniza.sk" - student
+    groupNumber: { type: String, required: true, unique: true }, //Cislo studijnej skupiny
+    studentNumber: { type: String, required: true, unique: true }, //Osobne cislo studenta
     password: { type: String },
     salt: { type: String },
-    name: { type: String, required: true },
-    surname: { type: String, required: true },
+    name: { type: String, required: true }, //Meno 
+    surname: { type: String, required: true }, //Priezvisko
     isAdmin: { type: Boolean, default: false },
     isActive: { type: Boolean, default: true },
+    assignedSubjects: [{ // Subjects user is participating in
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Subject",
+      default: []
+    }],
+    assignedProjects: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Project',
+      default: []
+    }],
+
   },
   {
     timestamps: true,

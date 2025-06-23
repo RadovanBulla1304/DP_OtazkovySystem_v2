@@ -22,7 +22,13 @@ const QuestionSchema = new mongoose.Schema(
         createdBy: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User"
-        }
+        },
+        validated: { type: Boolean, default: false }, // false until teacher validates
+        validationComment: { type: String }, // by teacher
+        userAgreement: {
+            agreed: { type: Boolean }, // did user agree with teacher comment?
+            comment: { type: String }, // why they agree/disagree
+        },
     },
     {
         timestamps: true,

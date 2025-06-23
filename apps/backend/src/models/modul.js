@@ -14,24 +14,19 @@ const ModuleSchema = new mongoose.Schema(
             type: Date,
             required: true
         },
-        deleted: {
-            type: Boolean,
-            default: false
-        },
-        subject: {
+        subject: { // RELATION to Subject
             type: mongoose.Schema.Types.ObjectId,
             ref: "Subject",
             required: true
         },
-        createdBy: {
+        createdBy: { // Teacher
             type: mongoose.Schema.Types.ObjectId,
-            ref: "User"
+            ref: "Teacher",
+            required: true
         },
-        questions: [{ // <-- Add this field
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Question",
-            default: []
-        }]
+        //Each module can have validatedQuestions
+        validatedQuestions: [{ type: mongoose.Schema.Types.ObjectId, ref: "ValidatedQuestion" }]
+
     },
     {
         timestamps: true,

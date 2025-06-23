@@ -21,7 +21,7 @@ const QuestionRatingSchema = new mongoose.Schema(
             type: Number,
             required: true,
             min: 1,
-            max: 5 // or whatever scale you want
+            max: 5
         },
         comment: {
             type: String,

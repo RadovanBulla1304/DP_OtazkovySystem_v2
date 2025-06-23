@@ -3,11 +3,24 @@ const mongoose = require("mongoose");
 const SubjectSchema = new mongoose.Schema(
     {
         name: { type: String, required: true, unique: true },
-        assignedUsers: { type: [mongoose.Schema.Types.ObjectId], ref: "User", default: [] }, // Array of assigned users
-        moduls: [{  // Array of modules
+
+        assignedTeachers: [{ // Teachers teaching this subject
             type: mongoose.Schema.Types.ObjectId,
-            ref: "Modul"
+            ref: "Teacher",
+            default: []
         }],
+
+        assignedStudents: [{ // Users (students) participating
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            default: []
+        }],
+
+        modules: [{ // Modules in the subject
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Module",
+            default: []
+        }]
     },
     {
         timestamps: true,
