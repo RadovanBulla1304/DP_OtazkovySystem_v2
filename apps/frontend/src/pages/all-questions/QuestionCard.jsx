@@ -14,7 +14,6 @@ import {
   Typography
 } from '@mui/material';
 import PropTypes from 'prop-types';
-import React from 'react';
 import RateQuestionModal from '../admin/components/RateQuestionModal';
 
 const answerLetterToLabel = { a: 'A', b: 'B', c: 'C', d: 'D' };
@@ -43,14 +42,14 @@ const QuestionCard = ({ question, subjectModuls, onOpenList }) => {
     .join('\n');
 
   // Show list icon only on hover
-  const [hovered, setHovered] = React.useState(false);
+  // const [hovered, setHovered] = React.useState(false);
 
   return (
     <Card
       elevation={3}
       sx={{ borderRadius: 3 }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      // onMouseEnter={() => setHovered(true)}
+      // onMouseLeave={() => setHovered(false)}
     >
       <CardHeader
         title={
@@ -119,9 +118,14 @@ const QuestionCard = ({ question, subjectModuls, onOpenList }) => {
           </Box>
           <Box>
             <RateQuestionModal questionId={question._id} questionCreatorId={question.createdBy} />
-            {isAuth.isAdmin && hovered && (
+            {isAuth.isAdmin && (
               <Tooltip title="Zoznam hodnotení">
-                <IconButton onClick={() => onOpenList(question._id)} size="small" sx={{ ml: 1 }}>
+                <IconButton
+                  onClick={() => onOpenList(question._id)}
+                  color="secondary"
+                  size="small"
+                  sx={{ ml: 1 }}
+                >
                   <ListIcon />
                 </IconButton>
               </Tooltip>

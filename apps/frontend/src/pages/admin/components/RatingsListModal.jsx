@@ -1,15 +1,9 @@
 import { useGetRatingsByQuestionIdQuery, useGetUserByIdQuery } from '@app/redux/api';
-import {
-  Box,
-  Button,
-  CircularProgress,
-  List,
-  ListItem,
-  Modal,
-  Rating,
-  Typography
-} from '@mui/material';
+import { Box, Button, CircularProgress, Modal, Typography } from '@mui/material';
+import Rating from '@mui/material/Rating';
+import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 import PropTypes from 'prop-types';
+import { useMemo } from 'react';
 
 const UserInfo = ({ userId }) => {
   const { data: user, isLoading } = useGetUserByIdQuery(userId);
@@ -38,8 +32,63 @@ UserInfo.propTypes = {
   userId: PropTypes.string.isRequired
 };
 
-const RatingsList = ({ questionId }) => {
+const RatingsTable = ({ questionId }) => {
   const { data: ratings = [], isLoading } = useGetRatingsByQuestionIdQuery(questionId);
+
+  const rows = useMemo(() => {
+    return ratings.map((r) => ({
+      id: r._id,
+      rating: r.rating,
+      comment: r.comment || '(bez komentára)',
+      ratedBy: r.ratedBy,
+      createdAt: new Date(r.createdAt).toLocaleString()
+    }));
+  }, [ratings]);
+
+  const columns = [
+    {
+      field: 'rating',
+      headerName: 'Hodnotenie',
+      flex: 1,
+      minWidth: 120,
+      renderCell: (params) => (
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center', // ensure vertical centering
+            justifyContent: 'flex-start',
+            gap: 1,
+            height: '100%' // take full height of the cell
+          }}
+        >
+          <Rating value={params.value} readOnly size="small" precision={0.5} />
+          <Typography variant="body2" sx={{ fontWeight: 500, lineHeight: 1 }}>
+            {params.value}/5
+          </Typography>
+        </Box>
+      ),
+      sortable: true
+    },
+    {
+      field: 'comment',
+      headerName: 'Komentár',
+      flex: 2,
+      minWidth: 200
+    },
+    {
+      field: 'ratedBy',
+      headerName: 'Používateľ',
+      flex: 2,
+      minWidth: 200,
+      renderCell: (params) => <UserInfo userId={params.value} />
+    },
+    {
+      field: 'createdAt',
+      headerName: 'Dátum',
+      flex: 2,
+      minWidth: 180
+    }
+  ];
 
   if (isLoading)
     return (
@@ -47,34 +96,36 @@ const RatingsList = ({ questionId }) => {
         <CircularProgress size={24} />
       </Box>
     );
+
   if (!ratings.length) return <Typography>Žiadne hodnotenia.</Typography>;
 
   return (
-    <List sx={{ maxHeight: 400, overflowY: 'auto' }}>
-      {ratings.map((r) => (
-        <ListItem
-          key={r._id}
-          sx={{ flexDirection: 'column', alignItems: 'flex-start', mb: 2, px: 0 }}
-        >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Rating value={r.rating} readOnly size="small" />
-            <Typography variant="body2" sx={{ fontWeight: 500 }}>
-              {r.rating}/5
-            </Typography>
-          </Box>
-          {r.comment && (
-            <Typography variant="body2" sx={{ mt: 0.5 }}>
-              {r.comment}
-            </Typography>
-          )}
-          <UserInfo userId={r.ratedBy} />
-        </ListItem>
-      ))}
-    </List>
+    <DataGrid
+      rows={rows}
+      columns={columns}
+      autoHeight
+      pageSizeOptions={[10, 20, 50]}
+      initialState={{
+        density: 'compact',
+        pagination: {
+          paginationModel: {
+            pageSize: 10
+          }
+        }
+      }}
+      slots={{ toolbar: GridToolbar }}
+      slotProps={{
+        toolbar: {
+          showQuickFilter: true,
+          quickFilterProps: { debounceMs: 300 }
+        }
+      }}
+      disableRowSelectionOnClick
+    />
   );
 };
 
-RatingsList.propTypes = {
+RatingsTable.propTypes = {
   questionId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired
 };
 
@@ -82,25 +133,26 @@ const RatingsListModal = ({ open, onClose, questionId }) => (
   <Modal open={open} onClose={onClose}>
     <Box
       sx={{
-        position: 'absolute',
-        top: '50%',
+        position: 'fixed',
+        top: '10%',
         left: '50%',
-        transform: 'translate(-50%, -50%)',
+        transform: 'translateX(-50%)',
         bgcolor: 'background.paper',
         p: 4,
         borderRadius: 2,
-        minWidth: 500,
-        maxWidth: 700,
-        maxHeight: '80vh',
-        overflowY: 'auto',
+        width: '90%',
+        maxWidth: 1000,
+        height: '80vh',
+        display: 'flex',
+        flexDirection: 'column',
         boxShadow: 24
       }}
     >
       <Typography variant="h5" sx={{ mb: 3, fontWeight: 600 }}>
         Hodnotenia otázky
       </Typography>
-      {questionId && <RatingsList questionId={questionId} />}
-      <Box sx={{ mt: 3, textAlign: 'right' }}>
+      {questionId && <RatingsTable questionId={questionId} />}
+      <Box sx={{ mt: 2, textAlign: 'right' }}>
         <Button onClick={onClose} variant="outlined">
           Zavrieť
         </Button>

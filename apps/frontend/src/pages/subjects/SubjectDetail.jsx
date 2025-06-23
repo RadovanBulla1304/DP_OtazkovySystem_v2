@@ -25,6 +25,7 @@ import {
   DialogTitle,
   Divider,
   Grid,
+  IconButton,
   Link,
   Paper,
   Tooltip,
@@ -252,43 +253,20 @@ const SubjectDetail = () => {
     },
     {
       field: 'actions',
+      type: 'actions',
       headerName: 'Akcie',
-      flex: 1,
-      headerAlign: 'center',
-      sortable: false,
-      renderCell: (params) => (
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 1,
-            height: '100%',
-            width: '100%'
-          }}
-        >
-          <Button
-            variant="contained"
-            size="small"
-            color="primary"
-            startIcon={<EditIcon />}
-            sx={{ minWidth: 100 }}
-            onClick={() => handleOpenEditModulModal(params.row)}
-          >
-            Upraviť
-          </Button>
-          <Button
-            variant="contained"
-            size="small"
-            color="error"
-            startIcon={<DeleteIcon />}
-            sx={{ minWidth: 100 }}
-            onClick={() => handleOpenDeleteModulDialog(params.row)}
-          >
-            Vymazať
-          </Button>
-        </Box>
-      )
+      getActions: (params) => [
+        <Tooltip key="edit" title="Upraviť modul">
+          <IconButton color="primary" onClick={() => handleOpenEditModulModal(params.row)}>
+            <EditIcon />
+          </IconButton>
+        </Tooltip>,
+        <Tooltip key="delete" title="Odstrániť modul">
+          <IconButton color="error" onClick={() => handleOpenDeleteModulDialog(params.row)}>
+            <DeleteIcon />
+          </IconButton>
+        </Tooltip>
+      ]
     }
   ];
 
@@ -355,32 +333,43 @@ const SubjectDetail = () => {
       <Card sx={{ mb: 4 }}>
         <CardContent>
           <Box
-            sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              mb: 2
+            }}
           >
             <Typography variant="h4" component="h1">
               {subject.name}
             </Typography>
-            <Box sx={{ display: 'flex', gap: 2 }}>
-              <Button variant="outlined" startIcon={<EditIcon />} onClick={handleEditSubject}>
-                Upraviť predmet
-              </Button>
-              <Button
-                variant="contained"
-                color="primary"
-                startIcon={<AddIcon />}
-                onClick={handleOpenModulModal}
-              >
-                Pridať modul
-              </Button>
-              <Tooltip title="Vymazať predmet">
-                <Button
-                  variant="contained"
-                  color="error"
-                  startIcon={<DeleteIcon />}
-                  onClick={handleOpenDeleteDialog}
+
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Tooltip title="Pridať modul">
+                <IconButton
+                  color="primary"
+                  onClick={handleOpenModulModal}
+                  sx={{
+                    border: '1px solid',
+                    borderRadius: '50%',
+                    padding: 0.5,
+                    borderColor: 'primary.main'
+                  }}
                 >
-                  Vymazať
-                </Button>
+                  <AddIcon />
+                </IconButton>
+              </Tooltip>
+
+              <Tooltip title="Upraviť predmet">
+                <IconButton color="secondary" onClick={handleEditSubject}>
+                  <EditIcon />
+                </IconButton>
+              </Tooltip>
+
+              <Tooltip title="Vymazať predmet">
+                <IconButton color="error" onClick={handleOpenDeleteDialog}>
+                  <DeleteIcon />
+                </IconButton>
               </Tooltip>
             </Box>
           </Box>
