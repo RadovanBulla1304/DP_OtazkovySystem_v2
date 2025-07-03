@@ -1,60 +1,80 @@
-const mongoose = require("mongoose");
+const mongoose = require("mongoose")
 
 const TestSchema = new mongoose.Schema(
     {
         title: {
             type: String,
-            required: true
+            required: true,
+            trim: true,
         },
+        description: { type: String, trim: true },
         total_questions: {
             type: Number,
             required: true,
-            min: 1
+            min: 1,
         },
         date_start: {
             type: Date,
-            required: true
+            required: true,
         },
         date_end: {
             type: Date,
-            required: true
+            required: true,
         },
-        time_limit: {  // in minutes
+        time_limit: {
             type: Number,
-            default: 30
+            default: 30,
+            min: 1,
         },
         subject: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Subject",
-            required: true
+            required: true,
         },
-        module: {  // Optional link to specific module
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Module"
-        },
-        questions: [{
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Question"
-        }],
+        selectedModules: [
+            {
+                // Modules from which questions will be selected
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "Module",
+                required: true,
+            },
+        ],
         createdBy: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "User"
+            ref: "Teacher",
+            required: true,
         },
         isPublished: {
             type: Boolean,
-            default: false
-        }
+            default: false,
+        },
+        maxAttempts: {
+            type: Number,
+            default: 1,
+            min: 1,
+        },
+        passingScore: {
+            type: Number,
+            default: 60,
+            min: 0,
+            max: 100,
+        },
     },
     {
         timestamps: true,
         toJSON: { virtuals: true },
         toObject: { virtuals: true },
-    }
-);
+    },
+)
 
-// Virtual for test duration (optional)
+// Indexes
+TestSchema.index({ subject: 1, isPublished: 1 })
+TestSchema.index({ createdBy: 1 })
+TestSchema.index({ date_start: 1, date_end: 1 })
+
+// Virtual for test duration
 TestSchema.virtual("duration_days").get(function () {
-    return Math.ceil((this.date_end - this.date_start) / (1000 * 60 * 60 * 24));
-});
+    return Math.ceil((this.date_end - this.date_start) / (1000 * 60 * 60 * 24))
+})
 
-module.exports = mongoose.model("Test", TestSchema);
+module.exports = mongoose.model("Test", TestSchema)

@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require("mongoose")
 
 const PointSchema = new mongoose.Schema(
     {
@@ -9,13 +9,48 @@ const PointSchema = new mongoose.Schema(
         },
         assignedBy: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "User", // Teacher who gave the points
+            ref: "Teacher",
             required: true,
         },
-        reason: { type: String, required: true }, //reason/description why points were given
-        points: { type: Number, required: true }, //Number of points given
+        reason: {
+            type: String,
+            required: true,
+            trim: true,
+        },
+        points: {
+            type: Number,
+            required: true,
+        },
+        category: {
+            type: String,
+            enum: [
+                "question_creation",
+                "question_rating",
+                "test_performance",
+                "forum_participation",
+                "project_work",
+                "other",
+            ],
+            default: "other",
+        },
+        relatedEntity: {
+            entityType: {
+                type: String,
+                enum: ["Question", "Test", "ForumQuestion", "Project"],
+            },
+            entityId: {
+                type: mongoose.Schema.Types.ObjectId,
+            },
+        },
     },
-    { timestamps: true }
-);
+    {
+        timestamps: true,
+    },
+)
 
-module.exports = mongoose.model("Point", PointSchema);
+// Indexes
+PointSchema.index({ student: 1, createdAt: -1 })
+PointSchema.index({ assignedBy: 1 })
+PointSchema.index({ category: 1 })
+
+module.exports = mongoose.model("Point", PointSchema)

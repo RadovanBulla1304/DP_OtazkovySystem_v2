@@ -1,32 +1,56 @@
-const mongoose = require("mongoose");
+const mongoose = require("mongoose")
 
 const SubjectSchema = new mongoose.Schema(
     {
-        name: { type: String, required: true, unique: true },
+        name: {
+            type: String,
+            required: true,
+            unique: true,
+            trim: true,
+        },
+        code: {
+            type: String,
+            required: true,
+            unique: true,
+            trim: true,
+            uppercase: true,
+        }, // Subject code like "MATH101"
+        description: { type: String, trim: true },
 
-        assignedTeachers: [{ // Teachers teaching this subject
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Teacher",
-            default: []
-        }],
+        assignedTeachers: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "Teacher",
+            },
+        ],
 
-        assignedStudents: [{ // Users (students) participating
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
-            default: []
-        }],
+        assignedStudents: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "User",
+            },
+        ],
 
-        modules: [{ // Modules in the subject
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Module",
-            default: []
-        }]
+        isActive: { type: Boolean, default: true },
     },
     {
         timestamps: true,
         toJSON: { virtuals: true },
         toObject: { virtuals: true },
-    }
-);
+    },
+)
 
-module.exports = mongoose.model("Subject", SubjectSchema);
+// Indexes
+SubjectSchema.index({ name: 1 })
+SubjectSchema.index({ code: 1 })
+SubjectSchema.index({ assignedTeachers: 1 })
+SubjectSchema.index({ assignedStudents: 1 })
+
+// Virtual for modules
+SubjectSchema.virtual("modules", {
+    ref: "Module",
+    localField: "_id",
+    foreignField: "subject",
+})
+
+module.exports = mongoose.model("Subject", SubjectSchema)
