@@ -18,43 +18,38 @@ const QuestionSchema = new mongoose.Schema(
             enum: ["a", "b", "c", "d"],
             required: true,
         },
-        difficulty: {
-            type: String,
-            enum: ["easy", "medium", "hard"],
-            default: "medium",
-        },
         modul: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Module",
             required: true,
         },
-        createdBy: {
+        created_by: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
             required: true,
         },
         validated: { type: Boolean, default: false },
-        validatedBy: {
+        validated_by: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Teacher",
         },
-        validatedAt: { type: Date },
-        validationComment: { type: String, trim: true },
+        validated_at: { type: Date },
+        validation_comment: { type: String, trim: true },
 
         // User's response to validation
-        userAgreement: {
+        user_agreement: {
             agreed: { type: Boolean },
             comment: { type: String, trim: true },
-            respondedAt: { type: Date },
+            responded_at: { type: Date },
         },
 
         // Rating statistics (cached for performance)
-        ratingStats: {
-            averageRating: { type: Number, default: 0 },
-            totalRatings: { type: Number, default: 0 },
+        rating_stats: {
+            average_rating: { type: Number, default: 0 },
+            total_ratings: { type: Number, default: 0 },
         },
 
-        isActive: { type: Boolean, default: true },
+        is_active: { type: Boolean, default: true },
     },
     {
         timestamps: true,
@@ -64,16 +59,16 @@ const QuestionSchema = new mongoose.Schema(
 )
 
 // Indexes
-QuestionSchema.index({ modul: 1, createdBy: 1 })
+QuestionSchema.index({ modul: 1, created_by: 1 })
 QuestionSchema.index({ validated: 1, modul: 1 })
-QuestionSchema.index({ createdBy: 1, createdAt: -1 })
-QuestionSchema.index({ "ratingStats.averageRating": -1 })
+QuestionSchema.index({ created_by: 1, createdAt: -1 })
+QuestionSchema.index({ "rating_stats.average_rating": -1 })
 
 // Compound index for weekly question tracking
 QuestionSchema.index({
-    createdBy: 1,
+    created_by: 1,
     modul: 1,
-    createdAt: -1,
+    created_at: -1,
 })
 
 module.exports = mongoose.model("Question", QuestionSchema)

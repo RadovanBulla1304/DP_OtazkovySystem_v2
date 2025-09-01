@@ -11,13 +11,13 @@ const ProjectSchema = new mongoose.Schema(
             type: String,
             trim: true,
         },
-        assignedUsers: [
+        assigned_users: [
             {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "User",
             },
         ],
-        createdBy: {
+        created_by: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Teacher",
             required: true,
@@ -26,13 +26,13 @@ const ProjectSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: "Subject",
         },
-        dueDate: { type: Date },
+        due_date: { type: Date },
         status: {
             type: String,
             enum: ["active", "completed", "cancelled"],
             default: "active",
         },
-        maxMembers: {
+        max_members: {
             type: Number,
             default: 5,
         },
@@ -45,9 +45,9 @@ const ProjectSchema = new mongoose.Schema(
 )
 
 // Indexes
-ProjectSchema.index({ assignedUsers: 1 })
-ProjectSchema.index({ createdBy: 1 })
+ProjectSchema.index({ assigned_users: 1 })
+ProjectSchema.index({ created_by: 1 })
 ProjectSchema.index({ subject: 1 })
-ProjectSchema.index({ status: 1, dueDate: 1 })
+ProjectSchema.index({ status: 1, due_date: 1 })
 
 module.exports = mongoose.model("Project", ProjectSchema)

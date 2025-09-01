@@ -21,7 +21,7 @@ const UserSchema = new mongoose.Schema(
       trim: true,
     },
     studentNumber: {
-      type: String,
+      type: Number,
       required: true,
       unique: true,
       trim: true,
@@ -52,7 +52,13 @@ const UserSchema = new mongoose.Schema(
         ref: "Project",
       },
     ],
-    totalPoints: { type: Number, default: 0 }, // Cache total points for performance
+    points: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Point",
+      },
+    ],
+
     weeklyQuestionCount: [
       {
         week: { type: Date, required: true }, // Start of week

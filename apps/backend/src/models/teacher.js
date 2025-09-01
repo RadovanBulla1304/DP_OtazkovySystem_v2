@@ -26,9 +26,9 @@ const TeacherSchema = new mongoose.Schema(
             required: true,
             trim: true,
         },
-        isAdmin: { type: Boolean, default: false },
-        isActive: { type: Boolean, default: true },
-        assignedSubjects: [
+        is_admin: { type: Boolean, default: false },
+        is_active: { type: Boolean, default: true },
+        assigned_subjects: [
             {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "Subject",
@@ -44,7 +44,7 @@ const TeacherSchema = new mongoose.Schema(
 
 // Indexes
 TeacherSchema.index({ email: 1 })
-TeacherSchema.index({ assignedSubjects: 1 })
+TeacherSchema.index({ assigned_subjects: 1 })
 
 // Virtual full name
 TeacherSchema.virtual("fullName").get(function () {

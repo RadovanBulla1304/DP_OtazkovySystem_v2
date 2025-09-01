@@ -7,12 +7,12 @@ const QuestionRatingSchema = new mongoose.Schema(
             ref: "Question",
             required: true,
         },
-        questionCreator: {
+        question_creator: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
             required: true,
         },
-        ratedBy: {
+        rated_by: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
             required: true,
@@ -30,10 +30,10 @@ const QuestionRatingSchema = new mongoose.Schema(
         },
 
         // Creator's response to this rating
-        creatorResponse: {
+        creator_response: {
             agreed: { type: Boolean },
             comment: { type: String, trim: true },
-            respondedAt: { type: Date },
+            responded_at: { type: Date },
         },
     },
     {
@@ -43,10 +43,10 @@ const QuestionRatingSchema = new mongoose.Schema(
 
 // Indexes
 QuestionRatingSchema.index({ question: 1 })
-QuestionRatingSchema.index({ questionCreator: 1 })
-QuestionRatingSchema.index({ ratedBy: 1 })
+QuestionRatingSchema.index({ question_creator: 1 })
+QuestionRatingSchema.index({ rated_by: 1 })
 
 // Prevent duplicate ratings
-QuestionRatingSchema.index({ question: 1, ratedBy: 1 }, { unique: true })
+QuestionRatingSchema.index({ question: 1, rated_by: 1 }, { unique: true })
 
 module.exports = mongoose.model("QuestionRating", QuestionRatingSchema)

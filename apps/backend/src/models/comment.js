@@ -7,12 +7,12 @@ const CommentSchema = new mongoose.Schema(
             required: true,
             trim: true,
         },
-        forumQuestion: {
+        forum_question: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "ForumQuestion",
             required: true,
         },
-        createdBy: {
+        created_by: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
             required: true,
@@ -30,16 +30,29 @@ const CommentSchema = new mongoose.Schema(
                     type: mongoose.Schema.Types.ObjectId,
                     ref: "User",
                 },
-                createdAt: {
+                created_at: {
                     type: Date,
                     default: Date.now,
                 },
             },
         ],
-        likesCount: { type: Number, default: 0 },
+        dislikes: [
+            {
+                user: {
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: "User",
+                },
+                created_at: {
+                    type: Date,
+                    default: Date.now,
+                },
+            },
+        ],
+        likes_count: { type: Number, default: 0 },
+        dislikes_count: { type: Number, default: 0 },
 
-        isEdited: { type: Boolean, default: false },
-        editedAt: { type: Date },
+        is_edited: { type: Boolean, default: false },
+        edited_at: { type: Date },
     },
     {
         timestamps: true,
@@ -47,8 +60,8 @@ const CommentSchema = new mongoose.Schema(
 )
 
 // Indexes
-CommentSchema.index({ forumQuestion: 1, parent: 1, createdAt: 1 })
-CommentSchema.index({ createdBy: 1 })
+CommentSchema.index({ forum_question: 1, parent: 1, created_at: 1 })
+CommentSchema.index({ created_by: 1 })
 CommentSchema.index({ parent: 1 })
 
 // Virtual for replies

@@ -19,16 +19,16 @@ const TestAttemptSchema = new mongoose.Schema(
                     ref: "Question",
                     required: true,
                 },
-                selectedAnswer: {
+                selected_answer: {
                     type: String,
                     enum: ["a", "b", "c", "d"],
                     required: true,
                 },
-                isCorrect: {
+                is_correct: {
                     type: Boolean,
                     required: true,
                 },
-                timeSpent: {
+                time_spent: {
                     // in seconds
                     type: Number,
                     default: 0,
@@ -52,7 +52,7 @@ const TestAttemptSchema = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
-        totalTimeSpent: {
+        totalTime_spent: {
             // in seconds
             type: Number,
             default: 0,

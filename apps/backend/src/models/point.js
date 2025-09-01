@@ -7,7 +7,7 @@ const PointSchema = new mongoose.Schema(
             ref: "User",
             required: true,
         },
-        assignedBy: {
+        assigned_by: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Teacher",
             required: true,
@@ -33,12 +33,12 @@ const PointSchema = new mongoose.Schema(
             ],
             default: "other",
         },
-        relatedEntity: {
-            entityType: {
+        related_entity: {
+            entity_type: {
                 type: String,
                 enum: ["Question", "Test", "ForumQuestion", "Project"],
             },
-            entityId: {
+            entity_id: {
                 type: mongoose.Schema.Types.ObjectId,
             },
         },
@@ -50,7 +50,7 @@ const PointSchema = new mongoose.Schema(
 
 // Indexes
 PointSchema.index({ student: 1, createdAt: -1 })
-PointSchema.index({ assignedBy: 1 })
+PointSchema.index({ assigned_by: 1 })
 PointSchema.index({ category: 1 })
 
 module.exports = mongoose.model("Point", PointSchema)

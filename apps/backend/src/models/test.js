@@ -31,7 +31,7 @@ const TestSchema = new mongoose.Schema(
             ref: "Subject",
             required: true,
         },
-        selectedModules: [
+        selected_modules: [
             {
                 // Modules from which questions will be selected
                 type: mongoose.Schema.Types.ObjectId,
@@ -39,21 +39,21 @@ const TestSchema = new mongoose.Schema(
                 required: true,
             },
         ],
-        createdBy: {
+        created_by: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Teacher",
             required: true,
         },
-        isPublished: {
+        is_published: {
             type: Boolean,
             default: false,
         },
-        maxAttempts: {
+        max_attempts: {
             type: Number,
             default: 1,
             min: 1,
         },
-        passingScore: {
+        passing_score: {
             type: Number,
             default: 60,
             min: 0,

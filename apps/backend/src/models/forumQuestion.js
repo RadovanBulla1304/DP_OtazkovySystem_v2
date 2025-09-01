@@ -24,7 +24,7 @@ const ForumQuestionSchema = new mongoose.Schema(
             ref: "Module",
             required: true,
         },
-        createdBy: {
+        created_by: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
             required: true,
@@ -37,7 +37,7 @@ const ForumQuestionSchema = new mongoose.Schema(
                     type: mongoose.Schema.Types.ObjectId,
                     ref: "User",
                 },
-                createdAt: {
+                created_at: {
                     type: Date,
                     default: Date.now,
                 },
@@ -49,7 +49,7 @@ const ForumQuestionSchema = new mongoose.Schema(
                     type: mongoose.Schema.Types.ObjectId,
                     ref: "User",
                 },
-                createdAt: {
+                created_at: {
                     type: Date,
                     default: Date.now,
                 },
@@ -57,12 +57,12 @@ const ForumQuestionSchema = new mongoose.Schema(
         ],
 
         // Cached counts for performance
-        likesCount: { type: Number, default: 0 },
-        dislikesCount: { type: Number, default: 0 },
-        commentsCount: { type: Number, default: 0 },
+        likes_count: { type: Number, default: 0 },
+        dislikes_count: { type: Number, default: 0 },
+        comments_count: { type: Number, default: 0 },
 
-        isPinned: { type: Boolean, default: false },
-        isClosed: { type: Boolean, default: false },
+        is_pinned: { type: Boolean, default: false },
+        is_closed: { type: Boolean, default: false },
     },
     {
         timestamps: true,
@@ -72,10 +72,10 @@ const ForumQuestionSchema = new mongoose.Schema(
 )
 
 // Indexes
-ForumQuestionSchema.index({ modul: 1, createdAt: -1 })
-ForumQuestionSchema.index({ createdBy: 1 })
+ForumQuestionSchema.index({ modul: 1, created_at: -1 })
+ForumQuestionSchema.index({ created_by: 1 })
 ForumQuestionSchema.index({ tags: 1 })
-ForumQuestionSchema.index({ isPinned: -1, createdAt: -1 })
+ForumQuestionSchema.index({ is_pinned: -1, created_at: -1 })
 
 // Virtual for comments
 ForumQuestionSchema.virtual("comments", {

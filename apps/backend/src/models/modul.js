@@ -8,7 +8,7 @@ const ModuleSchema = new mongoose.Schema(
             trim: true,
         },
         description: { type: String, trim: true },
-        weekNumber: {
+        week_number: {
             type: Number,
             required: true,
             min: 1,
@@ -26,13 +26,13 @@ const ModuleSchema = new mongoose.Schema(
             ref: "Subject",
             required: true,
         },
-        createdBy: {
+        created_by: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Teacher",
             required: true,
         },
-        isActive: { type: Boolean, default: true },
-        requiredQuestionsPerUser: { type: Number, default: 2 }, // Configurable per module
+        is_active: { type: Boolean, default: true },
+        required_questions_per_user: { type: Number, default: 2 }, // Configurable per module
     },
     {
         timestamps: true,
@@ -42,9 +42,9 @@ const ModuleSchema = new mongoose.Schema(
 )
 
 // Indexes
-ModuleSchema.index({ subject: 1, weekNumber: 1 })
+ModuleSchema.index({ subject: 1, week_number: 1 })
 ModuleSchema.index({ date_start: 1, date_end: 1 })
-ModuleSchema.index({ createdBy: 1 })
+ModuleSchema.index({ created_by: 1 })
 
 // Virtual for duration
 ModuleSchema.virtual("duration_days").get(function () {

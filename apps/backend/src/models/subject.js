@@ -17,21 +17,21 @@ const SubjectSchema = new mongoose.Schema(
         }, // Subject code like "MATH101"
         description: { type: String, trim: true },
 
-        assignedTeachers: [
+        assigned_teachers: [
             {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "Teacher",
             },
         ],
 
-        assignedStudents: [
+        assigned_students: [
             {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "User",
             },
         ],
 
-        isActive: { type: Boolean, default: true },
+        is_active: { type: Boolean, default: true },
     },
     {
         timestamps: true,
@@ -43,8 +43,8 @@ const SubjectSchema = new mongoose.Schema(
 // Indexes
 SubjectSchema.index({ name: 1 })
 SubjectSchema.index({ code: 1 })
-SubjectSchema.index({ assignedTeachers: 1 })
-SubjectSchema.index({ assignedStudents: 1 })
+SubjectSchema.index({ assigned_teachers: 1 })
+SubjectSchema.index({ assigned_students: 1 })
 
 // Virtual for modules
 SubjectSchema.virtual("modules", {

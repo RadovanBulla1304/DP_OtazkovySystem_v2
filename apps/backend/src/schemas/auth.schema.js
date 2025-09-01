@@ -19,7 +19,7 @@ const signupSchema = Joi.object({
   }),
   email: Joi.string().email({ tlds: { allow: false } }).required(),
   password: Joi.string().required(),
-  passwordConfirmation: Joi.string().required(),
+  password_confirmation: Joi.string().required(),
 });
 
 
