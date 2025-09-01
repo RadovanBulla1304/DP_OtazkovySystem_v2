@@ -8,10 +8,9 @@ const crypto = require("crypto");
 exports.Register = [
   validate(signupSchema),
   async (req, res) => {
-    const { email, password, passwordConfirmation, name, surname } = validated(req);
-
+    const { email, password, password_confirmation, name, surname, groupNumber, studentNumber } = validated(req);
     // Check if passwords match
-    if (password !== passwordConfirmation) {
+    if (password !== password_confirmation) {
       throwError(req.t("validation.passwords_do_not_match"), 400);
     }
 
@@ -32,6 +31,8 @@ exports.Register = [
       name,
       surname,
       email,
+      groupNumber,
+      studentNumber,
       password: hashedPassword,
       isActive: true, // or false if you want email verification flow
     });

@@ -9,9 +9,11 @@ import AvTimerIcon from '@mui/icons-material/AvTimer';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import DashboardIcon from '@mui/icons-material/Dashboard';
+import GroupIcon from '@mui/icons-material/Group';
 import MenuIcon from '@mui/icons-material/Menu';
 import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
 import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
+import SchoolIcon from '@mui/icons-material/School';
 import ViewModuleIcon from '@mui/icons-material/ViewModule';
 import { Button, Container, ListItemButton, Stack, Tooltip, useMediaQuery } from '@mui/material';
 import AppBar from '@mui/material/AppBar';
@@ -31,7 +33,6 @@ import * as React from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import ProfileMenu from './profile-menu.component';
 import TeamSwitcher from './TeamSwitcher';
-
 const drawerWidth = 240;
 const collapsedDrawerWidth = 65;
 
@@ -186,18 +187,18 @@ const MainLayout = ({ children }) => {
   if (user?.isAdmin) {
     drawerOption.push(
       { isHeader: true, title: 'Správca' },
-      { title: 'Dashboard', navTo: '/', icon: <DashboardIcon /> }
-      // { title: 'Používatelia', navTo: '/admin/users', icon: <GroupIcon /> },
+      { title: 'Používatelia', navTo: '/admin/users', icon: <GroupIcon /> },
       // { isHeader: true, title: 'Funkcie' },
-      // { title: 'Predmety', navTo: '/subjects', icon: <SchoolIcon /> }
+      { title: 'Predmety', navTo: '/subjects', icon: <SchoolIcon /> }
     );
   }
 
   drawerOption = drawerOption.concat([
     { isHeader: true, title: 'Obsah' },
     // { title: 'Moduly', navTo: '/moduls', icon: <ViewModuleIcon /> },
-    { title: 'Projekty', navTo: '/moduls', icon: <AccountTreeIcon /> },
-    { title: 'Fórum', navTo: '/moduls', icon: <ViewModuleIcon /> }
+    { title: 'Dashboard', navTo: '/', icon: <DashboardIcon /> },
+    { title: 'Projekty', navTo: '/projects', icon: <AccountTreeIcon /> },
+    { title: 'Fórum', navTo: '/forum', icon: <ViewModuleIcon /> }
   ]);
   if (!user?.isAdmin) {
     drawerOption.push({

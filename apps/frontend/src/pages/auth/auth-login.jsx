@@ -77,7 +77,7 @@ export const AuthPage = () => {
             <Link component={RouterLink} to="/reset-password" variant="body2">
               Zabudnuté heslo
             </Link>
-            <Link component={RouterLink} to="/signup" variant="body2">
+            <Link component={RouterLink} to="/auth/register" variant="body2">
               Registruj sa
             </Link>
           </Box>

@@ -12,6 +12,7 @@ import {
   Popover,
   Typography
 } from '@mui/material';
+import PropTypes from 'prop-types';
 import React from 'react';
 
 import * as authService from '@app/pages/auth/authService';
@@ -244,6 +245,10 @@ const TeamSwitcher = ({ collapsed = false }) => {
       />
     </>
   );
+};
+
+TeamSwitcher.propTypes = {
+  collapsed: PropTypes.bool
 };
 
 export default TeamSwitcher;

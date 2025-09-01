@@ -1,3 +1,9 @@
+import axios from 'axios';
+
+export const registerUser = async (data) => {
+  const response = await axios.post('api/public/register', data);
+  return response.data;
+};
 export const getUserFromStorage = () => {
   const user = localStorage.getItem('user');
 

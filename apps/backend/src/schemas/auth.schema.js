@@ -18,6 +18,13 @@ const signupSchema = Joi.object({
     "string.empty": "validation.empty_surname",
   }),
   email: Joi.string().email({ tlds: { allow: false } }).required(),
+  groupNumber: Joi.string().min(1).required().messages({
+    "string.empty": "validation.empty_groupNumber",
+  }),
+  studentNumber: Joi.number().required().messages({
+    "number.base": "validation.invalid_studentNumber",
+    "any.required": "validation.empty_studentNumber",
+  }),
   password: Joi.string().required(),
   password_confirmation: Joi.string().required(),
 });
