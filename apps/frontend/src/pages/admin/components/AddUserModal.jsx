@@ -11,28 +11,40 @@ import {
   DialogContent,
   DialogTitle,
   FormControlLabel,
-  TextField
+  TextField,
+  ToggleButton,
+  ToggleButtonGroup
 } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
+import { createTeacherSchema } from '../schemas/createTeacher.schema';
 import { createUserSchema } from '../schemas/createUser.schema';
 
 const AddUserModal = () => {
   const [open, setOpen] = React.useState(false);
   const [addUser, { isLoading }] = useCreateUserMutation();
+  const [userType, setUserType] = React.useState('user');
 
   const {
     register,
     handleSubmit,
-    formState: { errors }
+    formState: { errors },
+    reset
   } = useForm({
     mode: 'onBlur',
-    resolver: joiResolver(createUserSchema),
+    resolver: joiResolver(userType === 'user' ? createUserSchema : createTeacherSchema),
     defaultValues: {
       isActive: true,
       isAdmin: false
     }
   });
+
+  const handleUserTypeChange = (event, newType) => {
+    if (newType) {
+      setUserType(newType);
+      reset();
+    }
+  };
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -78,10 +90,20 @@ const AddUserModal = () => {
             }
           }}
         >
-          <DialogTitle>Pridaj používateľa</DialogTitle>
+          <DialogTitle>Pridaj používateľa alebo učiteľa</DialogTitle>
+          <ToggleButtonGroup
+            color="primary"
+            value={userType}
+            exclusive
+            onChange={handleUserTypeChange}
+            sx={{ mb: 2, alignSelf: 'center' }}
+          >
+            <ToggleButton value="user">Používateľ</ToggleButton>
+            <ToggleButton value="teacher">Učiteľ</ToggleButton>
+          </ToggleButtonGroup>
 
           <TextField
-            label="Name"
+            label="Meno"
             variant="outlined"
             {...register('name')}
             error={!!errors.name}
@@ -90,7 +112,7 @@ const AddUserModal = () => {
           />
 
           <TextField
-            label="Surname"
+            label="Priezvisko"
             variant="outlined"
             {...register('surname')}
             error={!!errors.surname}
@@ -107,18 +129,38 @@ const AddUserModal = () => {
             fullWidth
           />
 
-          <FormControlLabel control={<Checkbox {...register('isActive')} />} label="Is Active" />
-          {errors.isActive && (
-            <p style={{ color: 'red', fontSize: '0.875rem' }}>{errors.isActive.message}</p>
+          {userType === 'user' && (
+            <>
+              <TextField
+                label="Skupina"
+                variant="outlined"
+                {...register('groupNumber')}
+                error={!!errors.groupNumber}
+                helperText={errors.groupNumber?.message}
+                fullWidth
+              />
+              <TextField
+                label="Študentské číslo"
+                variant="outlined"
+                type="number"
+                {...register('studentNumber')}
+                error={!!errors.studentNumber}
+                helperText={errors.studentNumber?.message}
+                fullWidth
+              />
+              <FormControlLabel control={<Checkbox {...register('isActive')} />} label="Aktívny" />
+              <FormControlLabel control={<Checkbox {...register('isAdmin')} />} label="Admin" />
+            </>
           )}
-
-          <FormControlLabel control={<Checkbox {...register('isAdmin')} />} label="Is Admin" />
-          {errors.isAdmin && (
-            <p style={{ color: 'red', fontSize: '0.875rem' }}>{errors.isAdmin.message}</p>
+          {userType === 'teacher' && (
+            <>
+              <FormControlLabel control={<Checkbox {...register('is_active')} />} label="Aktívny" />
+              <FormControlLabel control={<Checkbox {...register('is_admin')} />} label="Admin" />
+            </>
           )}
 
           <TextField
-            label="Password"
+            label="Heslo"
             type="password"
             variant="outlined"
             {...register('password')}
@@ -128,12 +170,15 @@ const AddUserModal = () => {
           />
 
           <TextField
-            label="Confirm Password"
+            label="Potvrďte heslo"
             type="password"
             variant="outlined"
-            {...register('passwordConfirmation')}
-            error={!!errors.passwordConfirmation}
-            helperText={errors.passwordConfirmation?.message}
+            {...register(userType === 'user' ? 'passwordConfirmation' : 'password_confirmation')}
+            error={!!errors[userType === 'user' ? 'passwordConfirmation' : 'password_confirmation']}
+            helperText={
+              errors[userType === 'user' ? 'passwordConfirmation' : 'password_confirmation']
+                ?.message
+            }
             fullWidth
           />
 
