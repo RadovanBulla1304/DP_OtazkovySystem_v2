@@ -157,7 +157,7 @@ const AddModulModal = ({ open, onClose, subjectId, onSuccess }) => {
 AddModulModal.propTypes = {
   open: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
-  subjectId: PropTypes.string.isRequired,
+  subjectId: PropTypes.string,
   onSuccess: PropTypes.func
 };
 

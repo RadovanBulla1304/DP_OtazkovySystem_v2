@@ -1,14 +1,5 @@
-// Get all teachers
-exports.getAllTeachers = [
-  async (req, res) => {
-    try {
-      const teachers = await Teacher.find({}, { password: 0, salt: 0, __v: 0 });
-      res.status(200).send(teachers);
-    } catch (err) {
-      throwError(err.message, 500);
-    }
-  },
-];
+
+
 const { body, validationResult, matchedData } = require("express-validator");
 const { throwError, errorFormatter } = require("../util/universal");
 const crypto = require("crypto");
@@ -96,7 +87,17 @@ exports.getAllUser = [
     }
   },
 ];
-
+// Get all teachers
+exports.getAllTeachers = [
+  async (req, res) => {
+    try {
+      const teachers = await Teacher.find({}, { password: 0, salt: 0, __v: 0 });
+      res.status(200).send(teachers);
+    } catch (err) {
+      throwError(err.message, 500);
+    }
+  },
+];
 exports.createUser = [
   validate(createUserSchema),
   async (req, res) => {
@@ -215,4 +216,19 @@ exports.removeUser = async (req, res) => {
     throwError(req.t("messages.record_not_exists"), 404);
   }
 };
+// Remove a teacher by ID
+exports.removeTeacher = async (req, res) => {
+  const record = await Teacher.findOne({ _id: req.params.id });
+  if (record) {
+    try {
+      await record.deleteOne();
+      res.status(200).send({});
+    } catch (error) {
+      throwError(`${req.t("messages.database_error")}: ${error.message}`, 500);
+    }
+  } else {
+    throwError(req.t("messages.record_not_exists"), 404);
+  }
+};
+
 

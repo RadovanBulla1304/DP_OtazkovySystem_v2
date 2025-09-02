@@ -6,6 +6,7 @@ const {
   createUser,
   createTeacher,
   getAllTeachers,
+  removeTeacher,
 } = require("../controllers/adminController");
 
 
@@ -18,5 +19,6 @@ router.post("/teacher", createTeacher);
 router.post("/user", createUser);
 router.put("/user/:id", editUser);
 router.delete("/user/:id", removeUser);
+router.delete("/teacher/:id", removeTeacher);
 
 module.exports = router;

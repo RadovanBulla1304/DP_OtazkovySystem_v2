@@ -1,10 +1,23 @@
+import ConfirmationDialog from '@app/components/ConfirmationDialog';
 import CenteredCheckIcon from '@app/components/table/CenteredCheckIcon';
-import { useGetAllTeachersQuery } from '@app/redux/api';
-import { Paper, Typography } from '@mui/material';
+import { useGetAllTeachersQuery, useRemoveTeacherMutation } from '@app/redux/api';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { IconButton, Paper, Tooltip, Typography } from '@mui/material';
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
+import { toast } from 'react-toastify';
 
 const TeacherList = () => {
   const { data = [], isLoading } = useGetAllTeachersQuery();
+  const [removeTeacher] = useRemoveTeacherMutation();
+
+  const onRemoveHandler = async (id) => {
+    const response = await removeTeacher(id);
+    if (!response.error) {
+      toast.success('Učiteľ bol úspešne odstránený');
+    } else {
+      toast.error('Chyba pri odstraňovaní učiteľa: ' + response.error?.data?.message);
+    }
+  };
 
   const columns = [
     { field: 'name', headerName: 'Meno', flex: 1, minWidth: 150 },
@@ -21,6 +34,24 @@ const TeacherList = () => {
       headerName: 'Účet aktívny',
       flex: 1,
       renderCell: (value) => (value.row.isActive ? <CenteredCheckIcon /> : null)
+    },
+    {
+      field: 'actions',
+      type: 'actions',
+      headerName: 'Akcie',
+      getActions: (params) => [
+        <ConfirmationDialog
+          key={'delete'}
+          title={`Naozaj chcete odstrániť učiteľa ${params.row.name} ${params.row.surname}?`}
+          onAccept={() => onRemoveHandler(params.row._id)}
+        >
+          <Tooltip title="Odstráň učiteľa">
+            <IconButton color="error">
+              <DeleteIcon />
+            </IconButton>
+          </Tooltip>
+        </ConfirmationDialog>
+      ]
     }
   ];
 
