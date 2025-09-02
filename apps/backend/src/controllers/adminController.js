@@ -1,3 +1,14 @@
+// Get all teachers
+exports.getAllTeachers = [
+  async (req, res) => {
+    try {
+      const teachers = await Teacher.find({}, { password: 0, salt: 0, __v: 0 });
+      res.status(200).send(teachers);
+    } catch (err) {
+      throwError(err.message, 500);
+    }
+  },
+];
 const { body, validationResult, matchedData } = require("express-validator");
 const { throwError, errorFormatter } = require("../util/universal");
 const crypto = require("crypto");

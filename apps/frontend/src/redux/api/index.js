@@ -48,6 +48,13 @@ export const api = createApi({
       }),
       invalidatesTags: (result) => (result ? ['Teachers'] : [])
     }),
+    getAllTeachers: builder.query({
+      query: () => ({
+        url: '/admin/getAllTeachers',
+        method: 'GET'
+      }),
+      providesTags: ['Teachers']
+    }),
     getUserById: builder.query({
       query: (userId) => ({
         url: `/user/${userId}`,
@@ -318,6 +325,7 @@ export const {
   useUpdateUserMutation,
   useRemoveUserMutation,
   useGetUsersListQuery,
+  useGetAllTeachersQuery,
   // SUBJECTS
   useCreateSubjectMutation,
   useGetAllSubjectsQuery,

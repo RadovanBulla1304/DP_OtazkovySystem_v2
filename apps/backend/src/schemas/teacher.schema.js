@@ -56,10 +56,10 @@ const updateTeacherSchema = Joi.object({
         .messages({
             'string.email': 'Email must be a valid email address',
         }),
-    is_admin: Joi.boolean().messages({
+    isAdmin: Joi.boolean().messages({
         'boolean.base': 'isAdmin must be a boolean value',
     }),
-    is_active: Joi.boolean().messages({
+    isActive: Joi.boolean().messages({
         'boolean.base': 'isActive must be a boolean value',
     }),
     assigned_subjects: Joi.array().items(objectId),

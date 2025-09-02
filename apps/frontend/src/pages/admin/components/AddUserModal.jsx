@@ -172,8 +172,8 @@ const AddUserModal = () => {
           )}
           {userType === 'teacher' && (
             <>
-              <FormControlLabel control={<Checkbox {...register('is_active')} />} label="Aktívny" />
-              <FormControlLabel control={<Checkbox {...register('is_admin')} />} label="Admin" />
+              <FormControlLabel control={<Checkbox {...register('isActive')} />} label="Aktívny" />
+              <FormControlLabel control={<Checkbox {...register('isAdmin')} />} label="Admin" />
             </>
           )}
 

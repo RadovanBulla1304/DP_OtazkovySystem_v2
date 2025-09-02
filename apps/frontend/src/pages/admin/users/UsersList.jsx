@@ -9,6 +9,7 @@ import { toast } from 'react-toastify';
 import AddUserModal from '../components/AddUserModal';
 import AssignToSubject from '../components/AssignToSubject';
 import EditUserModal from '../components/EditUserModal';
+import TeacherList from './TeacherList';
 
 const UsersList = () => {
   const { data, isLoading } = useGetUsersListQuery();
@@ -150,6 +151,9 @@ const UsersList = () => {
         userIds={selectedUserIds}
         onSuccess={handleAssignSuccess}
       />
+
+      {/* Teacher Table */}
+      <TeacherList />
     </Box>
   );
 };

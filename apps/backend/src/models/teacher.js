@@ -26,8 +26,8 @@ const TeacherSchema = new mongoose.Schema(
             required: true,
             trim: true,
         },
-        is_admin: { type: Boolean, default: false },
-        is_active: { type: Boolean, default: true },
+        isAdmin: { type: Boolean, default: false },
+        isActive: { type: Boolean, default: true },
         assigned_subjects: [
             {
                 type: mongoose.Schema.Types.ObjectId,
