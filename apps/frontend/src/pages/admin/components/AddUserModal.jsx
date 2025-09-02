@@ -1,7 +1,7 @@
 import React from 'react';
 
 import ErrorNotifier from '@app/components/ErrorNotifier';
-import { useCreateUserMutation } from '@app/redux/api';
+import { useCreateTeacherMutation, useCreateUserMutation } from '@app/redux/api';
 import { joiResolver } from '@hookform/resolvers/joi';
 import {
   Button,
@@ -17,12 +17,13 @@ import {
 } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
-import { createTeacherSchema } from '../schemas/createTeacher.schema';
-import { createUserSchema } from '../schemas/createUser.schema';
+import { createTeacherSchema } from '../schemas/teacher.schema';
+import { createUserSchema } from '../schemas/user.schema';
 
 const AddUserModal = () => {
   const [open, setOpen] = React.useState(false);
-  const [addUser, { isLoading }] = useCreateUserMutation();
+  const [addUser, { isLoading: isUserLoading }] = useCreateUserMutation();
+  const [addTeacher, { isLoading: isTeacherLoading }] = useCreateTeacherMutation();
   const [userType, setUserType] = React.useState('user');
 
   const {
@@ -56,9 +57,16 @@ const AddUserModal = () => {
 
   const onSubmit = async (data) => {
     try {
-      const response = await addUser(data);
+      let response;
+      if (userType === 'user') {
+        response = await addUser(data);
+      } else {
+        response = await addTeacher(data);
+      }
       if (!response.error) {
-        toast.success('User was successfully added.');
+        toast.success(
+          userType === 'user' ? 'User was successfully added.' : 'Teacher was successfully added.'
+        );
         handleClose();
       } else {
         toast.error(`Error: ${response.error.data.message}`);
@@ -78,16 +86,26 @@ const AddUserModal = () => {
       >
         Pridaj používateľa
       </Button>
-      <Dialog open={open} onClose={handleClose} component="form" onSubmit={handleSubmit(onSubmit)}>
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        component="form"
+        onSubmit={handleSubmit(onSubmit)}
+        maxWidth="md"
+        fullWidth
+      >
         <DialogContent
           sx={{
             display: 'flex',
             flexDirection: 'column',
             gap: 2,
-            mx: 'auto',
+            p: 3,
             minWidth: {
-              md: '30rem'
-            }
+              md: '48rem',
+              sm: '36rem',
+              xs: '100%'
+            },
+            maxWidth: '100%'
           }}
         >
           <DialogTitle>Pridaj používateľa alebo učiteľa</DialogTitle>
@@ -173,11 +191,10 @@ const AddUserModal = () => {
             label="Potvrďte heslo"
             type="password"
             variant="outlined"
-            {...register(userType === 'user' ? 'passwordConfirmation' : 'password_confirmation')}
-            error={!!errors[userType === 'user' ? 'passwordConfirmation' : 'password_confirmation']}
+            {...register(userType === 'user' ? 'passwordConfirmation' : 'passwordConfirmation')}
+            error={!!errors[userType === 'user' ? 'passwordConfirmation' : 'passwordConfirmation']}
             helperText={
-              errors[userType === 'user' ? 'passwordConfirmation' : 'password_confirmation']
-                ?.message
+              errors[userType === 'user' ? 'passwordConfirmation' : 'passwordConfirmation']?.message
             }
             fullWidth
           />
@@ -188,7 +205,7 @@ const AddUserModal = () => {
             <Button onClick={handleClose} color="error" variant="outlined">
               Zruš
             </Button>
-            <Button type="submit" variant="outlined" disabled={isLoading}>
+            <Button type="submit" variant="outlined" disabled={isUserLoading || isTeacherLoading}>
               Pridaj
             </Button>
           </DialogActions>

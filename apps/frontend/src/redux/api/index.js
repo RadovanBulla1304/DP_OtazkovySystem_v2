@@ -40,6 +40,14 @@ export const api = createApi({
       }),
       invalidatesTags: (result) => (result ? ['Users'] : [])
     }),
+    createTeacher: builder.mutation({
+      query: (data) => ({
+        url: '/admin/teacher',
+        method: 'POST',
+        body: data
+      }),
+      invalidatesTags: (result) => (result ? ['Teachers'] : [])
+    }),
     getUserById: builder.query({
       query: (userId) => ({
         url: `/user/${userId}`,
@@ -300,12 +308,13 @@ export const api = createApi({
 });
 
 export const {
-  // USERS
+  // USERS / TEACHERS
   useGetUserMeQuery,
   useLazyGetUserMeQuery,
   useLoginUserMutation,
   useGetUserByIdQuery,
   useCreateUserMutation,
+  useCreateTeacherMutation,
   useUpdateUserMutation,
   useRemoveUserMutation,
   useGetUsersListQuery,

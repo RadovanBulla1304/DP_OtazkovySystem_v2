@@ -21,7 +21,7 @@ import {
 import PropTypes from 'prop-types';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
-import { updateUserSchema } from '../schemas/createUser.schema';
+import { updateUserSchema } from '../schemas/user.schema';
 
 const EditUserModal = ({ userData }) => {
   const [open, setOpen] = React.useState(false);
@@ -65,7 +65,7 @@ const EditUserModal = ({ userData }) => {
   return (
     <>
       <Tooltip title="Uprav používateľa" key={'edit'}>
-        <IconButton color='primary' onClick={handleClickOpen}>
+        <IconButton color="primary" onClick={handleClickOpen}>
           <EditIcon />
         </IconButton>
       </Tooltip>

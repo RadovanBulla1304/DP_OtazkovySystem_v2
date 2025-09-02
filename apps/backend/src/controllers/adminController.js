@@ -4,9 +4,68 @@ const crypto = require("crypto");
 
 const Subject = require("../models/subject");
 const User = require("../models/user");
+const Teacher = require("../models/teacher");
 
 const { validate, validated } = require("../util/validation");
 const { createUserSchema, updateUserSchema } = require("../schemas/user.schema");
+const { createTeacherSchema } = require("../schemas/teacher.schema");
+
+exports.createTeacher = [
+  validate(createTeacherSchema),
+  async (req, res) => {
+    try {
+      const validatedData = validated(req);
+      if (!validatedData) {
+        return res.status(400).json({ message: "Invalid request data" });
+      }
+
+      const {
+        email,
+        password,
+        passwordConfirmation,
+        name,
+        surname,
+        isAdmin,
+        isActive
+      } = validatedData;
+
+      if (password !== passwordConfirmation) {
+        return res.status(400).json({ message: req.t("validation.passwords_not_match") });
+      }
+
+      const existingTeacher = await Teacher.findOne({ email });
+      if (existingTeacher) {
+        return res.status(400).json({ message: req.t("validation.email_already_exist") });
+      }
+
+      const hashedPassword = crypto
+        .createHmac("sha256", process.env.SALT_KEY)
+        .update(password)
+        .digest("hex");
+
+      const isAdminBool = isAdmin === "true" || isAdmin === true;
+      const isActiveBool = isActive === "true" || isActive === true;
+
+      const teacher = new Teacher({
+        email,
+        password: hashedPassword,
+        name,
+        surname,
+        is_admin: isAdminBool,
+        is_active: isActiveBool !== undefined ? isActiveBool : true
+      });
+
+      await teacher.save();
+
+      res.status(201).send({ email: teacher.email });
+    } catch (err) {
+      console.error("Error creating teacher:", err);
+      res.status(500).json({
+        message: `${req.t("messages.database_error")}: ${err.message}`,
+      });
+    }
+  },
+];
 const { createSubject, editSubject } = require("../schemas/subject.schema");
 
 exports.getAllUser = [
@@ -39,7 +98,17 @@ exports.createUser = [
         return res.status(400).json({ message: "Invalid request data" });
       }
 
-      const { email, password, passwordConfirmation, ...rest } = validatedData;
+      const {
+        email,
+        password,
+        passwordConfirmation,
+        name,
+        surname,
+        groupNumber,
+        studentNumber,
+        isAdmin,
+        isActive
+      } = validatedData;
 
       // Check if passwords match
       if (password !== passwordConfirmation) {
@@ -59,16 +128,19 @@ exports.createUser = [
         .digest("hex");
 
       // Convert string boolean values to actual booleans if needed
-      const isAdmin = rest.isAdmin === "true" || rest.isAdmin === true;
-      const isActive = rest.isActive === "true" || rest.isActive === true;
+      const isAdminBool = isAdmin === "true" || isAdmin === true;
+      const isActiveBool = isActive === "true" || isActive === true;
 
       // Create and save the new user
       const user = new User({
         email,
         password: hashedPassword,
-        isAdmin,
-        isActive: isActive !== undefined ? isActive : true,
-        ...rest,
+        name,
+        surname,
+        groupNumber,
+        studentNumber,
+        isAdmin: isAdminBool,
+        isActive: isActiveBool !== undefined ? isActiveBool : true
       });
 
       await user.save();
