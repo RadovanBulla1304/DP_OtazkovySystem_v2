@@ -14,13 +14,13 @@ const TeacherList = () => {
       field: 'is_admin',
       headerName: 'Admin účet',
       flex: 1,
-      renderCell: (value) => (value.row.is_admin ? <CenteredCheckIcon /> : null)
+      renderCell: (value) => (value.row.isAdmin ? <CenteredCheckIcon /> : null)
     },
     {
       field: 'is_active',
       headerName: 'Účet aktívny',
       flex: 1,
-      renderCell: (value) => (value.row.is_active ? <CenteredCheckIcon /> : null)
+      renderCell: (value) => (value.row.isActive ? <CenteredCheckIcon /> : null)
     }
   ];
 

@@ -37,7 +37,8 @@ const drawerWidth = 240;
 const collapsedDrawerWidth = 65;
 
 // Animation constants
-const animationDuration = '300ms';
+const animationDuration = '300ms'; // for CSS
+const animationDurationMs = 300; // for JS/props
 const customEasing = 'cubic-bezier(0.4, 0, 0.2, 1)'; // Material Design recommended easing
 
 // Styled components with optimized transitions
@@ -277,7 +278,7 @@ const MainLayout = ({ children }) => {
           ModalProps={{
             keepMounted: true,
             BackdropProps: {
-              transitionDuration: animationDuration
+              transitionDuration: animationDurationMs
             }
           }}
           sx={{
@@ -506,12 +507,8 @@ SectionHeader.propTypes = {
   collapsed: PropTypes.bool.isRequired
 };
 
-MainLayout.defaultProps = {
-  children: null
-};
-SectionHeader.defaultProps = {
-  title: '',
-  collapsed: false
-};
+// Use default parameter values instead of defaultProps for function components
+// MainLayout: children = null by default
+// SectionHeader: title = '', collapsed = false by default
 
 export default MainLayout;
