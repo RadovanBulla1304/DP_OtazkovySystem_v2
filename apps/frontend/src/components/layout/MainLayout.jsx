@@ -196,6 +196,7 @@ const MainLayout = ({ children }) => {
 
   drawerOption = drawerOption.concat([
     { isHeader: true, title: 'Obsah' },
+
     // { title: 'Moduly', navTo: '/moduls', icon: <ViewModuleIcon /> },
     { title: 'Dashboard', navTo: '/', icon: <DashboardIcon /> },
     { title: 'Projekty', navTo: '/projects', icon: <AccountTreeIcon /> },
@@ -368,8 +369,45 @@ const MainLayout = ({ children }) => {
             />
           </Link>
         </LogoContainer>
+
         <Stack justifyContent="space-between" direction="column" flexGrow={2}>
           <List component="nav" sx={{ overflow: 'hidden' }}>
+            <Box
+              sx={{
+                px: 2,
+                mt: 'auto',
+                mb: 2,
+                transition: `all ${animationDuration} ${customEasing}`,
+                willChange: 'transform, opacity',
+                transform: 'translateZ(0)'
+              }}
+            >
+              <Box
+                sx={{
+                  flexDirection: 'column',
+                  display: 'flex',
+                  justifyContent: drawerCollapsed ? 'center' : 'flex-start',
+                  width: '100%'
+                }}
+              >
+                {!drawerCollapsed && (
+                  <Typography
+                    variant="subtitle2"
+                    sx={{
+                      mb: 1,
+                      transition: `opacity ${animationDuration} ${customEasing}`,
+                      opacity: drawerCollapsed ? 0 : 1,
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis'
+                    }}
+                  >
+                    Zvoľ predmet:
+                  </Typography>
+                )}
+                <TeamSwitcher collapsed={drawerCollapsed} />
+              </Box>
+            </Box>
             {drawerOption.map((item, index) => {
               if (item.isHeader) {
                 return (
@@ -457,42 +495,6 @@ const MainLayout = ({ children }) => {
               </Box>
             </Box>
           )} */}
-
-          <Box
-            sx={{
-              px: 2,
-              mt: 'auto',
-              mb: 2,
-              transition: `all ${animationDuration} ${customEasing}`,
-              willChange: 'transform, opacity',
-              transform: 'translateZ(0)'
-            }}
-          >
-            {!drawerCollapsed && (
-              <Typography
-                variant="subtitle2"
-                sx={{
-                  mb: 1,
-                  transition: `opacity ${animationDuration} ${customEasing}`,
-                  opacity: drawerCollapsed ? 0 : 1,
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis'
-                }}
-              >
-                Zvoľ predmet:
-              </Typography>
-            )}
-            <Box
-              sx={{
-                display: 'flex',
-                justifyContent: drawerCollapsed ? 'center' : 'flex-start',
-                width: '100%'
-              }}
-            >
-              <TeamSwitcher collapsed={drawerCollapsed} />
-            </Box>
-          </Box>
         </Stack>
       </Box>
     );

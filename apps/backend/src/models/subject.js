@@ -32,6 +32,14 @@ const SubjectSchema = new mongoose.Schema(
         ],
 
         is_active: { type: Boolean, default: true },
+
+        // Array of module references
+        moduls: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "Module",
+            },
+        ],
     },
     {
         timestamps: true,

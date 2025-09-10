@@ -90,10 +90,13 @@ exports.asignUserToSubject = [
                 return res.status(404).json({ message: req.t("messages.record_not_exists") || "One or more users not found" });
             }
 
-            // Add users to assignedUsers if not already present
+            // Add users to assigned_students if not already present
+            if (!Array.isArray(subject.assigned_students)) {
+                subject.assigned_students = [];
+            }
             userIds.forEach(id => {
-                if (!subject.assignedUsers.includes(id)) {
-                    subject.assignedUsers.push(id);
+                if (!subject.assigned_students.map(String).includes(String(id))) {
+                    subject.assigned_students.push(id);
                 }
             });
             await subject.save();

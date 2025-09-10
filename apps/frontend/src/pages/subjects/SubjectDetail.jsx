@@ -94,7 +94,7 @@ const SubjectDetail = () => {
   // Prepare assigned users info
   const assignedUsersInfo = useMemo(() => {
     if (!subject || !users) return [];
-    return (subject.assignedUsers || [])
+    return (subject.assigned_students || [])
       .map((userId) => users.find((u) => u._id === userId))
       .filter(Boolean);
   }, [subject, users]);
@@ -104,13 +104,9 @@ const SubjectDetail = () => {
   const handleCloseModulModal = () => setIsModulModalOpen(false);
 
   const handleModulCreated = async () => {
-    try {
-      await refetchSubject();
-      await refetchModules();
-      handleCloseModulModal();
-    } catch (error) {
-      console.error('Error handling modul creation:', error);
-    }
+    await refetchModules();
+    await refetchSubject(); // always refetch subject right here
+    handleCloseModulModal();
   };
 
   // Edit subject modal handlers
@@ -188,6 +184,7 @@ const SubjectDetail = () => {
       await deleteModul(modulToDelete._id).unwrap();
       toast.success('Modul bol úspešne odstránený');
       await refetchModules();
+      await refetchSubject(); // Refresh subject to update module count
     } catch (error) {
       toast.error('Chyba pri odstraňovaní modulu', error);
     } finally {
@@ -387,10 +384,10 @@ const SubjectDetail = () => {
             </Grid>
             <Grid item xs={12} md={6}>
               <Typography variant="body2" color="text.secondary">
-                Počet modulov: {subject.moduls?.length || 0}
+                Počet modulov: {modules.length}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Počet priradených používateľov: {subject.assignedUsers?.length || 0}
+                Počet priradených používateľov: {subject.assigned_students?.length || 0}
               </Typography>
             </Grid>
           </Grid>
