@@ -62,6 +62,14 @@ export const api = createApi({
       }),
       invalidatesTags: ['Teachers']
     }),
+    updateTeacher: builder.mutation({
+      query: (data) => ({
+        url: `/admin/teacher/${data.teacherId}`,
+        method: 'PUT',
+        body: data.data
+      }),
+      invalidatesTags: (result) => (result ? ['Teachers'] : [])
+    }),
     getUserById: builder.query({
       query: (userId) => ({
         url: `/user/${userId}`,
@@ -331,6 +339,7 @@ export const {
   useCreateTeacherMutation,
   useRemoveTeacherMutation,
   useUpdateUserMutation,
+  useUpdateTeacherMutation,
   useRemoveUserMutation,
   useGetUsersListQuery,
   useGetAllTeachersQuery,

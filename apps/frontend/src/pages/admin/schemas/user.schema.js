@@ -57,8 +57,6 @@ export const updateUserSchema = Joi.object({
     email: Joi.string().email({ tlds: { allow: false } }),
     groupNumber: Joi.string().min(1).max(50),
     studentNumber: Joi.string().min(1).max(50),
-    password: Joi.string().pattern(/^(?=.*[A-Z])(?=.*\d).{6,}$/),
-    passwordConfirmation: Joi.string().valid(Joi.ref('password')),
     isAdmin: Joi.boolean(),
     isActive: Joi.boolean()
 });

@@ -83,32 +83,12 @@ const updateUserSchema = Joi.object({
     'string.min': 'Student number must be at least 1 character',
     'string.max': 'Student number must not exceed 50 characters',
   }),
-  password: Joi.string()
-    .pattern(/^(?=.*[A-Z])(?=.*\d).{6,}$/)
-    .messages({
-      'string.pattern.base': 'Password must be at least 6 characters, include one uppercase letter and one number.',
-    }),
-  passwordConfirmation: Joi.string()
-    .valid(Joi.ref('password'))
-    .messages({
-      'any.only': 'Password confirmation does not match password',
-    }),
   isAdmin: Joi.boolean().messages({
     'boolean.base': 'isAdmin must be a boolean value',
   }),
   isActive: Joi.boolean().messages({
     'boolean.base': 'isActive must be a boolean value',
-  }),
-  assignedSubjects: Joi.array().items(objectId),
-  assignedProjects: Joi.array().items(objectId),
-  points: Joi.array().items(objectId),
-  weeklyQuestionCount: Joi.array().items(
-    Joi.object({
-      week: Joi.date().required(),
-      count: Joi.number(),
-      moduleId: objectId,
-    })
-  ),
+  })
 });
 
 module.exports = {

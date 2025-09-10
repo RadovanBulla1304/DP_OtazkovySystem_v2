@@ -9,7 +9,6 @@ import { toast } from 'react-toastify';
 import AddUserModal from '../components/AddUserModal';
 import AssignToSubject from '../components/AssignToSubject';
 import EditUserModal from '../components/EditUserModal';
-import TeacherList from './TeacherList';
 
 const UsersList = () => {
   const { data, isLoading } = useGetUsersListQuery();
@@ -17,7 +16,6 @@ const UsersList = () => {
 
   // State for selected users
   const [selectedUserIds, setSelectedUserIds] = useState([]);
-
   // State for assign modal
   const [assignModalOpen, setAssignModalOpen] = useState(false);
 
@@ -26,55 +24,46 @@ const UsersList = () => {
     if (!response.error) {
       toast.success('Užívateľ bol úspešne odstránený');
     } else {
-      toast.error('Chyba pri odstranovani pouzivatela: ' + response.error?.data?.message);
+      toast.error('Chyba pri odstraňovaní užívateľa: ' + response.error?.data?.message);
     }
   };
 
+  // Columns definition similar to TeacherList, but for users (students)
   const columns = [
     { field: 'name', headerName: 'Meno', flex: 1, minWidth: 150 },
     { field: 'surname', headerName: 'Priezvisko', flex: 1 },
     { field: 'email', headerName: 'Email', flex: 1 },
+    { field: 'groupNumber', headerName: 'Skupina', flex: 1, minWidth: 100 },
+    { field: 'studentNumber', headerName: 'Študentské číslo', flex: 1, minWidth: 120 },
     {
-      field: 'isAdmin',
-      headerName: 'Admin ucet',
+      field: 'is_active',
+      headerName: 'Účet aktívny',
       flex: 1,
-      renderCell: (value) => {
-        return value.row.isAdmin ? <CenteredCheckIcon /> : null;
-      }
-    },
-    {
-      field: 'isActive',
-      headerName: 'Ucet aktivny',
-      flex: 1,
-      renderCell: (value) => {
-        return value.row.isActive ? <CenteredCheckIcon /> : null;
-      }
+      renderCell: (value) => (value.row.isActive ? <CenteredCheckIcon /> : null)
     },
     {
       field: 'actions',
       type: 'actions',
       headerName: 'Akcie',
-      getActions: (params) => {
-        return [
-          <EditUserModal key={'edit'} userData={params.row} />,
-          <ConfirmationDialog
-            key={'delete'}
-            title={`Naozaj chcete odstranit pouzivatela ${params.row.name} ${params.row.surname} ?`}
-            onAccept={() => onRemoveHandler(params.row._id)}
-          >
-            <Tooltip title="Odstran pouzivatela">
-              <IconButton color="error">
-                <DeleteIcon />
-              </IconButton>
-            </Tooltip>
-          </ConfirmationDialog>
-        ];
-      }
+      getActions: (params) => [
+        <EditUserModal key={'edit'} userData={params.row} isTeacher={false} />, // user
+        <ConfirmationDialog
+          key={'delete'}
+          title={`Naozaj chcete odstranit pouzivatela ${params.row.name} ${params.row.surname} ?`}
+          onAccept={() => onRemoveHandler(params.row._id)}
+        >
+          <Tooltip title="Odstran pouzivatela">
+            <IconButton color="error">
+              <DeleteIcon />
+            </IconButton>
+          </Tooltip>
+        </ConfirmationDialog>
+      ]
     }
   ];
 
   const handleRowClick = (params) => {
-    //NOTE ak chceme na dvojklik nejaku aktivitu
+    // NOTE: ak chceme na dvojklik nejaku aktivitu
     console.log(params);
   };
 
@@ -90,6 +79,8 @@ const UsersList = () => {
   const handleAssignSuccess = () => {
     setSelectedUserIds([]);
   };
+
+  // ...columns are now defined above...
 
   return (
     <Box py={2}>
@@ -131,18 +122,10 @@ const UsersList = () => {
           isRowSelectable={() => true}
           onRowSelectionModelChange={(ids) => setSelectedUserIds(ids)}
           rowSelectionModel={selectedUserIds}
-          slots={{
-            toolbar: GridToolbar
-          }}
-          slotProps={{
-            toolbar: {
-              showQuickFilter: true
-            }
-          }}
+          slots={{ toolbar: GridToolbar }}
+          slotProps={{ toolbar: { showQuickFilter: true } }}
           ignoreDiacritics
-          onRowDoubleClick={(params) => {
-            handleRowClick(params);
-          }}
+          onRowDoubleClick={handleRowClick}
         />
       </Paper>
       <AssignToSubject
@@ -151,9 +134,6 @@ const UsersList = () => {
         userIds={selectedUserIds}
         onSuccess={handleAssignSuccess}
       />
-
-      {/* Teacher Table */}
-      <TeacherList />
     </Box>
   );
 };

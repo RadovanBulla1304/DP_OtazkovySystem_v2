@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { useUpdateUserMutation } from '@app/redux/api';
+import { useUpdateTeacherMutation, useUpdateUserMutation } from '@app/redux/api';
 import EditIcon from '@mui/icons-material/Edit';
 
 import ErrorNotifier from '@app/components/ErrorNotifier';
@@ -21,12 +21,15 @@ import {
 import PropTypes from 'prop-types';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
+import { updateTeacherSchema } from '../schemas/teacher.schema';
 import { updateUserSchema } from '../schemas/user.schema';
 
-const EditUserModal = ({ userData }) => {
+const EditUserModal = ({ userData, isTeacher }) => {
   const [open, setOpen] = React.useState(false);
-  const [updateUser, { isLoading }] = useUpdateUserMutation();
+  const [updateUser, { isLoading: isUserLoading }] = useUpdateUserMutation();
+  const [updateTeacher, { isLoading: isTeacherLoading }] = useUpdateTeacherMutation();
 
+  const schema = isTeacher ? updateTeacherSchema : updateUserSchema;
   const {
     register,
     handleSubmit,
@@ -35,13 +38,15 @@ const EditUserModal = ({ userData }) => {
     formState: { errors }
   } = useForm({
     mode: 'onBlur',
-    resolver: joiResolver(updateUserSchema),
+    resolver: joiResolver(schema),
     defaultValues: {
       name: userData.name || '',
       surname: userData.surname || '',
       email: userData.email || '',
-      isAdmin: userData.isAdmin || false,
-      isActive: userData.isActive || false
+      groupNumber: userData.groupNumber || '',
+      studentNumber: userData.studentNumber || '',
+      isAdmin: userData.isAdmin || userData.is_admin || false,
+      isActive: userData.isActive || userData.is_active || false
     }
   });
 
@@ -55,16 +60,23 @@ const EditUserModal = ({ userData }) => {
   };
 
   const onSubmit = async (data) => {
-    const response = await updateUser({ data, userId: userData._id });
+    let response;
+    if (isTeacher) {
+      response = await updateTeacher({ data, teacherId: userData._id });
+    } else {
+      response = await updateUser({ data, userId: userData._id });
+    }
     if (!response.error) {
-      toast.success('Uzivatel bol uspesne aktualizovany');
+      toast.success(
+        isTeacher ? 'Učiteľ bol úspešne aktualizovaný' : 'Užívateľ bol úspešne aktualizovaný'
+      );
       handleClose();
     }
   };
 
   return (
     <>
-      <Tooltip title="Uprav používateľa" key={'edit'}>
+      <Tooltip title={isTeacher ? 'Uprav učiteľa' : 'Uprav používateľa'} key={'edit'}>
         <IconButton color="primary" onClick={handleClickOpen}>
           <EditIcon />
         </IconButton>
@@ -86,25 +98,23 @@ const EditUserModal = ({ userData }) => {
             }
           }}
         >
-          <DialogTitle>Uprav používateľa</DialogTitle>
+          <DialogTitle>{isTeacher ? 'Uprav učiteľa' : 'Uprav používateľa'}</DialogTitle>
           <TextField
-            label="Name"
+            label="Meno"
             variant="outlined"
             {...register('name')}
             error={!!errors.name}
             helperText={errors.name?.message}
             fullWidth
           />
-
           <TextField
-            label="Surname"
+            label="Priezvisko"
             variant="outlined"
             {...register('surname')}
             error={!!errors.surname}
             helperText={errors.surname?.message}
             fullWidth
           />
-
           <TextField
             label="Email"
             variant="outlined"
@@ -113,39 +123,56 @@ const EditUserModal = ({ userData }) => {
             helperText={errors.email?.message}
             fullWidth
           />
-
+          {!isTeacher && (
+            <>
+              <TextField
+                label="Skupina"
+                variant="outlined"
+                {...register('groupNumber')}
+                error={!!errors.groupNumber}
+                helperText={errors.groupNumber?.message}
+                fullWidth
+              />
+              <TextField
+                label="Študentské číslo"
+                variant="outlined"
+                {...register('studentNumber')}
+                error={!!errors.studentNumber}
+                helperText={errors.studentNumber?.message}
+                fullWidth
+              />
+            </>
+          )}
           <Controller
             name="isAdmin"
-            control={control} // This comes from `useForm`
-            defaultValue={false} // Default value for the checkbox
+            control={control}
+            defaultValue={false}
             render={({ field }) => (
               <FormControlLabel
-                control={<Checkbox {...field} checked={field.value} />} // Connect field and handle `checked`
-                label="Is Admin"
+                control={<Checkbox {...field} checked={field.value} />}
+                label="Admin"
               />
             )}
           />
           {errors.isAdmin && <Typography color="error">{errors.isAdmin.message}</Typography>}
-
           <Controller
             name="isActive"
-            control={control} // This comes from `useForm`
-            defaultValue={false} // Default value for the checkbox
+            control={control}
+            defaultValue={false}
             render={({ field }) => (
               <FormControlLabel
-                control={<Checkbox {...field} checked={field.value} />} // Connect field and handle `checked`
-                label="Ucet aktivny"
+                control={<Checkbox {...field} checked={field.value} />}
+                label="Aktívny"
               />
             )}
           />
           {errors.isActive && <Typography color="error">{errors.isActive.message}</Typography>}
           <ErrorNotifier />
-
           <DialogActions>
             <Button onClick={handleClose} color="error" variant="outlined">
               Zruš
             </Button>
-            <Button type="submit" variant="outlined" disabled={isLoading}>
+            <Button type="submit" variant="outlined" disabled={isUserLoading || isTeacherLoading}>
               Uprav
             </Button>
           </DialogActions>
@@ -156,7 +183,8 @@ const EditUserModal = ({ userData }) => {
 };
 
 EditUserModal.propTypes = {
-  userData: PropTypes.object.isRequired // Specify that `value` is a required string
+  userData: PropTypes.object.isRequired,
+  isTeacher: PropTypes.bool
 };
 
 export default EditUserModal;

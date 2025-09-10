@@ -43,3 +43,11 @@ export const createTeacherSchema = Joi.object({
     assignedSubjects: Joi.array().items(objectId),
 
 });
+
+export const updateTeacherSchema = Joi.object({
+    name: Joi.string().min(2).max(50),
+    surname: Joi.string().min(2).max(50),
+    email: Joi.string().email({ tlds: { allow: false } }),
+    isAdmin: Joi.boolean(),
+    isActive: Joi.boolean()
+});

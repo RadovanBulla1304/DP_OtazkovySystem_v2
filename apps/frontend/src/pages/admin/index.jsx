@@ -1,9 +1,9 @@
-import UsersList from './users/UsersList';
+import UsersAndTeachersPage from './users/page';
 
 const routes = [
   {
     path: 'users',
-    element: <UsersList />
+    element: <UsersAndTeachersPage />
   }
 ];
 

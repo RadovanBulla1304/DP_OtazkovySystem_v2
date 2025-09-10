@@ -1,5 +1,4 @@
-
-
+const { updateTeacherSchema } = require("../schemas/teacher.schema");
 const { body, validationResult, matchedData } = require("express-validator");
 const { throwError, errorFormatter } = require("../util/universal");
 const crypto = require("crypto");
@@ -68,6 +67,34 @@ exports.createTeacher = [
     }
   },
 ];
+exports.editTeacher = [
+  validate(updateTeacherSchema),
+  async (req, res) => {
+    const data = validated(req);
+    const teacher = await Teacher.findOne({ _id: req.params.id });
+    if (!teacher) {
+      return res.status(404).send();
+    }
+    if (data.email) {
+      const teacherByEmail = await Teacher.findOne({
+        email: data.email,
+        _id: { $ne: req.params.id },
+      });
+      if (teacherByEmail) {
+        if (teacherByEmail._id.toString() !== teacher._id.toString()) {
+          return res.status(400).json({ message: req.t("validation.email_already_exist") });
+        }
+      }
+    }
+    try {
+      Object.assign(teacher, data);
+      await teacher.save();
+      return res.status(200).send({});
+    } catch (error) {
+      throwError(`${req.t("messages.database_error")}: ${error.message}`, 500);
+    }
+  },
+];
 const { createSubject, editSubject } = require("../schemas/subject.schema");
 
 exports.getAllUser = [
@@ -98,6 +125,7 @@ exports.getAllTeachers = [
     }
   },
 ];
+
 exports.createUser = [
   validate(createUserSchema),
   async (req, res) => {

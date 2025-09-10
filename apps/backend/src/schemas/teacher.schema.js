@@ -61,8 +61,7 @@ const updateTeacherSchema = Joi.object({
     }),
     isActive: Joi.boolean().messages({
         'boolean.base': 'isActive must be a boolean value',
-    }),
-    assigned_subjects: Joi.array().items(objectId),
+    })
 });
 
 module.exports = {
