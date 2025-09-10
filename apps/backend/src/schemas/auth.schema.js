@@ -1,6 +1,18 @@
 const Joi = require("joi");
 
+
 const signinSchema = Joi.object({
+  email: Joi.string()
+    .email({ tlds: { allow: false } })
+    .required()
+    .messages({ "*": "validation.invalid_email" }),
+  password: Joi.string()
+    .required()
+    .messages({ "*": "validation.empty_password" }),
+});
+
+// Teacher sign-in schema (same as user, but can be extended later)
+const signinTeacherSchema = Joi.object({
   email: Joi.string()
     .email({ tlds: { allow: false } })
     .required()
@@ -33,4 +45,5 @@ const signupSchema = Joi.object({
 module.exports = {
   signinSchema,
   signupSchema,
+  signinTeacherSchema,
 };

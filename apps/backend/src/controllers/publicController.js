@@ -1,8 +1,43 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
+const Teacher = require("../models/teacher");
 const { throwError } = require("../util/universal");
 const { validate, validated } = require("../util/validation");
-const { signinSchema, signupSchema } = require("../schemas/auth.schema");
+const { signinSchema, signupSchema, signinTeacherSchema } = require("../schemas/auth.schema");
+// Teacher sign-in
+
+
+exports.signinTeacher = [
+  validate(signinTeacherSchema),
+  async (req, res) => {
+    const { email, password } = validated(req);
+    // Find teacher by email and isAdmin true
+    const user = await Teacher.findOne({ email });
+    if (!user) {
+      throwError(req.t("messages.invalid_credentials"), 400);
+    }
+
+    // Hash the provided password and compare with stored hash
+    const hashedPassword = crypto
+      .createHmac("sha256", process.env.SALT_KEY)
+      .update(password)
+      .digest("hex");
+
+    if (hashedPassword !== user.password || !user.isActive) {
+      throwError(req.t("messages.invalid_credentials"), 400);
+    }
+
+    const token = jwt.sign(
+      {
+        user_id: user._id,
+        is_admin: user.is_admin,
+      },
+      process.env.TOKEN_KEY
+    );
+
+    res.status(200).send({ token });
+  },
+];
 const crypto = require("crypto");
 
 exports.Register = [

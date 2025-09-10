@@ -33,6 +33,7 @@ app.use("/public", require("./src/routes/public")); // This is for public routes
 app.use(authMiddleware); // Apply auth middleware after public routes
 
 app.use("/user", require("./src/routes/user"));
+app.use("/teacher", require("./src/routes/teacher"));
 app.use("/subject", require("./src/routes/subject"));
 app.use("/modul", require("./src/routes/modul"));
 app.use("/question", require("./src/routes/question"));

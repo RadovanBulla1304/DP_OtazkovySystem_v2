@@ -1,25 +1,56 @@
 import ErrorNotifier from '@app/components/ErrorNotifier';
 import * as authService from '@app/pages/auth/authService';
-import { useLazyGetUserMeQuery, useLoginUserMutation } from '@app/redux/api';
+import {
+  useLazyGetTeacherMeQuery,
+  useLazyGetUserMeQuery,
+  useLoginTeacherMutation,
+  useLoginUserMutation
+} from '@app/redux/api';
 import { LoadingButton } from '@mui/lab';
 import { Box, Card, Container, Link, TextField, Typography } from '@mui/material';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 
 export const AuthPage = () => {
-  const [loginUser, { isLoading }] = useLoginUserMutation();
-  const [trigger] = useLazyGetUserMeQuery();
+  const [loginUser, { isLoading: isUserLoading }] = useLoginUserMutation();
+  const [loginTeacher, { isLoading: isTeacherLoading }] = useLoginTeacherMutation();
+  const [triggerUserMe] = useLazyGetUserMeQuery();
+  const [triggerTeacherMe] = useLazyGetTeacherMeQuery();
   const navigate = useNavigate();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const response = await loginUser({
-      email: event.target.email.value.trim(),
-      password: event.target.password.value.trim()
-    });
+    const email = event.target.email.value.trim();
+    const password = event.target.password.value.trim();
+    let response;
+    if (email.endsWith('@uniza.sk')) {
+      response = await loginTeacher({ email, password });
+    } else if (email.endsWith('@stud.uniza.sk')) {
+      response = await loginUser({ email, password });
+    } else {
+      response = await loginUser({ email, password }); // fallback to user
+    }
     if (!response.error) {
       authService.saveTokenToStorage(response.data.token);
-      const me = await trigger().unwrap();
-      authService.saveUserToStorage(me);
+      let me;
+      if (email.endsWith('@uniza.sk')) {
+        me = await triggerTeacherMe().unwrap();
+        // Try to get fullName from response or fallback to name + surname
+        let teacherFullName =
+          me.fullName || (me.name && me.surname ? `${me.name} ${me.surname}` : undefined);
+        if (!teacherFullName && response.data && response.data.name && response.data.surname) {
+          teacherFullName = `${response.data.name} ${response.data.surname}`;
+        }
+        if (!teacherFullName && response.data && response.data.fullName) {
+          teacherFullName = response.data.fullName;
+        }
+        if (!teacherFullName) {
+          teacherFullName = email;
+        }
+        authService.saveUserToStorage({ ...me, isTeacher: true, fullName: teacherFullName });
+      } else {
+        me = await triggerUserMe().unwrap();
+        authService.saveUserToStorage(me);
+      }
       navigate('/');
     }
   };
@@ -58,7 +89,7 @@ export const AuthPage = () => {
           />
           <ErrorNotifier />
           <LoadingButton
-            loading={isLoading}
+            loading={isUserLoading || isTeacherLoading}
             type="submit"
             variant="contained"
             fullWidth

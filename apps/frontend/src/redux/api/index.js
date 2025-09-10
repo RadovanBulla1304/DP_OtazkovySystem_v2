@@ -25,9 +25,23 @@ export const api = createApi({
         method: 'GET'
       })
     }),
+    getTeacherMe: builder.query({
+      query: () => ({
+        url: '/teacher/current',
+        method: 'GET'
+      })
+    }),
+    // Auth
     loginUser: builder.mutation({
       query: (data) => ({
         url: '/public/signin',
+        method: 'POST',
+        body: data
+      })
+    }),
+    loginTeacher: builder.mutation({
+      query: (data) => ({
+        url: '/public/signin-teacher',
         method: 'POST',
         body: data
       })
@@ -333,7 +347,10 @@ export const {
   // USERS / TEACHERS
   useGetUserMeQuery,
   useLazyGetUserMeQuery,
+  useGetTeacherMeQuery,
+  useLazyGetTeacherMeQuery,
   useLoginUserMutation,
+  useLoginTeacherMutation,
   useGetUserByIdQuery,
   useCreateUserMutation,
   useCreateTeacherMutation,

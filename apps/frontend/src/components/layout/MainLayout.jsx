@@ -140,7 +140,20 @@ const MainLayout = ({ children }) => {
   const profileMenuOpen = Boolean(profileMenuAnchorEl);
 
   React.useEffect(() => {
-    if (!user) {
+    // Check for user or teacher in local storage
+    const storedUser = localStorage.getItem('user');
+    let isLoggedIn = false;
+    if (storedUser) {
+      try {
+        const parsed = JSON.parse(storedUser);
+        if (parsed && (parsed._id || parsed.isTeacher)) {
+          isLoggedIn = true;
+        }
+      } catch {
+        // Invalid JSON, treat as not logged in
+      }
+    }
+    if (!user && !isLoggedIn) {
       navigate('/auth/login');
     }
   }, [user, navigate]);
@@ -250,7 +263,23 @@ const MainLayout = ({ children }) => {
             Otázkový systém
           </Typography>
           <Button color="inherit" onClick={openProfileMenu} startIcon={<AccountCircleIcon />}>
-            {matched && replaceDiacritics(user?.name.concat(' ', user.surname) || '')}
+            {matched &&
+              (() => {
+                const storedUser = localStorage.getItem('user');
+                if (storedUser) {
+                  try {
+                    const parsed = JSON.parse(storedUser);
+                    if (parsed.isTeacher && parsed.fullName) {
+                      return replaceDiacritics(parsed.fullName);
+                    } else if (parsed.name && parsed.surname) {
+                      return replaceDiacritics(parsed.name + ' ' + parsed.surname);
+                    }
+                  } catch {
+                    // Invalid JSON, return empty string
+                  }
+                }
+                return '';
+              })()}
           </Button>
 
           <ProfileMenu
