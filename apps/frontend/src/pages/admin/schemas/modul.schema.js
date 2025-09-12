@@ -27,7 +27,7 @@ export const createModulSchema = Joi.object({
             'date.min': 'Dátum konca nemôže byť pred dátumom začiatku.'
         }),
     subject: Joi.string(),
-    created_by: Joi.string(),
+    createdBy: Joi.string(),
     is_active: Joi.boolean(),
     required_questions_per_user: Joi.number().messages({
         'number.base': 'Počet povinných otázok musí byť číslo.'

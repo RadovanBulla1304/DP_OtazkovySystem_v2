@@ -1,6 +1,6 @@
 const { throwError } = require("../util/universal");
 const { validate, validated } = require("../util/validation");
-const { createQuestion, editQuestion } = require("../schemas/question.schema");
+const { createQuestionSchema, editQuestionSchema } = require("../schemas/question.schema");
 
 const Question = require("../models/question");
 const Module = require("../models/modul");
@@ -70,7 +70,7 @@ exports.getQuestionsBySubjectId = async (req, res) => {
 };
 // CREATE a new question
 exports.createQuestion = [
-    validate(createQuestion),
+    validate(createQuestionSchema),
     async (req, res) => {
         try {
             const data = validated(req);
@@ -78,9 +78,6 @@ exports.createQuestion = [
             // Create and save the question
             const question = new Question(data);
             await question.save();
-
-            // Add question to the module's questions array
-            await Module.findByIdAndUpdate(data.modul, { $push: { questions: question._id } });
 
             res.status(201).json(question);
         } catch (err) {
@@ -91,7 +88,7 @@ exports.createQuestion = [
 
 // EDIT a question
 exports.editQuestion = [
-    validate(editQuestion),
+    validate(editQuestionSchema),
     async (req, res) => {
         try {
             const data = validated(req);

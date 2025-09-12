@@ -12,7 +12,7 @@ const CommentSchema = new mongoose.Schema(
             ref: "ForumQuestion",
             required: true,
         },
-        created_by: {
+        createdBy: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
             required: true,
@@ -61,7 +61,7 @@ const CommentSchema = new mongoose.Schema(
 
 // Indexes
 CommentSchema.index({ forum_question: 1, parent: 1, created_at: 1 })
-CommentSchema.index({ created_by: 1 })
+CommentSchema.index({ createdBy: 1 })
 CommentSchema.index({ parent: 1 })
 
 // Virtual for replies

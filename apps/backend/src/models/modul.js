@@ -26,7 +26,7 @@ const ModuleSchema = new mongoose.Schema(
             ref: "Subject",
             required: true,
         },
-        created_by: {
+        createdBy: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Teacher",
             required: true,
@@ -44,7 +44,7 @@ const ModuleSchema = new mongoose.Schema(
 // Indexes
 ModuleSchema.index({ subject: 1, week_number: 1 })
 ModuleSchema.index({ date_start: 1, date_end: 1 })
-ModuleSchema.index({ created_by: 1 })
+ModuleSchema.index({ createdBy: 1 })
 
 // Virtual for duration
 ModuleSchema.virtual("duration_days").get(function () {

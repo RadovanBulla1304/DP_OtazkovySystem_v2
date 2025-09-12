@@ -17,7 +17,7 @@ const ProjectSchema = new mongoose.Schema(
                 ref: "User",
             },
         ],
-        created_by: {
+        createdBy: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Teacher",
             required: true,
@@ -46,7 +46,7 @@ const ProjectSchema = new mongoose.Schema(
 
 // Indexes
 ProjectSchema.index({ assigned_users: 1 })
-ProjectSchema.index({ created_by: 1 })
+ProjectSchema.index({ createdBy: 1 })
 ProjectSchema.index({ subject: 1 })
 ProjectSchema.index({ status: 1, due_date: 1 })
 

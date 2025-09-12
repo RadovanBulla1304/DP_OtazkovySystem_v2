@@ -23,7 +23,7 @@ const QuestionSchema = new mongoose.Schema(
             ref: "Module",
             required: true,
         },
-        created_by: {
+        createdBy: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
             required: true,
@@ -59,14 +59,14 @@ const QuestionSchema = new mongoose.Schema(
 )
 
 // Indexes
-QuestionSchema.index({ modul: 1, created_by: 1 })
+QuestionSchema.index({ modul: 1, createdBy: 1 })
 QuestionSchema.index({ validated: 1, modul: 1 })
-QuestionSchema.index({ created_by: 1, createdAt: -1 })
+QuestionSchema.index({ createdBy: 1, createdAt: -1 })
 QuestionSchema.index({ "rating_stats.average_rating": -1 })
 
 // Compound index for weekly question tracking
 QuestionSchema.index({
-    created_by: 1,
+    createdBy: 1,
     modul: 1,
     created_at: -1,
 })

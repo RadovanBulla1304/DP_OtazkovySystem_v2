@@ -39,7 +39,7 @@ const TestSchema = new mongoose.Schema(
                 required: true,
             },
         ],
-        created_by: {
+        createdBy: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Teacher",
             required: true,

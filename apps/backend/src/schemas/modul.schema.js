@@ -8,7 +8,7 @@ const createModulSchema = Joi.object({
     date_start: Joi.date().iso().required(),
     date_end: Joi.date().iso().greater(Joi.ref('date_start')).required(),
     subject: objectId.required(),
-    created_by: objectId.required(),
+    createdBy: objectId.required(),
     is_active: Joi.boolean().default(true),
     required_questions_per_user: Joi.number(),
 });
@@ -25,7 +25,7 @@ const editModulSchema = Joi.object({
         otherwise: Joi.date()
     }),
     subject: objectId,
-    created_by: objectId,
+    createdBy: objectId,
     is_active: Joi.boolean(),
     required_questions_per_user: Joi.number(),
 });

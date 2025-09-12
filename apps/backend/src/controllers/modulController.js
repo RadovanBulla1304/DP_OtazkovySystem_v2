@@ -1,6 +1,6 @@
 const { validate, validated } = require("../util/validation");
 const { throwError } = require("../util/universal");
-const { createModulSchema, editModul } = require("../schemas/modul.schema");
+const { createModulSchema, editModulSchema } = require("../schemas/modul.schema");
 const Modul = require("../models/modul");
 const Subject = require("../models/subject");
 
@@ -110,17 +110,27 @@ exports.deleteAllModulsBySubject = [
 ];
 
 exports.editModul = [
-    validate(editModul),
+    validate(editModulSchema),
     async (req, res) => {
         const data = validated(req);
         try {
             const modul = await Modul.findOne({
                 _id: req.params.id,
-                deleted: false
             });
 
             if (!modul) {
                 return res.status(404).json({ message: "Modul not found" });
+            }
+
+            // normalize existing modul fields if DB used snake_case previously
+            if (!modul.createdBy && modul.created_by) {
+                modul.createdBy = modul.created_by;
+            }
+
+            // If request used snake_case, map it to camelCase expected by schema
+            if (data.created_by && !data.createdBy) {
+                data.createdBy = data.created_by;
+                delete data.created_by;
             }
 
             // Prevent changing subject if specified

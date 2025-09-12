@@ -24,7 +24,7 @@ const ForumQuestionSchema = new mongoose.Schema(
             ref: "Module",
             required: true,
         },
-        created_by: {
+        createdBy: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
             required: true,
@@ -73,7 +73,7 @@ const ForumQuestionSchema = new mongoose.Schema(
 
 // Indexes
 ForumQuestionSchema.index({ modul: 1, created_at: -1 })
-ForumQuestionSchema.index({ created_by: 1 })
+ForumQuestionSchema.index({ createdBy: 1 })
 ForumQuestionSchema.index({ tags: 1 })
 ForumQuestionSchema.index({ is_pinned: -1, created_at: -1 })
 

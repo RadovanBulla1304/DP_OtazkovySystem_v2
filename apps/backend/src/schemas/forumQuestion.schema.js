@@ -7,7 +7,7 @@ const createForumQuestionSchema = Joi.object({
     desctription: Joi.string().required(),
     tags: Joi.array(Joi.string()),
     modul: objectId,
-    created_by: objectId,
+    createdBy: objectId,
     likes: Joi.array({
         user: objectId.required(),
         created_at: Joi.date()
@@ -25,7 +25,7 @@ const updateForumQuestionSchema = Joi.object({
     desctription: Joi.string(),
     tags: Joi.array(Joi.string()),
     modul: objectId,
-    created_by: objectId,
+    createdBy: objectId,
     likes: Joi.array({
         user: objectId.required(),
         created_at: Joi.date()

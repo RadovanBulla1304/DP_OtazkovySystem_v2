@@ -5,7 +5,7 @@ const objectId = Joi.string().regex(/^[0-9a-fA-F]{24}$/);
 const createCommentSchema = Joi.object({
     content: Joi.string(),
     forum_question: objectId.required(),
-    created_by: objectId.required(),
+    createdBy: objectId.required(),
     parent: objectId.required(),
     likes: Joi.array({
         user: objectId.required(),
@@ -22,7 +22,7 @@ const createCommentSchema = Joi.object({
 const updateCommentSchema = Joi.object({
     content: Joi.string(),
     forum_question: objectId,
-    created_by: objectId,
+    createdBy: objectId,
     parent: objectId,
     likes: Joi.array({
         user: objectId,

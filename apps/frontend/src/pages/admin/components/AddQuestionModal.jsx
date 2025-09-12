@@ -21,7 +21,7 @@ import { toast } from 'react-toastify';
 
 const DEFAULT_OPTIONS = ['', '', '', ''];
 
-const AddQuestionModal = ({ disabled = false, modulId }) => {
+const AddQuestionModal = ({ disabled = false, modulId, onCreated }) => {
   const [open, setOpen] = React.useState(false);
   const [options, setOptions] = React.useState(DEFAULT_OPTIONS);
   const [correctIndex, setCorrectIndex] = React.useState(0);
@@ -73,12 +73,14 @@ const AddQuestionModal = ({ disabled = false, modulId }) => {
       },
       correct: ['a', 'b', 'c', 'd'][correctIndex],
       modul: modulId, // pass modulId as prop
-      createdBy: auth.id // pass createdBy as prop (optional)
+      createdBy: auth.id // pass createdBy as prop
     };
 
     try {
-      await createQuestion(payload).unwrap();
+      const created = await createQuestion(payload).unwrap();
       toast.success('Otázka bola úspešne pridaná');
+      // notify parent so it can render the created question inline
+      if (onCreated) onCreated(created);
       handleClose();
     } catch (err) {
       toast.error('Chyba pri pridávaní otázky', err?.data?.message || 'Skúste to neskôr');
@@ -179,6 +181,7 @@ const AddQuestionModal = ({ disabled = false, modulId }) => {
 AddQuestionModal.propTypes = {
   disabled: PropTypes.bool,
   modulId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-  createdBy: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+  createdBy: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  onCreated: PropTypes.func
 };
 export default AddQuestionModal;

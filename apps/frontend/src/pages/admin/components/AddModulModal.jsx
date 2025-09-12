@@ -1,4 +1,4 @@
-import { useCreateModulMutation, useGetUserMeQuery } from '@app/redux/api';
+import { useCreateModulMutation, useGetTeacherMeQuery, useGetUserMeQuery } from '@app/redux/api';
 import { joiResolver } from '@hookform/resolvers/joi';
 import {
   Box,
@@ -33,6 +33,7 @@ const style = {
 const AddModulModal = ({ open, onClose, subjectId, onSuccess }) => {
   const [createModul, { isLoading }] = useCreateModulMutation();
   const { data: currentUser } = useGetUserMeQuery();
+  const { data: currentTeacher } = useGetTeacherMeQuery();
 
   const {
     control,
@@ -79,7 +80,7 @@ const AddModulModal = ({ open, onClose, subjectId, onSuccess }) => {
         subject: data.subject,
         is_active: Boolean(data.is_active),
         required_questions_per_user: Number(data.required_questions_per_user),
-        created_by: currentUser?._id
+        createdBy: currentTeacher?._id || currentUser?._id
       };
       console.log('Constructed payload:', payload);
       await createModul(payload).unwrap();
