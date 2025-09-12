@@ -1,7 +1,7 @@
 import logoExpanded from '@app/assets/UNIZA_TEXT_A.png';
 import logoCollapsed from '@app/assets/UNIZA_TEXT_B.png';
 import * as authService from '@app/pages/auth/authService';
-import { useGetUserMeQuery } from '@app/redux/api';
+import { useGetTeacherMeQuery, useGetUserMeQuery } from '@app/redux/api';
 import { replaceDiacritics } from '@app/utils/common.util';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
@@ -133,6 +133,7 @@ const MainLayout = ({ children }) => {
   const matched = useMediaQuery('(min-width:900px)');
   const navigate = useNavigate();
   const { data: user } = useGetUserMeQuery();
+  const { data: teacher } = useGetTeacherMeQuery();
   const [drawerCollapsed, setDrawerCollapsed] = React.useState(false);
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [isClosing, setIsClosing] = React.useState(false);
@@ -198,7 +199,7 @@ const MainLayout = ({ children }) => {
 
   let drawerOption = [];
 
-  if (user?.isAdmin) {
+  if (user?.isAdmin || teacher?.isAdmin) {
     drawerOption.push(
       { isHeader: true, title: 'Správca' },
       { title: 'Používatelia', navTo: '/admin/users', icon: <GroupIcon /> },

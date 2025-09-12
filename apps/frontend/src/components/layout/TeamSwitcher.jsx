@@ -62,7 +62,7 @@ const TeamSwitcher = ({ collapsed = false }) => {
   // Filter subjects based on user assignment
   const subjects = React.useMemo(() => {
     if (user?.isAdmin) return allSubjects;
-    return allSubjects.filter((subj) => subj.assignedUsers?.includes(user._id));
+    return allSubjects.filter((subj) => subj.assigned_students?.includes(user._id));
   }, [allSubjects, user]);
 
   React.useEffect(() => {

@@ -24,10 +24,10 @@ exports.createSubject = [
 exports.getAllSubjects = [
     async (req, res) => {
         try {
-            const subjects = await Subject.find({}, { __v: 0 }); // Exclude the __v field
-            res.status(200).json(subjects); // Respond with the list of subjects
+            const subjects = await Subject.find({}, { __v: 0 });
+            res.status(200).json(subjects);
         } catch (err) {
-            throwError(`Error fetching subjects: ${err.message}`, 500); // Handle errors
+            throwError(`Error fetching subjects: ${err.message}`, 500);
         }
     },
 ];
@@ -94,11 +94,22 @@ exports.asignUserToSubject = [
             if (!Array.isArray(subject.assigned_students)) {
                 subject.assigned_students = [];
             }
-            userIds.forEach(id => {
+            for (const id of userIds) {
                 if (!subject.assigned_students.map(String).includes(String(id))) {
                     subject.assigned_students.push(id);
                 }
-            });
+                // Also add subject to user's assignedSubjects if not already present
+                const user = await User.findById(id);
+                if (user) {
+                    if (!Array.isArray(user.assignedSubjects)) {
+                        user.assignedSubjects = [];
+                    }
+                    if (!user.assignedSubjects.map(String).includes(String(subject._id))) {
+                        user.assignedSubjects.push(subject._id);
+                        await user.save();
+                    }
+                }
+            }
             await subject.save();
 
             res.status(200).json({ message: "Používateľ bol priradený k predmetu.", subject });
