@@ -11,6 +11,7 @@ import {
 } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
 import AddQuestionModal from '../components/AddQuestionModal';
+import ValidateQuestionModal from '../components/ValidateQuestionModal';
 
 const Dashboard = () => {
   const [currentSubjectId, setCurrentSubjectId] = useState(null);
@@ -109,6 +110,8 @@ const Dashboard = () => {
     setSelectedModulId(event.target.value);
   };
   const [selectedWeekNumber, setSelectedWeekNumber] = useState(1);
+  const [validateOpen, setValidateOpen] = useState(false);
+  const [questionToValidate, setQuestionToValidate] = useState(null);
 
   // When selected module changes, reset selectedWeekNumber to the current week (or 1)
   useEffect(() => {
@@ -196,8 +199,6 @@ const Dashboard = () => {
               ))}
             </Select>
           </FormControl>
-
-          {/* no debug controls */}
         </>
       ) : (
         <Typography color="text.secondary">Pre tento predmet nie sú žiadne moduly.</Typography>
@@ -217,10 +218,77 @@ const Dashboard = () => {
                 : now < w.start
                   ? 'Coming soon'
                   : 'Completed';
-              const questions =
+              // default questions for this week (server + local)
+              let questions =
                 (questionsByWeekMerged[selectedModul._id] &&
                   questionsByWeekMerged[selectedModul._id][w.weekNumber]) ||
                 [];
+
+              // If this is week 2, instead show two random questions from the module
+              // where the owner is NOT the current user.
+              let externalSelection = [];
+              if (w.weekNumber === 2) {
+                try {
+                  const pool = (modulQuestions || []).filter(
+                    (q) => String(q.createdBy ?? q.created_by) !== String(userId)
+                  );
+
+                  const storageKey = `module-${selectedModul._id}-week-2-selection`;
+                  const stored = (() => {
+                    try {
+                      const raw = localStorage.getItem(storageKey);
+                      return raw ? JSON.parse(raw) : null;
+                    } catch {
+                      return null;
+                    }
+                  })();
+
+                  if (stored && Array.isArray(stored) && stored.length > 0) {
+                    // restore from stored ids if they still exist in pool
+                    const restored = stored
+                      .map((id) => pool.find((p) => String(p._id) === String(id)))
+                      .filter(Boolean)
+                      .slice(0, 2);
+                    if (restored.length === stored.length && restored.length > 0) {
+                      externalSelection = restored;
+                    } else {
+                      // stored ids missing or invalid -> choose new and persist
+                      for (let i = pool.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [pool[i], pool[j]] = [pool[j], pool[i]];
+                      }
+                      externalSelection = pool.slice(0, 2);
+                      try {
+                        localStorage.setItem(
+                          storageKey,
+                          JSON.stringify(externalSelection.map((q) => q._id))
+                        );
+                      } catch {
+                        // ignore storage errors
+                      }
+                    }
+                  } else {
+                    // no stored selection -> pick and persist
+                    for (let i = pool.length - 1; i > 0; i--) {
+                      const j = Math.floor(Math.random() * (i + 1));
+                      [pool[i], pool[j]] = [pool[j], pool[i]];
+                    }
+                    externalSelection = pool.slice(0, 2);
+                    try {
+                      localStorage.setItem(
+                        storageKey,
+                        JSON.stringify(externalSelection.map((q) => q._id))
+                      );
+                    } catch {
+                      // ignore storage errors
+                    }
+                  }
+                } catch {
+                  externalSelection = [];
+                }
+                // use externalSelection for rendering slots below
+                questions = externalSelection;
+              }
               return (
                 <Box
                   key={w.weekNumber}
@@ -241,8 +309,35 @@ const Dashboard = () => {
                     {(() => {
                       const slots = [];
                       for (let i = 0; i < 2; i++) {
+                        // For week 2, use externalSelection (already set on questions variable) which comes from modulQuestions
                         const q = questions[i];
-                        if (q) {
+                        // If this is week 2 and question belongs to another user, render as clickable validation card
+                        if (
+                          w.weekNumber === 2 &&
+                          q &&
+                          String(q.createdBy ?? q.created_by) !== String(userId)
+                        ) {
+                          slots.push(
+                            <Box
+                              key={`ext-${i}`}
+                              sx={{
+                                p: 1,
+                                border: '1px solid',
+                                borderColor: 'grey.300',
+                                borderRadius: 1,
+                                cursor: 'pointer',
+                                '&:hover': { backgroundColor: 'grey.50' }
+                              }}
+                              onClick={() => {
+                                setQuestionToValidate(q);
+                                setValidateOpen(true);
+                              }}
+                            >
+                              <Typography sx={{ fontWeight: 600 }}>{q.text}</Typography>
+                              <Typography color="text.secondary">Odpoveď: {q.correct}</Typography>
+                            </Box>
+                          );
+                        } else if (q) {
                           slots.push(
                             <Box
                               key={i}
@@ -258,27 +353,46 @@ const Dashboard = () => {
                             </Box>
                           );
                         } else {
-                          slots.push(
-                            <Box key={i} sx={{ display: 'flex', alignItems: 'center' }}>
-                              <AddQuestionModal
-                                modulId={selectedModul._id}
-                                disabled={!isCurrent}
-                                onCreated={(created) => {
-                                  setLocalCreated((prev) => {
-                                    const next = { ...prev };
-                                    if (!next[selectedModul._id]) next[selectedModul._id] = {};
-                                    if (!next[selectedModul._id][w.weekNumber])
-                                      next[selectedModul._id][w.weekNumber] = [];
-                                    next[selectedModul._id][w.weekNumber].push(created);
-                                    return next;
-                                  });
+                          if (w.weekNumber === 2) {
+                            // For week 2 we intentionally do not render AddQuestionModal rows.
+                            // If there is no question (e.g. not enough external questions), show an empty placeholder.
+                            slots.push(
+                              <Box
+                                key={`empty-${i}`}
+                                sx={{
+                                  p: 2,
+                                  border: '1px dashed',
+                                  borderColor: 'grey.200',
+                                  borderRadius: 1,
+                                  color: 'text.disabled'
                                 }}
-                              />
-                              <Typography color="text.secondary" sx={{ ml: 1 }}>
-                                Pridať otázku
-                              </Typography>
-                            </Box>
-                          );
+                              >
+                                <Typography>Žiadna otázka</Typography>
+                              </Box>
+                            );
+                          } else {
+                            slots.push(
+                              <Box key={i} sx={{ display: 'flex', alignItems: 'center' }}>
+                                <AddQuestionModal
+                                  modulId={selectedModul._id}
+                                  disabled={!isCurrent}
+                                  onCreated={(created) => {
+                                    setLocalCreated((prev) => {
+                                      const next = { ...prev };
+                                      if (!next[selectedModul._id]) next[selectedModul._id] = {};
+                                      if (!next[selectedModul._id][w.weekNumber])
+                                        next[selectedModul._id][w.weekNumber] = [];
+                                      next[selectedModul._id][w.weekNumber].push(created);
+                                      return next;
+                                    });
+                                  }}
+                                />
+                                <Typography color="text.secondary" sx={{ ml: 1 }}>
+                                  Pridať otázku
+                                </Typography>
+                              </Box>
+                            );
+                          }
                         }
                       }
                       return slots;
@@ -362,6 +476,26 @@ const Dashboard = () => {
             );
           })()
         : null}
+
+      {/* Validation modal for external questions */}
+      <ValidateQuestionModal
+        open={validateOpen}
+        question={questionToValidate}
+        onClose={() => setValidateOpen(false)}
+        onSubmit={async (questionId, payload) => {
+          try {
+            // submit validation to backend - endpoint may not exist, so ignore errors
+            await fetch(`/api/questions/${questionId}/validate`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+          } catch {
+            // swallow - backend may not support this yet
+            // In future: show toast / update UI
+          }
+        }}
+      />
     </Box>
   );
 };
