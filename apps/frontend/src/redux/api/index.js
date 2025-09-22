@@ -413,6 +413,166 @@ export const api = createApi({
         { type: 'Comments', id: `QUESTION-${questionId}` }
       ]
     }),
+
+    likeForumQuestion: builder.mutation({
+      query: (questionId) => ({
+        url: `/forum/questions/${questionId}/like`,
+        method: 'POST'
+      }),
+      onQueryStarted: async (questionId, { dispatch, queryFulfilled }) => {
+        try {
+          const { data } = await queryFulfilled;
+          // Update all getForumQuestions caches regardless of parameters
+          dispatch(
+            api.util.updateQueryData('getForumQuestions', undefined, (draft) => {
+              if (draft?.data) {
+                const question = draft.data.find(q => q._id === questionId);
+                if (question) {
+                  question.likes_count = data.data.likes_count;
+                  question.dislikes_count = data.data.dislikes_count;
+                  question.user_liked = data.data.user_liked;
+                  question.user_disliked = data.data.user_disliked;
+                }
+              }
+            })
+          );
+          // Also update specific question cache
+          dispatch(
+            api.util.updateQueryData('getForumQuestion', questionId, (draft) => {
+              if (draft?.data?.question) {
+                draft.data.question.likes_count = data.data.likes_count;
+                draft.data.question.dislikes_count = data.data.dislikes_count;
+                draft.data.question.user_liked = data.data.user_liked;
+                draft.data.question.user_disliked = data.data.user_disliked;
+              }
+            })
+          );
+          // Ensure all list variants are refreshed
+          dispatch(api.util.invalidateTags(['ForumQuestions']));
+        } catch {
+          // If optimistic update fails, invalidate tags to refetch data
+          dispatch(api.util.invalidateTags(['ForumQuestions']));
+        }
+      },
+      invalidatesTags: ['ForumQuestions']
+    }),
+
+    dislikeForumQuestion: builder.mutation({
+      query: (questionId) => ({
+        url: `/forum/questions/${questionId}/dislike`,
+        method: 'POST'
+      }),
+      onQueryStarted: async (questionId, { dispatch, queryFulfilled }) => {
+        try {
+          const { data } = await queryFulfilled;
+          // Update all getForumQuestions caches regardless of parameters
+          dispatch(
+            api.util.updateQueryData('getForumQuestions', undefined, (draft) => {
+              if (draft?.data) {
+                const question = draft.data.find(q => q._id === questionId);
+                if (question) {
+                  question.likes_count = data.data.likes_count;
+                  question.dislikes_count = data.data.dislikes_count;
+                  question.user_liked = data.data.user_liked;
+                  question.user_disliked = data.data.user_disliked;
+                }
+              }
+            })
+          );
+          // Also update specific question cache
+          dispatch(
+            api.util.updateQueryData('getForumQuestion', questionId, (draft) => {
+              if (draft?.data?.question) {
+                draft.data.question.likes_count = data.data.likes_count;
+                draft.data.question.dislikes_count = data.data.dislikes_count;
+                draft.data.question.user_liked = data.data.user_liked;
+                draft.data.question.user_disliked = data.data.user_disliked;
+              }
+            })
+          );
+          // Ensure all list variants are refreshed
+          dispatch(api.util.invalidateTags(['ForumQuestions']));
+        } catch {
+          // If optimistic update fails, invalidate tags to refetch data
+          dispatch(api.util.invalidateTags(['ForumQuestions']));
+        }
+      },
+      invalidatesTags: ['ForumQuestions']
+    }),
+
+    likeComment: builder.mutation({
+      query: (commentId) => ({
+        url: `/forum/comments/${commentId}/like`,
+        method: 'POST'
+      }),
+      onQueryStarted: async (commentId, { dispatch, queryFulfilled }) => {
+        try {
+          const { data } = await queryFulfilled;
+          // Update comment in question cache
+          dispatch(
+            api.util.updateQueryData('getForumQuestion', undefined, (draft) => {
+              const updateCommentInTree = (comments) => {
+                for (let comment of comments) {
+                  if (comment._id === commentId) {
+                    comment.likes_count = data.data.likes_count;
+                    comment.dislikes_count = data.data.dislikes_count;
+                    comment.user_liked = data.data.user_liked;
+                    comment.user_disliked = data.data.user_disliked;
+                    return true;
+                  }
+                  if (comment.replies && updateCommentInTree(comment.replies)) {
+                    return true;
+                  }
+                }
+                return false;
+              };
+              if (draft?.data?.comments) {
+                updateCommentInTree(draft.data.comments);
+              }
+            })
+          );
+        } catch {
+          // Silently fail optimistic update
+        }
+      }
+    }),
+
+    dislikeComment: builder.mutation({
+      query: (commentId) => ({
+        url: `/forum/comments/${commentId}/dislike`,
+        method: 'POST'
+      }),
+      onQueryStarted: async (commentId, { dispatch, queryFulfilled }) => {
+        try {
+          const { data } = await queryFulfilled;
+          // Update comment in question cache
+          dispatch(
+            api.util.updateQueryData('getForumQuestion', undefined, (draft) => {
+              const updateCommentInTree = (comments) => {
+                for (let comment of comments) {
+                  if (comment._id === commentId) {
+                    comment.likes_count = data.data.likes_count;
+                    comment.dislikes_count = data.data.dislikes_count;
+                    comment.user_liked = data.data.user_liked;
+                    comment.user_disliked = data.data.user_disliked;
+                    return true;
+                  }
+                  if (comment.replies && updateCommentInTree(comment.replies)) {
+                    return true;
+                  }
+                }
+                return false;
+              };
+              if (draft?.data?.comments) {
+                updateCommentInTree(draft.data.comments);
+              }
+            })
+          );
+        } catch {
+          // Silently fail optimistic update
+        }
+      }
+    }),
   })
 });
 
@@ -477,4 +637,8 @@ export const {
   useLazyGetForumQuestionQuery,
   useCreateForumQuestionMutation,
   useAddCommentMutation,
+  useLikeForumQuestionMutation,
+  useDislikeForumQuestionMutation,
+  useLikeCommentMutation,
+  useDislikeCommentMutation,
 } = api;

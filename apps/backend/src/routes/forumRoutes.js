@@ -4,12 +4,12 @@ const {
     getForumQuestions,
     getForumQuestion,
     createForumQuestion,
-    addComment
+    addComment,
+    likeForumQuestion,
+    dislikeForumQuestion,
+    likeComment,
+    dislikeComment
 } = require('../controllers/forumController')
-const verifyToken = require('../middlewares/auth')
-
-// All routes require authentication
-router.use(verifyToken)
 
 // Forum question routes
 router.route('/questions')
@@ -21,5 +21,19 @@ router.route('/questions/:id')
 
 router.route('/questions/:id/comments')
     .post(addComment)
+
+// Like/dislike routes for questions
+router.route('/questions/:id/like')
+    .post(likeForumQuestion)
+
+router.route('/questions/:id/dislike')
+    .post(dislikeForumQuestion)
+
+// Like/dislike routes for comments
+router.route('/comments/:id/like')
+    .post(likeComment)
+
+router.route('/comments/:id/dislike')
+    .post(dislikeComment)
 
 module.exports = router

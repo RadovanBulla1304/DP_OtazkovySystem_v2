@@ -1,5 +1,5 @@
-import { useCreateForumQuestionMutation, useGetModulsBySubjectQuery } from '@app/redux/api';
 import { useCurrentSubjectId } from '@app/hooks/useCurrentSubjectId';
+import { useCreateForumQuestionMutation, useGetModulsBySubjectQuery } from '@app/redux/api';
 import { Add, Close } from '@mui/icons-material';
 import {
   Alert,
@@ -32,9 +32,12 @@ const AddQuestionDialog = ({ open, onClose }) => {
   const [errors, setErrors] = useState({});
 
   const currentSubjectId = useCurrentSubjectId();
-  const { data: modulesData = [], isLoading: modulesLoading } = useGetModulsBySubjectQuery(currentSubjectId, {
-    skip: !currentSubjectId
-  });
+  const { data: modulesData = [], isLoading: modulesLoading } = useGetModulsBySubjectQuery(
+    currentSubjectId,
+    {
+      skip: !currentSubjectId
+    }
+  );
   const [createQuestion, { isLoading, error }] = useCreateForumQuestionMutation();
 
   const handleInputChange = (field) => (event) => {

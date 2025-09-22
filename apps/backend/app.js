@@ -37,9 +37,9 @@ app.use("/teacher", require("./src/routes/teacher"));
 app.use("/subject", require("./src/routes/subject"));
 app.use("/modul", require("./src/routes/modul"));
 app.use("/question", require("./src/routes/question"));
+app.use("/forum", require("./src/routes/forumRoutes"));
 app.use("/questionRating", require("./src/routes/questionRating"));
 app.use("/admin", require("./src/routes/admin"));
-app.use("/forum", require("./src/routes/forumRoutes"));
 
 app.use(function (req, res, next) {
   throwError("Hľadaná stránka neexistuje", 404);

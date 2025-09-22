@@ -22,11 +22,16 @@ import { formatDistanceToNow } from 'date-fns';
 import { sk } from 'date-fns/locale';
 import PropTypes from 'prop-types';
 import { useState } from 'react';
+import { useDislikeForumQuestionMutation, useLikeForumQuestionMutation } from '../../redux/api';
 import CommentSection from './CommentSection';
 
 const QuestionCard = ({ question, onQuestionClick }) => {
   const [showComments, setShowComments] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const [likeQuestion, { isLoading: isLiking }] = useLikeForumQuestionMutation();
+  const [dislikeQuestion, { isLoading: isDisliking }] = useDislikeForumQuestionMutation();
 
   const formatDate = (date) => {
     return formatDistanceToNow(new Date(date), {
@@ -37,6 +42,88 @@ const QuestionCard = ({ question, onQuestionClick }) => {
 
   const handleToggleComments = () => {
     setShowComments(!showComments);
+  };
+
+  const handleLike = async (e) => {
+    e.stopPropagation();
+
+    console.log(`[FE LIKE] User attempting to like question ${question._id}`, {
+      questionId: question._id,
+      isLiking,
+      isDisliking,
+      isProcessing,
+      currentUserLiked: question.user_liked,
+      currentUserDisliked: question.user_disliked,
+      currentLikesCount: question.likes_count,
+      currentDislikesCount: question.dislikes_count,
+      timestamp: new Date().toISOString()
+    });
+
+    // Prevent multiple clicks and already processing
+    if (isLiking || isDisliking || isProcessing) {
+      console.log(`[FE LIKE] Preventing click - already processing`, {
+        questionId: question._id,
+        isLiking,
+        isDisliking,
+        isProcessing
+      });
+      return;
+    }
+
+    setIsProcessing(true);
+    console.log(`[FE LIKE] Processing state set to true for question ${question._id}`);
+
+    try {
+      console.log(`[FE LIKE] Calling likeQuestion mutation for question ${question._id}`);
+      const result = await likeQuestion(question._id).unwrap();
+      console.log(`[FE LIKE] Mutation successful for question ${question._id}`, result);
+    } catch (error) {
+      console.error(`[FE LIKE] Error liking question ${question._id}:`, error);
+    } finally {
+      setIsProcessing(false);
+      console.log(`[FE LIKE] Processing state set to false for question ${question._id}`);
+    }
+  };
+
+  const handleDislike = async (e) => {
+    e.stopPropagation();
+
+    console.log(`[FE DISLIKE] User attempting to dislike question ${question._id}`, {
+      questionId: question._id,
+      isLiking,
+      isDisliking,
+      isProcessing,
+      currentUserLiked: question.user_liked,
+      currentUserDisliked: question.user_disliked,
+      currentLikesCount: question.likes_count,
+      currentDislikesCount: question.dislikes_count,
+      timestamp: new Date().toISOString()
+    });
+
+    // Prevent multiple clicks and already processing
+    if (isLiking || isDisliking || isProcessing) {
+      console.log(`[FE DISLIKE] Preventing click - already processing`, {
+        questionId: question._id,
+        isLiking,
+        isDisliking,
+        isProcessing
+      });
+      return;
+    }
+
+    setIsProcessing(true);
+    console.log(`[FE DISLIKE] Processing state set to true for question ${question._id}`);
+
+    try {
+      console.log(`[FE DISLIKE] Calling dislikeQuestion mutation for question ${question._id}`);
+      const result = await dislikeQuestion(question._id).unwrap();
+      console.log(`[FE DISLIKE] Mutation successful for question ${question._id}`, result);
+    } catch (error) {
+      console.error(`[FE DISLIKE] Error disliking question ${question._id}:`, error);
+    } finally {
+      setIsProcessing(false);
+      console.log(`[FE DISLIKE] Processing state set to false for question ${question._id}`);
+    }
   };
 
   const handleToggleExpanded = () => {
@@ -145,14 +232,40 @@ const QuestionCard = ({ question, onQuestionClick }) => {
           {/* Interaction buttons */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <IconButton size="small">
+              <IconButton
+                size="small"
+                onClick={handleLike}
+                disabled={isLiking || isDisliking || isProcessing}
+                sx={{
+                  color: question.user_liked ? 'success.main' : 'text.secondary',
+                  '&:hover': {
+                    color: question.user_liked ? 'success.dark' : 'success.main'
+                  },
+                  '&:disabled': {
+                    opacity: 0.6
+                  }
+                }}
+              >
                 <ThumbUp fontSize="small" />
               </IconButton>
               <Typography variant="caption">{question.likes_count || 0}</Typography>
             </Box>
 
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <IconButton size="small">
+              <IconButton
+                size="small"
+                onClick={handleDislike}
+                disabled={isLiking || isDisliking || isProcessing}
+                sx={{
+                  color: question.user_disliked ? 'error.main' : 'text.secondary',
+                  '&:hover': {
+                    color: question.user_disliked ? 'error.dark' : 'error.main'
+                  },
+                  '&:disabled': {
+                    opacity: 0.6
+                  }
+                }}
+              >
                 <ThumbDown fontSize="small" />
               </IconButton>
               <Typography variant="caption">{question.dislikes_count || 0}</Typography>
@@ -193,6 +306,8 @@ QuestionCard.propTypes = {
     is_closed: PropTypes.bool,
     likes_count: PropTypes.number,
     dislikes_count: PropTypes.number,
+    user_liked: PropTypes.bool,
+    user_disliked: PropTypes.bool,
     comments_count: PropTypes.number,
     createdAt: PropTypes.string.isRequired,
     createdBy: PropTypes.shape({

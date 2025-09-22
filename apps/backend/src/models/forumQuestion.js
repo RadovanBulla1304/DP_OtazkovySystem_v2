@@ -30,30 +30,18 @@ const ForumQuestionSchema = new mongoose.Schema(
             required: true,
         },
 
-        // Track who liked/disliked
+        // Track who liked/disliked as simple user ObjectId arrays (one entry per user)
         likes: [
             {
-                user: {
-                    type: mongoose.Schema.Types.ObjectId,
-                    ref: "User",
-                },
-                created_at: {
-                    type: Date,
-                    default: Date.now,
-                },
-            },
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'User'
+            }
         ],
         dislikes: [
             {
-                user: {
-                    type: mongoose.Schema.Types.ObjectId,
-                    ref: "User",
-                },
-                created_at: {
-                    type: Date,
-                    default: Date.now,
-                },
-            },
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'User'
+            }
         ],
 
         // Cached counts for performance

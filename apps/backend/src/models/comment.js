@@ -23,30 +23,18 @@ const CommentSchema = new mongoose.Schema(
             default: null,
         },
 
-        // Track likes on comments
+        // Track likes/dislikes as arrays of user ObjectId
         likes: [
             {
-                user: {
-                    type: mongoose.Schema.Types.ObjectId,
-                    ref: "User",
-                },
-                created_at: {
-                    type: Date,
-                    default: Date.now,
-                },
-            },
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'User'
+            }
         ],
         dislikes: [
             {
-                user: {
-                    type: mongoose.Schema.Types.ObjectId,
-                    ref: "User",
-                },
-                created_at: {
-                    type: Date,
-                    default: Date.now,
-                },
-            },
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'User'
+            }
         ],
         likes_count: { type: Number, default: 0 },
         dislikes_count: { type: Number, default: 0 },

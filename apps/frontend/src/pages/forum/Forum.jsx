@@ -1,5 +1,5 @@
-import { useGetForumQuestionsQuery, useGetModulsBySubjectQuery } from '@app/redux/api';
 import { useCurrentSubjectId } from '@app/hooks/useCurrentSubjectId';
+import { useGetForumQuestionsQuery, useGetModulsBySubjectQuery } from '@app/redux/api';
 import { Add, Search } from '@mui/icons-material';
 import {
   Alert,

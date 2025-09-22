@@ -1,4 +1,8 @@
-import { useAddCommentMutation } from '@app/redux/api';
+import {
+  useAddCommentMutation,
+  useDislikeCommentMutation,
+  useLikeCommentMutation
+} from '@app/redux/api';
 import { ExpandLess, ExpandMore, Reply, Send, ThumbDown, ThumbUp } from '@mui/icons-material';
 import {
   Alert,
@@ -20,8 +24,11 @@ const Comment = ({ comment, questionId, level = 0 }) => {
   const [showReplies, setShowReplies] = useState(false);
   const [isReplying, setIsReplying] = useState(false);
   const [replyText, setReplyText] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const [addComment, { isLoading: addingReply, error: replyError }] = useAddCommentMutation();
+  const [likeComment, { isLoading: isLikingComment }] = useLikeCommentMutation();
+  const [dislikeComment, { isLoading: isDislikingComment }] = useDislikeCommentMutation();
 
   const maxNestingLevel = 4; // Limit nesting to prevent too deep threads
   const canReply = level < maxNestingLevel;
@@ -59,6 +66,90 @@ const Comment = ({ comment, questionId, level = 0 }) => {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
       handleReply();
+    }
+  };
+
+  const handleLike = async (e) => {
+    e.stopPropagation();
+
+    console.log(`[FE COMMENT LIKE] User attempting to like comment ${comment._id}`, {
+      commentId: comment._id,
+      questionId,
+      isLikingComment,
+      isDislikingComment,
+      isProcessing,
+      currentUserLiked: comment.user_liked,
+      currentUserDisliked: comment.user_disliked,
+      currentLikesCount: comment.likes_count,
+      currentDislikesCount: comment.dislikes_count,
+      timestamp: new Date().toISOString()
+    });
+
+    if (isLikingComment || isDislikingComment || isProcessing) {
+      console.log(`[FE COMMENT LIKE] Preventing click - already processing`, {
+        commentId: comment._id,
+        isLikingComment,
+        isDislikingComment,
+        isProcessing
+      });
+      return;
+    }
+
+    setIsProcessing(true);
+    console.log(`[FE COMMENT LIKE] Processing state set to true for comment ${comment._id}`);
+
+    try {
+      console.log(`[FE COMMENT LIKE] Calling likeComment mutation for comment ${comment._id}`);
+      const result = await likeComment(comment._id).unwrap();
+      console.log(`[FE COMMENT LIKE] Mutation successful for comment ${comment._id}`, result);
+    } catch (error) {
+      console.error(`[FE COMMENT LIKE] Error liking comment ${comment._id}:`, error);
+    } finally {
+      setIsProcessing(false);
+      console.log(`[FE COMMENT LIKE] Processing state set to false for comment ${comment._id}`);
+    }
+  };
+
+  const handleDislike = async (e) => {
+    e.stopPropagation();
+
+    console.log(`[FE COMMENT DISLIKE] User attempting to dislike comment ${comment._id}`, {
+      commentId: comment._id,
+      questionId,
+      isLikingComment,
+      isDislikingComment,
+      isProcessing,
+      currentUserLiked: comment.user_liked,
+      currentUserDisliked: comment.user_disliked,
+      currentLikesCount: comment.likes_count,
+      currentDislikesCount: comment.dislikes_count,
+      timestamp: new Date().toISOString()
+    });
+
+    if (isLikingComment || isDislikingComment || isProcessing) {
+      console.log(`[FE COMMENT DISLIKE] Preventing click - already processing`, {
+        commentId: comment._id,
+        isLikingComment,
+        isDislikingComment,
+        isProcessing
+      });
+      return;
+    }
+
+    setIsProcessing(true);
+    console.log(`[FE COMMENT DISLIKE] Processing state set to true for comment ${comment._id}`);
+
+    try {
+      console.log(
+        `[FE COMMENT DISLIKE] Calling dislikeComment mutation for comment ${comment._id}`
+      );
+      const result = await dislikeComment(comment._id).unwrap();
+      console.log(`[FE COMMENT DISLIKE] Mutation successful for comment ${comment._id}`, result);
+    } catch (error) {
+      console.error(`[FE COMMENT DISLIKE] Error disliking comment ${comment._id}:`, error);
+    } finally {
+      setIsProcessing(false);
+      console.log(`[FE COMMENT DISLIKE] Processing state set to false for comment ${comment._id}`);
     }
   };
 
@@ -104,14 +195,40 @@ const Comment = ({ comment, questionId, level = 0 }) => {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             {/* Like/Dislike */}
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <IconButton size="small">
+              <IconButton
+                size="small"
+                onClick={handleLike}
+                disabled={isLikingComment || isDislikingComment || isProcessing}
+                sx={{
+                  color: comment.user_liked ? 'success.main' : 'text.secondary',
+                  '&:hover': {
+                    color: comment.user_liked ? 'success.dark' : 'success.main'
+                  },
+                  '&:disabled': {
+                    opacity: 0.6
+                  }
+                }}
+              >
                 <ThumbUp fontSize="small" />
               </IconButton>
               <Typography variant="caption">{comment.likes_count || 0}</Typography>
             </Box>
 
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <IconButton size="small">
+              <IconButton
+                size="small"
+                onClick={handleDislike}
+                disabled={isLikingComment || isDislikingComment || isProcessing}
+                sx={{
+                  color: comment.user_disliked ? 'error.main' : 'text.secondary',
+                  '&:hover': {
+                    color: comment.user_disliked ? 'error.dark' : 'error.main'
+                  },
+                  '&:disabled': {
+                    opacity: 0.6
+                  }
+                }}
+              >
                 <ThumbDown fontSize="small" />
               </IconButton>
               <Typography variant="caption">{comment.dislikes_count || 0}</Typography>
@@ -213,6 +330,8 @@ Comment.propTypes = {
     createdAt: PropTypes.string.isRequired,
     likes_count: PropTypes.number,
     dislikes_count: PropTypes.number,
+    user_liked: PropTypes.bool,
+    user_disliked: PropTypes.bool,
     replies_count: PropTypes.number,
     createdBy: PropTypes.shape({
       username: PropTypes.string,
