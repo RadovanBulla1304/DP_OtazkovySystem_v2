@@ -47,82 +47,38 @@ const QuestionCard = ({ question, onQuestionClick }) => {
   const handleLike = async (e) => {
     e.stopPropagation();
 
-    console.log(`[FE LIKE] User attempting to like question ${question._id}`, {
-      questionId: question._id,
-      isLiking,
-      isDisliking,
-      isProcessing,
-      currentUserLiked: question.user_liked,
-      currentUserDisliked: question.user_disliked,
-      currentLikesCount: question.likes_count,
-      currentDislikesCount: question.dislikes_count,
-      timestamp: new Date().toISOString()
-    });
-
     // Prevent multiple clicks and already processing
     if (isLiking || isDisliking || isProcessing) {
-      console.log(`[FE LIKE] Preventing click - already processing`, {
-        questionId: question._id,
-        isLiking,
-        isDisliking,
-        isProcessing
-      });
       return;
     }
 
     setIsProcessing(true);
-    console.log(`[FE LIKE] Processing state set to true for question ${question._id}`);
 
     try {
-      console.log(`[FE LIKE] Calling likeQuestion mutation for question ${question._id}`);
-      const result = await likeQuestion(question._id).unwrap();
-      console.log(`[FE LIKE] Mutation successful for question ${question._id}`, result);
+      await likeQuestion(question._id).unwrap();
     } catch (error) {
       console.error(`[FE LIKE] Error liking question ${question._id}:`, error);
     } finally {
       setIsProcessing(false);
-      console.log(`[FE LIKE] Processing state set to false for question ${question._id}`);
     }
   };
 
   const handleDislike = async (e) => {
     e.stopPropagation();
 
-    console.log(`[FE DISLIKE] User attempting to dislike question ${question._id}`, {
-      questionId: question._id,
-      isLiking,
-      isDisliking,
-      isProcessing,
-      currentUserLiked: question.user_liked,
-      currentUserDisliked: question.user_disliked,
-      currentLikesCount: question.likes_count,
-      currentDislikesCount: question.dislikes_count,
-      timestamp: new Date().toISOString()
-    });
-
     // Prevent multiple clicks and already processing
     if (isLiking || isDisliking || isProcessing) {
-      console.log(`[FE DISLIKE] Preventing click - already processing`, {
-        questionId: question._id,
-        isLiking,
-        isDisliking,
-        isProcessing
-      });
       return;
     }
 
     setIsProcessing(true);
-    console.log(`[FE DISLIKE] Processing state set to true for question ${question._id}`);
 
     try {
-      console.log(`[FE DISLIKE] Calling dislikeQuestion mutation for question ${question._id}`);
-      const result = await dislikeQuestion(question._id).unwrap();
-      console.log(`[FE DISLIKE] Mutation successful for question ${question._id}`, result);
+      await dislikeQuestion(question._id).unwrap();
     } catch (error) {
       console.error(`[FE DISLIKE] Error disliking question ${question._id}:`, error);
     } finally {
       setIsProcessing(false);
-      console.log(`[FE DISLIKE] Processing state set to false for question ${question._id}`);
     }
   };
 
@@ -203,11 +159,6 @@ const QuestionCard = ({ question, onQuestionClick }) => {
               <Chip key={index} label={tag} size="small" variant="outlined" color="primary" />
             ))}
           </Box>
-        )}
-
-        {/* Module */}
-        {question.modul && (
-          <Chip label={question.modul.name} size="small" color="secondary" sx={{ mb: 2 }} />
         )}
 
         <Divider sx={{ my: 2 }} />

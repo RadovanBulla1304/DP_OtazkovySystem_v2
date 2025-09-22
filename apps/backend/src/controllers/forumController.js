@@ -79,8 +79,11 @@ const getForumQuestions = async (req, res) => {
 
         // Add user interaction status
         const questionsWithUserStatus = questions.map(question => {
-            const userLiked = question.likes.some(like => (like && like.toString()) === user_id)
-            const userDisliked = question.dislikes.some(dislike => (dislike && dislike.toString()) === user_id)
+            // Normalize likes and dislikes arrays to handle legacy data
+            const normalizedLikes = toValidObjectIdArray(question.likes)
+            const normalizedDislikes = toValidObjectIdArray(question.dislikes)
+            const userLiked = normalizedLikes.some(like => like.toString() === user_id.toString())
+            const userDisliked = normalizedDislikes.some(dislike => dislike.toString() === user_id.toString())
 
             // Remove the full likes/dislikes arrays to reduce payload size
             const { likes, dislikes, ...questionData } = question
@@ -143,8 +146,12 @@ const getForumQuestion = async (req, res) => {
         }
 
         // Add user interaction status to question
-        const userLiked = question.likes.some(like => (like && like.toString()) === user_id)
-        const userDisliked = question.dislikes.some(dislike => (dislike && dislike.toString()) === user_id)
+        // Normalize likes and dislikes arrays to handle legacy data
+        const normalizedLikes = toValidObjectIdArray(question.likes)
+        const normalizedDislikes = toValidObjectIdArray(question.dislikes)
+
+        const userLiked = normalizedLikes.some(like => like.toString() === user_id.toString())
+        const userDisliked = normalizedDislikes.some(dislike => dislike.toString() === user_id.toString())
         const { likes, dislikes, ...questionData } = question
         const questionWithUserStatus = {
             ...questionData,
@@ -172,8 +179,8 @@ const getForumQuestion = async (req, res) => {
         const populateNestedReplies = async (comments) => {
             for (let comment of comments) {
                 // Add user interaction status to comment
-                const userLiked = comment.likes.some(like => (like && like.toString()) === user_id)
-                const userDisliked = comment.dislikes.some(dislike => (dislike && dislike.toString()) === user_id)
+                const userLiked = comment.likes.some(like => (like && like.toString()) === user_id.toString())
+                const userDisliked = comment.dislikes.some(dislike => (dislike && dislike.toString()) === user_id.toString())
                 const { likes, dislikes, ...commentData } = comment
 
                 Object.assign(comment, {
@@ -366,10 +373,7 @@ const likeForumQuestion = async (req, res) => {
         const { id } = req.params
         const user_id = req.user?.user_id
 
-        console.log(`[LIKE] User ${user_id} attempting to like question ${id}`)
-
         if (!user_id) {
-            console.log(`[LIKE] Authentication failed for question ${id}`)
             return res.status(401).json({
                 success: false,
                 message: "User not authenticated"
@@ -378,7 +382,6 @@ const likeForumQuestion = async (req, res) => {
 
         const question = await ForumQuestion.findById(id)
         if (!question) {
-            console.log(`[LIKE] Question ${id} not found`)
             return res.status(404).json({
                 success: false,
                 message: "Forum question not found"
@@ -389,26 +392,11 @@ const likeForumQuestion = async (req, res) => {
         const userObjectId = new mongoose.Types.ObjectId(user_id)
         const alreadyLiked = question.likes.some(like => (like && like.toString()) === user_id)
         const alreadyDisliked = question.dislikes.some(dislike => (dislike && dislike.toString()) === user_id)
-
-        console.log(`[LIKE] Question ${id} current state:`, {
-            user_id,
-            userObjectId: userObjectId.toString(),
-            alreadyLiked,
-            alreadyDisliked,
-            likes_count: question.likes_count,
-            dislikes_count: question.dislikes_count,
-            total_likes: question.likes.length,
-            total_dislikes: question.dislikes.length,
-            likes_array: question.likes.map(like => like.toString()),
-            dislikes_array: question.dislikes.map(dislike => dislike.toString())
-        })
-
         // Build atomic update to avoid race conditions and duplicate entries
         let updateQuery = {}
 
         if (alreadyLiked) {
             // Toggle off like
-            console.log(`[LIKE] User ${user_id} removing like from question ${id}`)
             updateQuery = {
                 $pull: { likes: userObjectId },
                 $inc: { likes_count: -1 }
@@ -416,14 +404,12 @@ const likeForumQuestion = async (req, res) => {
         } else {
             // Add like; if user had a dislike, remove it in the same atomic operation
             if (alreadyDisliked) {
-                console.log(`[LIKE] User ${user_id} switching from dislike to like for question ${id}`)
                 updateQuery = {
                     $pull: { dislikes: userObjectId },
                     $addToSet: { likes: userObjectId },
                     $inc: { likes_count: 1, dislikes_count: -1 }
                 }
             } else {
-                console.log(`[LIKE] User ${user_id} adding new like to question ${id}`)
                 updateQuery = {
                     $addToSet: { likes: userObjectId }, // addToSet prevents duplicates
                     $inc: { likes_count: 1 }
@@ -431,19 +417,11 @@ const likeForumQuestion = async (req, res) => {
             }
         }
 
-        console.log(`[LIKE] Executing update for question ${id}:`, updateQuery)
-
         const updatedQuestion = await ForumQuestion.findByIdAndUpdate(
             id,
             updateQuery,
             { new: true }
         ).select('likes_count dislikes_count')
-
-        console.log(`[LIKE] Update result for question ${id}:`, {
-            likes_count: updatedQuestion.likes_count,
-            dislikes_count: updatedQuestion.dislikes_count
-        })
-
         // Get fresh question and normalize likes/dislikes to ObjectId array entries
         let freshQuestion = await ForumQuestion.findById(id).lean()
 
@@ -471,19 +449,8 @@ const likeForumQuestion = async (req, res) => {
         }, { new: true }).lean()
 
         freshQuestion = normalized
-        const userLiked = (freshQuestion.likes || []).some(l => l.toString() === user_id)
-        const userDisliked = (freshQuestion.dislikes || []).some(d => d.toString() === user_id)
-
-        console.log(`[LIKE] Final normalized state for user ${user_id} on question ${id}:`, {
-            userLiked,
-            userDisliked,
-            final_likes_count: freshQuestion.likes_count,
-            final_dislikes_count: freshQuestion.dislikes_count,
-            actual_likes_length: freshQuestion.likes.length,
-            actual_dislikes_length: freshQuestion.dislikes.length,
-            fresh_likes_array: freshQuestion.likes.map(like => like.toString()),
-            fresh_dislikes_array: freshQuestion.dislikes.map(dislike => dislike.toString())
-        })
+        const userLiked = (freshQuestion.likes || []).some(l => l.toString() === user_id.toString())
+        const userDisliked = (freshQuestion.dislikes || []).some(d => d.toString() === user_id.toString())
 
         res.status(200).json({
             success: true,
@@ -519,10 +486,7 @@ const dislikeForumQuestion = async (req, res) => {
         const { id } = req.params
         const user_id = req.user?.user_id
 
-        console.log(`[DISLIKE] User ${user_id} attempting to dislike question ${id}`)
-
         if (!user_id) {
-            console.log(`[DISLIKE] Authentication failed for question ${id}`)
             return res.status(401).json({
                 success: false,
                 message: "User not authenticated"
@@ -531,7 +495,6 @@ const dislikeForumQuestion = async (req, res) => {
 
         const question = await ForumQuestion.findById(id)
         if (!question) {
-            console.log(`[DISLIKE] Question ${id} not found`)
             return res.status(404).json({
                 success: false,
                 message: "Forum question not found"
@@ -542,26 +505,11 @@ const dislikeForumQuestion = async (req, res) => {
         const userObjectId = new mongoose.Types.ObjectId(user_id)
         const alreadyLiked = question.likes.some(like => (like && like.toString()) === user_id)
         const alreadyDisliked = question.dislikes.some(dislike => (dislike && dislike.toString()) === user_id)
-
-        console.log(`[DISLIKE] Question ${id} current state:`, {
-            user_id,
-            userObjectId: userObjectId.toString(),
-            alreadyLiked,
-            alreadyDisliked,
-            likes_count: question.likes_count,
-            dislikes_count: question.dislikes_count,
-            total_likes: question.likes.length,
-            total_dislikes: question.dislikes.length,
-            likes_array: question.likes.map(like => like.toString()),
-            dislikes_array: question.dislikes.map(dislike => dislike.toString())
-        })
-
         // Build atomic update to avoid race conditions and duplicate entries
         let updateQuery = {}
 
         if (alreadyDisliked) {
             // Toggle off dislike
-            console.log(`[DISLIKE] User ${user_id} removing dislike from question ${id}`)
             updateQuery = {
                 $pull: { dislikes: userObjectId },
                 $inc: { dislikes_count: -1 }
@@ -569,14 +517,12 @@ const dislikeForumQuestion = async (req, res) => {
         } else {
             // Add dislike; if user had a like, remove it in the same atomic operation
             if (alreadyLiked) {
-                console.log(`[DISLIKE] User ${user_id} switching from like to dislike for question ${id}`)
                 updateQuery = {
                     $pull: { likes: userObjectId },
                     $addToSet: { dislikes: userObjectId },
                     $inc: { dislikes_count: 1, likes_count: -1 }
                 }
             } else {
-                console.log(`[DISLIKE] User ${user_id} adding new dislike to question ${id}`)
                 updateQuery = {
                     $addToSet: { dislikes: userObjectId }, // addToSet prevents duplicates
                     $inc: { dislikes_count: 1 }
@@ -584,18 +530,11 @@ const dislikeForumQuestion = async (req, res) => {
             }
         }
 
-        console.log(`[DISLIKE] Executing update for question ${id}:`, updateQuery)
-
         const updatedQuestion = await ForumQuestion.findByIdAndUpdate(
             id,
             updateQuery,
             { new: true }
         ).select('likes_count dislikes_count')
-
-        console.log(`[DISLIKE] Update result for question ${id}:`, {
-            likes_count: updatedQuestion.likes_count,
-            dislikes_count: updatedQuestion.dislikes_count
-        })
 
         // Get fresh question and normalize likes/dislikes to ObjectId array entries
         let freshQuestion = await ForumQuestion.findById(id).lean()
@@ -631,19 +570,8 @@ const dislikeForumQuestion = async (req, res) => {
         }, { new: true }).lean()
 
         freshQuestion = normalized
-        const userLiked = (freshQuestion.likes || []).some(l => l.toString() === user_id)
-        const userDisliked = (freshQuestion.dislikes || []).some(d => d.toString() === user_id)
-
-        console.log(`[DISLIKE] Final normalized state for user ${user_id} on question ${id}:`, {
-            userLiked,
-            userDisliked,
-            final_likes_count: freshQuestion.likes_count,
-            final_dislikes_count: freshQuestion.dislikes_count,
-            actual_likes_length: freshQuestion.likes.length,
-            actual_dislikes_length: freshQuestion.dislikes.length,
-            fresh_likes_array: freshQuestion.likes.map(like => like.toString()),
-            fresh_dislikes_array: freshQuestion.dislikes.map(dislike => dislike.toString())
-        })
+        const userLiked = (freshQuestion.likes || []).some(l => l.toString() === user_id.toString())
+        const userDisliked = (freshQuestion.dislikes || []).some(d => d.toString() === user_id.toString())
 
         res.status(200).json({
             success: true,
@@ -758,8 +686,8 @@ const likeComment = async (req, res) => {
         }, { new: true }).lean()
 
         freshComment = normalized
-        const userLiked = (freshComment.likes || []).some(l => l.toString() === user_id)
-        const userDisliked = (freshComment.dislikes || []).some(d => d.toString() === user_id)
+        const userLiked = (freshComment.likes || []).some(l => l.toString() === user_id.toString())
+        const userDisliked = (freshComment.dislikes || []).some(d => d.toString() === user_id.toString())
 
         res.status(200).json({
             success: true,
@@ -873,8 +801,8 @@ const dislikeComment = async (req, res) => {
         }, { new: true }).lean()
 
         freshComment = normalized
-        const userLiked = (freshComment.likes || []).some(l => l.toString() === user_id)
-        const userDisliked = (freshComment.dislikes || []).some(d => d.toString() === user_id)
+        const userLiked = (freshComment.likes || []).some(l => l.toString() === user_id.toString())
+        const userDisliked = (freshComment.dislikes || []).some(d => d.toString() === user_id.toString())
 
         res.status(200).json({
             success: true,

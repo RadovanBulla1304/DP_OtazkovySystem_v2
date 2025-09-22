@@ -72,84 +72,36 @@ const Comment = ({ comment, questionId, level = 0 }) => {
   const handleLike = async (e) => {
     e.stopPropagation();
 
-    console.log(`[FE COMMENT LIKE] User attempting to like comment ${comment._id}`, {
-      commentId: comment._id,
-      questionId,
-      isLikingComment,
-      isDislikingComment,
-      isProcessing,
-      currentUserLiked: comment.user_liked,
-      currentUserDisliked: comment.user_disliked,
-      currentLikesCount: comment.likes_count,
-      currentDislikesCount: comment.dislikes_count,
-      timestamp: new Date().toISOString()
-    });
-
     if (isLikingComment || isDislikingComment || isProcessing) {
-      console.log(`[FE COMMENT LIKE] Preventing click - already processing`, {
-        commentId: comment._id,
-        isLikingComment,
-        isDislikingComment,
-        isProcessing
-      });
       return;
     }
 
     setIsProcessing(true);
-    console.log(`[FE COMMENT LIKE] Processing state set to true for comment ${comment._id}`);
 
     try {
-      console.log(`[FE COMMENT LIKE] Calling likeComment mutation for comment ${comment._id}`);
-      const result = await likeComment(comment._id).unwrap();
-      console.log(`[FE COMMENT LIKE] Mutation successful for comment ${comment._id}`, result);
+      await likeComment(comment._id).unwrap();
     } catch (error) {
-      console.error(`[FE COMMENT LIKE] Error liking comment ${comment._id}:`, error);
+      console.error(`Error liking comment ${comment._id}:`, error);
     } finally {
       setIsProcessing(false);
-      console.log(`[FE COMMENT LIKE] Processing state set to false for comment ${comment._id}`);
     }
   };
 
   const handleDislike = async (e) => {
     e.stopPropagation();
 
-    console.log(`[FE COMMENT DISLIKE] User attempting to dislike comment ${comment._id}`, {
-      commentId: comment._id,
-      questionId,
-      isLikingComment,
-      isDislikingComment,
-      isProcessing,
-      currentUserLiked: comment.user_liked,
-      currentUserDisliked: comment.user_disliked,
-      currentLikesCount: comment.likes_count,
-      currentDislikesCount: comment.dislikes_count,
-      timestamp: new Date().toISOString()
-    });
-
     if (isLikingComment || isDislikingComment || isProcessing) {
-      console.log(`[FE COMMENT DISLIKE] Preventing click - already processing`, {
-        commentId: comment._id,
-        isLikingComment,
-        isDislikingComment,
-        isProcessing
-      });
       return;
     }
 
     setIsProcessing(true);
-    console.log(`[FE COMMENT DISLIKE] Processing state set to true for comment ${comment._id}`);
 
     try {
-      console.log(
-        `[FE COMMENT DISLIKE] Calling dislikeComment mutation for comment ${comment._id}`
-      );
-      const result = await dislikeComment(comment._id).unwrap();
-      console.log(`[FE COMMENT DISLIKE] Mutation successful for comment ${comment._id}`, result);
+      await dislikeComment(comment._id).unwrap();
     } catch (error) {
-      console.error(`[FE COMMENT DISLIKE] Error disliking comment ${comment._id}:`, error);
+      console.error(`Error disliking comment ${comment._id}:`, error);
     } finally {
       setIsProcessing(false);
-      console.log(`[FE COMMENT DISLIKE] Processing state set to false for comment ${comment._id}`);
     }
   };
 
