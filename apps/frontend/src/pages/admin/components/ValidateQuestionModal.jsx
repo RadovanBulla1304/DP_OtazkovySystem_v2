@@ -15,7 +15,12 @@ import {
 import PropTypes from 'prop-types';
 import { useEffect, useState } from 'react';
 
-const ValidateQuestionModal = ({ open, question, onClose, onSubmit }) => {
+const ValidateQuestionModal = ({
+  open = false,
+  question = null,
+  onClose = () => {},
+  onSubmit = () => {}
+}) => {
   const [valid, setValid] = useState('valid');
   const [comment, setComment] = useState('');
 
@@ -79,11 +84,4 @@ ValidateQuestionModal.propTypes = {
   }),
   onClose: PropTypes.func,
   onSubmit: PropTypes.func
-};
-
-ValidateQuestionModal.defaultProps = {
-  open: false,
-  question: null,
-  onClose: () => {},
-  onSubmit: () => {}
 };

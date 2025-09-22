@@ -16,7 +16,7 @@ const baseQuery = fetchBaseQuery({
 export const api = createApi({
   reducerPath: 'api',
   baseQuery,
-  tagTypes: ['Users', 'Subjects', 'Moduls', 'Questions', 'QuestionRatings'],
+  tagTypes: ['Users', 'Subjects', 'Moduls', 'Questions', 'QuestionRatings', 'ForumQuestions', 'Comments'],
   endpoints: (builder) => ({
     // USERS
     getUserMe: builder.query({
@@ -362,6 +362,57 @@ export const api = createApi({
         'QuestionRatings'
       ]
     }),
+
+    // FORUM QUESTIONS
+    getForumQuestions: builder.query({
+      query: ({ page = 1, limit = 10, modul, tags, search } = {}) => {
+        const params = new URLSearchParams({ page, limit });
+        if (modul) params.append('modul', modul);
+        if (tags) params.append('tags', tags);
+        if (search) params.append('search', search);
+
+        return {
+          url: `/forum/questions?${params.toString()}`,
+          method: 'GET'
+        };
+      },
+      providesTags: (result) => [
+        ...(result?.data || []).map(({ _id }) => ({ type: 'ForumQuestions', id: _id })),
+        'ForumQuestions'
+      ]
+    }),
+
+    getForumQuestion: builder.query({
+      query: (id) => ({
+        url: `/forum/questions/${id}`,
+        method: 'GET'
+      }),
+      providesTags: (result, error, arg) => [
+        { type: 'ForumQuestions', id: arg },
+        { type: 'Comments', id: `QUESTION-${arg}` }
+      ]
+    }),
+
+    createForumQuestion: builder.mutation({
+      query: (data) => ({
+        url: '/forum/questions',
+        method: 'POST',
+        body: data
+      }),
+      invalidatesTags: ['ForumQuestions']
+    }),
+
+    addComment: builder.mutation({
+      query: ({ questionId, ...data }) => ({
+        url: `/forum/questions/${questionId}/comments`,
+        method: 'POST',
+        body: data
+      }),
+      invalidatesTags: (result, error, { questionId }) => [
+        { type: 'ForumQuestions', id: questionId },
+        { type: 'Comments', id: `QUESTION-${questionId}` }
+      ]
+    }),
   })
 });
 
@@ -419,4 +470,11 @@ export const {
   useDeleteQuestionRatingMutation,
   useGetRatingsByQuestionIdQuery,
   useGetRatingsByUserIdQuery,
+  // FORUM
+  useGetForumQuestionsQuery,
+  useLazyGetForumQuestionsQuery,
+  useGetForumQuestionQuery,
+  useLazyGetForumQuestionQuery,
+  useCreateForumQuestionMutation,
+  useAddCommentMutation,
 } = api;

@@ -16,7 +16,12 @@ import {
 import PropTypes from 'prop-types';
 import { useEffect, useState } from 'react';
 
-const RespondToValidationModal = ({ open, question, onClose, onSubmit }) => {
+const RespondToValidationModal = ({
+  open = false,
+  question = null,
+  onClose = () => {},
+  onSubmit = () => {}
+}) => {
   const [agreed, setAgreed] = useState(false);
   const [comment, setComment] = useState('');
 
@@ -135,11 +140,4 @@ RespondToValidationModal.propTypes = {
   }),
   onClose: PropTypes.func,
   onSubmit: PropTypes.func
-};
-
-RespondToValidationModal.defaultProps = {
-  open: false,
-  question: null,
-  onClose: () => {},
-  onSubmit: () => {}
 };
