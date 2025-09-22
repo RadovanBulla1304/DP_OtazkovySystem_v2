@@ -16,7 +16,7 @@ const baseQuery = fetchBaseQuery({
 export const api = createApi({
   reducerPath: 'api',
   baseQuery,
-  tagTypes: ['Users', 'Subjects', 'Moduls', 'Questions', 'QuestionRatings', 'ForumQuestions', 'Comments'],
+  tagTypes: ['Users', 'Subjects', 'Moduls', 'Questions', 'QuestionRatings', 'ForumQuestions', 'Comments', 'Tests'],
   endpoints: (builder) => ({
     // USERS
     getUserMe: builder.query({
@@ -278,6 +278,17 @@ export const api = createApi({
         'Questions'
       ]
     }),
+    teacherValidateQuestion: builder.mutation({
+      query: ({ questionId, validated_by_teacher, validated_by_teacher_comment }) => ({
+        url: `/question/${questionId}/teacher-validate`,
+        method: 'POST',
+        body: { validated_by_teacher, validated_by_teacher_comment }
+      }),
+      invalidatesTags: (result, error, { questionId }) => [
+        { type: 'Questions', id: questionId },
+        'Questions'
+      ]
+    }),
     getQuestionsBySubjectId: builder.query({
       query: (subjectId) => ({
         url: `/question/subject/${subjectId}`,
@@ -285,6 +296,16 @@ export const api = createApi({
       }),
       providesTags: (result, error, arg) => [
         { type: 'Questions', id: `SUBJECT-${arg}` },
+        'Questions'
+      ]
+    }),
+    getValidatedQuestionsWithAgreementBySubject: builder.query({
+      query: (subjectId) => ({
+        url: `/question/subject/${subjectId}/validated-with-agreement`,
+        method: 'GET'
+      }),
+      providesTags: (result, error, arg) => [
+        { type: 'Questions', id: `VALIDATED-SUBJECT-${arg}` },
         'Questions'
       ]
     }),
@@ -635,6 +656,81 @@ export const api = createApi({
       },
       invalidatesTags: ['ForumQuestions']
     }),
+
+    // TESTS
+    createTest: builder.mutation({
+      query: (data) => ({
+        url: '/test',
+        method: 'POST',
+        body: data
+      }),
+      invalidatesTags: ['Tests']
+    }),
+    getTestsBySubject: builder.query({
+      query: (subjectId) => ({
+        url: `/test/subject/${subjectId}`,
+        method: 'GET'
+      }),
+      providesTags: (result, error, arg) => [
+        { type: 'Tests', id: `SUBJECT-${arg}` },
+        'Tests'
+      ]
+    }),
+    getTestsByTeacher: builder.query({
+      query: () => ({
+        url: '/test/teacher',
+        method: 'GET'
+      }),
+      providesTags: ['Tests']
+    }),
+    getTestById: builder.query({
+      query: (id) => ({
+        url: `/test/${id}`,
+        method: 'GET'
+      }),
+      providesTags: (result, error, arg) => [
+        { type: 'Tests', id: arg },
+        'Tests'
+      ]
+    }),
+    updateTest: builder.mutation({
+      query: ({ id, ...data }) => ({
+        url: `/test/${id}`,
+        method: 'PUT',
+        body: data
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        { type: 'Tests', id },
+        'Tests'
+      ]
+    }),
+    deleteTest: builder.mutation({
+      query: (id) => ({
+        url: `/test/${id}`,
+        method: 'DELETE'
+      }),
+      invalidatesTags: ['Tests']
+    }),
+    toggleTestPublication: builder.mutation({
+      query: ({ id, is_published }) => ({
+        url: `/test/${id}/publish`,
+        method: 'PATCH',
+        body: { is_published }
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        { type: 'Tests', id },
+        'Tests'
+      ]
+    }),
+    getTestStatistics: builder.query({
+      query: (id) => ({
+        url: `/test/${id}/statistics`,
+        method: 'GET'
+      }),
+      providesTags: (result, error, arg) => [
+        { type: 'Tests', id: `STATS-${arg}` }
+      ]
+    }),
   })
 });
 
@@ -681,8 +777,11 @@ export const {
   useDeleteQuestionMutation,
   useValidateQuestionMutation,
   useRespondToValidationMutation,
+  useTeacherValidateQuestionMutation,
   useGetQuestionsBySubjectIdQuery,
   useLazyGetQuestionsBySubjectIdQuery,
+  useGetValidatedQuestionsWithAgreementBySubjectQuery,
+  useLazyGetValidatedQuestionsWithAgreementBySubjectQuery,
   useGetQuestionByIdQuery,
   useLazyGetQuestionByIdQuery,
   useGetQuestionByUserIdQuery,
@@ -703,4 +802,17 @@ export const {
   useDislikeForumQuestionMutation,
   useLikeCommentMutation,
   useDislikeCommentMutation,
+  // TESTS
+  useCreateTestMutation,
+  useGetTestsBySubjectQuery,
+  useLazyGetTestsBySubjectQuery,
+  useGetTestsByTeacherQuery,
+  useLazyGetTestsByTeacherQuery,
+  useGetTestByIdQuery,
+  useLazyGetTestByIdQuery,
+  useUpdateTestMutation,
+  useDeleteTestMutation,
+  useToggleTestPublicationMutation,
+  useGetTestStatisticsQuery,
+  useLazyGetTestStatisticsQuery,
 } = api;

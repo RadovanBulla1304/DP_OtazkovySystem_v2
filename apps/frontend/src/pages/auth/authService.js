@@ -14,6 +14,16 @@ export const getUserFromStorage = () => {
   return JSON.parse(user);
 };
 
+export const getTeacherFromStorage = () => {
+  const user = localStorage.getItem('teacher');
+
+  if (!user) {
+    return null;
+  }
+
+  return JSON.parse(user);
+};
+
 export const saveUserToStorage = (user) => {
   localStorage.setItem('user', JSON.stringify(user));
 };

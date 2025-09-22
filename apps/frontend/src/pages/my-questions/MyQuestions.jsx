@@ -180,7 +180,7 @@ const MyQuestions = () => {
         availableQuestions = currentModuleQuestions;
       } else {
         // No module filter - use questions from all subject for this specific module
-        availableQuestions = allSubjectQuestions.filter(q => q.modul === modulId);
+        availableQuestions = allSubjectQuestions.filter((q) => q.modul === modulId);
       }
 
       // Always get/generate questions for validation (same logic as Week2.jsx)
@@ -255,7 +255,14 @@ const MyQuestions = () => {
 
       return questions;
     },
-    [filter.modulId, currentModuleQuestions, allSubjectQuestions, userId, getWeekState, saveWeekState]
+    [
+      filter.modulId,
+      currentModuleQuestions,
+      allSubjectQuestions,
+      userId,
+      getWeekState,
+      saveWeekState
+    ]
   );
 
   // Render question based on module's current week

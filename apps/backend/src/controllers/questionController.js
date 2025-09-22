@@ -204,3 +204,79 @@ exports.respondToValidation = async (req, res) => {
         throwError(`Error saving validation response: ${err.message}`, 500);
     }
 };
+
+/**
+ * GET validated questions with user agreement by subject ID
+ */
+exports.getValidatedQuestionsWithAgreementBySubject = async (req, res) => {
+    try {
+        // Find modules with the given subject ID
+        const modules = await Module.find({ subject: req.params.subjectId }).select('_id');
+        const moduleIds = modules.map(m => m._id);
+
+        // Find questions that are validated and have user agreement
+        const questions = await Question.find({
+            modul: { $in: moduleIds },
+            validated: true,
+            'user_agreement.agreed': true
+        })
+            .populate('modul', 'name')
+            .populate('createdBy', 'name surname email')
+            .populate('validated_by', 'firstName lastName email')
+            .sort({ createdAt: -1 });
+
+        res.status(200).json(questions);
+    } catch (err) {
+        throwError(`Error fetching validated questions with agreement: ${err.message}`, 500);
+    }
+};
+
+/**
+ * TEACHER VALIDATE a question - separate from regular validation
+ */
+exports.teacherValidateQuestion = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { validated_by_teacher, validated_by_teacher_comment } = req.body;
+
+        console.log('Teacher validate question called:', {
+            id,
+            validated_by_teacher,
+            validated_by_teacher_comment,
+            user: req.user
+        }); // Debug log
+
+        // Validate input
+        if (typeof validated_by_teacher !== 'boolean') {
+            return res.status(400).json({ message: "validated_by_teacher field must be a boolean." });
+        }
+
+        if (!validated_by_teacher_comment || validated_by_teacher_comment.trim().length === 0) {
+            return res.status(400).json({ message: "Teacher validation comment is required." });
+        }
+
+        const question = await Question.findById(id);
+        if (!question) {
+            return res.status(404).json({ message: "Question not found." });
+        }
+
+        console.log('Question found before teacher validation update:', question.toObject()); // Debug log
+
+        // Update question with teacher validation info
+        question.validated_by_teacher = validated_by_teacher;
+        question.validated_by_teacher_comment = validated_by_teacher_comment.trim();
+        question.validated_by_teacher_at = new Date();
+
+        await question.save();
+
+        console.log('Question after teacher validation update:', question.toObject()); // Debug log
+
+        res.status(200).json({
+            message: "Teacher validation saved successfully.",
+            question: question
+        });
+    } catch (err) {
+        console.error('Error in teacherValidateQuestion:', err); // Debug log
+        throwError(`Error in teacher validation: ${err.message}`, 500);
+    }
+};

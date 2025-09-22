@@ -6,7 +6,7 @@ import Dashboard from './pages/admin/dashboard/Dashboard';
 import authRoutes from './pages/auth';
 
 import adminRoutes from '@app/pages/admin';
-import AllQuestions from './pages/all-questions/AllQuestions';
+import AllUsersQuestions from './pages/all-users-questions/AllUsersQuestions';
 import Forum from './pages/forum/Forum';
 import Moduls from './pages/moduls/ModulsList';
 import MyQuestions from './pages/my-questions/MyQuestions';
@@ -30,8 +30,8 @@ export const router = createBrowserRouter([
       { path: '/moduls', element: <Moduls /> },
       { path: '/tests', element: <Tests /> },
       { path: '/my-questions', element: <MyQuestions /> },
+      { path: '/all-users-questions', element: <AllUsersQuestions /> },
       { path: '/forum', element: <Forum /> },
-      { path: '/all-questions', element: <AllQuestions /> },
       { path: '/subjects', element: <Subjects /> },
       { path: '/subjects/:subjectId', element: <SubjectDetail /> },
       { path: 'admin', children: adminRoutes },

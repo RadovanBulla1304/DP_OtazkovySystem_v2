@@ -12,7 +12,6 @@ import DashboardIcon from '@mui/icons-material/Dashboard';
 import GroupIcon from '@mui/icons-material/Group';
 import MenuIcon from '@mui/icons-material/Menu';
 import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
-import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 import SchoolIcon from '@mui/icons-material/School';
 import ViewModuleIcon from '@mui/icons-material/ViewModule';
 import { Button, Container, ListItemButton, Stack, Tooltip, useMediaQuery } from '@mui/material';
@@ -208,25 +207,36 @@ const MainLayout = ({ children }) => {
     );
   }
 
-  drawerOption = drawerOption.concat([
-    { isHeader: true, title: 'Obsah' },
-
-    // { title: 'Moduly', navTo: '/moduls', icon: <ViewModuleIcon /> },
-    { title: 'Dashboard', navTo: '/', icon: <DashboardIcon /> },
-    { title: 'Projekty', navTo: '/projects', icon: <AccountTreeIcon /> },
-    { title: 'Fórum', navTo: '/forum', icon: <ViewModuleIcon /> }
-  ]);
-  if (!user?.isAdmin) {
+  if (!user?.isAdmin && !teacher) {
+    drawerOption = drawerOption.concat([
+      { isHeader: true, title: 'Obsah' },
+      // { title: 'Moduly', navTo: '/moduls', icon: <ViewModuleIcon /> },
+      { title: 'Dashboard', navTo: '/', icon: <DashboardIcon /> },
+      { title: 'Projekty', navTo: '/projects', icon: <AccountTreeIcon /> },
+      { title: 'Fórum', navTo: '/forum', icon: <ViewModuleIcon /> }
+    ]);
+  } else {
+    drawerOption = drawerOption.concat([
+      { isHeader: true, title: 'Obsah' },
+      // { title: 'Moduly', navTo: '/moduls', icon: <ViewModuleIcon /> },
+      { title: 'Projekty', navTo: '/projects', icon: <AccountTreeIcon /> },
+      { title: 'Fórum', navTo: '/forum', icon: <ViewModuleIcon /> }
+    ]);
+  }
+  if (user && !user?.isAdmin && !teacher) {
     drawerOption.push({
       title: 'Moje otázky',
       navTo: '/my-questions',
       icon: <QuestionAnswerIcon />
     });
+  } else if (teacher) {
+    drawerOption.push({
+      title: 'Všetky otázky',
+      navTo: '/all-users-questions',
+      icon: <QuestionAnswerIcon />
+    });
   }
-  drawerOption = drawerOption.concat([
-    { title: 'Otázky', navTo: '/all-questions', icon: <QuestionMarkIcon /> },
-    { title: 'Testy', navTo: '/tests', icon: <AvTimerIcon /> }
-  ]);
+  drawerOption = drawerOption.concat([{ title: 'Testy', navTo: '/tests', icon: <AvTimerIcon /> }]);
 
   const currentDrawerWidth = drawerCollapsed ? collapsedDrawerWidth : drawerWidth;
 

@@ -36,6 +36,11 @@ const QuestionSchema = new mongoose.Schema(
         validated_at: { type: Date },
         validation_comment: { type: String, trim: true },
 
+        // Teacher validation (additional validation by teachers)
+        validated_by_teacher: { type: Boolean, default: false },
+        validated_by_teacher_at: { type: Date },
+        validated_by_teacher_comment: { type: String, trim: true },
+
         // User's response to validation
         user_agreement: {
             agreed: { type: Boolean },
