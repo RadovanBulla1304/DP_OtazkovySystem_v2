@@ -3,12 +3,13 @@ import * as authService from '@app/pages/auth/authService';
 import { useGetModulsBySubjectQuery, useGetQuestionByUserIdQuery } from '@app/redux/api';
 import {
   Box,
+  Button,
+  ButtonGroup,
   Card,
   CardContent,
-  CardHeader,
   Chip,
+  Divider,
   FormControl,
-  Grid,
   InputLabel,
   MenuItem,
   Select,
@@ -16,8 +17,6 @@ import {
   Typography
 } from '@mui/material';
 import React from 'react';
-
-const answerLetterToLabel = { a: 'A', b: 'B', c: 'C', d: 'D' };
 
 const MyQuestions = () => {
   const auth = authService.getUserFromStorage();
@@ -33,6 +32,9 @@ const MyQuestions = () => {
     modulId: ''
   });
 
+  // Debug: manual week override
+  const [debugWeekOverride, setDebugWeekOverride] = React.useState(null);
+
   // Fetch modules for the selected subject
   const { data: subjectModuls = [] } = useGetModulsBySubjectQuery(subjectId, {
     skip: !subjectId
@@ -47,26 +49,155 @@ const MyQuestions = () => {
     skip: !userId
   });
 
+  // Helper to determine current week for a module
+  const getCurrentWeek = (modul) => {
+    // Debug override takes precedence
+    if (debugWeekOverride !== null) {
+      return debugWeekOverride;
+    }
+
+    if (!modul || !modul.date_start || !modul.date_end) return 1;
+
+    try {
+      const now = new Date();
+      const start = new Date(modul.date_start);
+      const end = new Date(modul.date_end);
+
+      if (now < start) return 0; // Not started
+      if (now > end) return 4; // Finished (past week 3)
+
+      const diffDays = Math.floor((now - start) / (1000 * 60 * 60 * 24));
+      const week = Math.floor(diffDays / 7) + 1;
+      return Math.min(Math.max(week, 1), 3);
+    } catch {
+      return 1;
+    }
+  };
+
   // Helper to get module name by id
   const getModulName = (modulId) => {
     const modul = subjectModuls.find((m) => m._id === modulId);
-    return modul ? modul.title : modulId;
+    return modul ? modul.title || modul.name : modulId;
   };
 
-  // Filtering logic
-  const filteredQuestions = questions.filter((q) => {
-    let pass = true;
-    if (subjectId) {
-      pass = pass && subjectModuls.some((m) => m._id === q.modul);
-    }
-    if (filter.modulId) {
-      pass = pass && q.modul === filter.modulId;
-    }
-    if (filter.date) {
-      pass = pass && q.createdAt.slice(0, 10) === filter.date;
-    }
-    return pass;
-  });
+  // Group questions by module
+  const questionsByModule = React.useMemo(() => {
+    const filtered = questions.filter((q) => {
+      let pass = true;
+      if (subjectId) {
+        pass = pass && subjectModuls.some((m) => m._id === q.modul);
+      }
+      if (filter.modulId) {
+        pass = pass && q.modul === filter.modulId;
+      }
+      if (filter.date) {
+        pass = pass && q.createdAt.slice(0, 10) === filter.date;
+      }
+      return pass;
+    });
+
+    const grouped = {};
+    filtered.forEach((q) => {
+      if (!grouped[q.modul]) {
+        grouped[q.modul] = [];
+      }
+      grouped[q.modul].push(q);
+    });
+    return grouped;
+  }, [questions, subjectModuls, subjectId, filter]);
+
+  // Render question based on module's current week
+  const renderQuestion = (question, currentWeek) => {
+    const isInWeek3OrLater = currentWeek >= 3;
+
+    return (
+      <Card key={question._id} sx={{ mb: 2, borderRadius: 2 }}>
+        <CardContent>
+          <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+            {question.text}
+          </Typography>
+
+          {/* Answer options */}
+          <Box sx={{ mb: 2 }}>
+            {question.options &&
+              Object.entries(question.options).map(([key, value]) => (
+                <Typography
+                  key={key}
+                  variant="body2"
+                  sx={{
+                    color: key === question.correct ? 'success.dark' : 'text.secondary',
+                    fontWeight: key === question.correct ? 600 : 400,
+                    ml: 1,
+                    mb: 0.5
+                  }}
+                >
+                  {key.toUpperCase()}) {value} {key === question.correct && '✓'}
+                </Typography>
+              ))}
+          </Box>
+
+          {/* Week 3+ content - show validation status and feedback */}
+          {isInWeek3OrLater && (
+            <Box sx={{ mt: 2 }}>
+              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 1 }}>
+                {/* Validation status */}
+                {question.validated_by ? (
+                  <Chip
+                    label={question.validated ? 'Validná' : 'Nevalidná'}
+                    color={question.validated ? 'success' : 'error'}
+                    size="small"
+                  />
+                ) : (
+                  <Chip
+                    label="Nevalidovaná"
+                    size="small"
+                    sx={{
+                      backgroundColor: '#000000',
+                      color: 'white'
+                    }}
+                  />
+                )}
+
+                {/* User agreement status */}
+                {question.user_agreement && (
+                  <Chip
+                    label={question.user_agreement.agreed ? 'Súhlasím' : 'Nesúhlasím'}
+                    color={question.user_agreement.agreed ? 'success' : 'warning'}
+                    size="small"
+                  />
+                )}
+              </Box>
+
+              {/* Validation comment */}
+              {question.validation_comment && (
+                <Typography
+                  variant="body2"
+                  sx={{ mt: 1, fontStyle: 'italic', color: 'text.secondary' }}
+                >
+                  Validačný komentár: {question.validation_comment}
+                </Typography>
+              )}
+
+              {/* User's response */}
+              {question.user_agreement && question.user_agreement.comment && (
+                <Typography
+                  variant="body2"
+                  sx={{ mt: 1, fontStyle: 'italic', color: 'text.primary' }}
+                >
+                  Tvoja odpoveď: {question.user_agreement.comment}
+                </Typography>
+              )}
+            </Box>
+          )}
+
+          {/* Creation date */}
+          <Typography variant="caption" color="text.secondary" sx={{ mt: 2, display: 'block' }}>
+            Vytvorené: {new Date(question.createdAt).toLocaleDateString()}
+          </Typography>
+        </CardContent>
+      </Card>
+    );
+  };
 
   if (!subjectId) {
     return (
@@ -109,7 +240,7 @@ const MyQuestions = () => {
             <MenuItem value="">Všetky</MenuItem>
             {subjectModuls.map((m) => (
               <MenuItem key={m._id} value={m._id}>
-                {m.title}
+                {m.title || m.name}
               </MenuItem>
             ))}
           </Select>
@@ -124,71 +255,84 @@ const MyQuestions = () => {
         />
       </Box>
 
-      <Grid container spacing={3}>
-        {filteredQuestions.map((q) => (
-          <Grid item xs={12} md={6} lg={4} key={q._id}>
-            <Card elevation={3} sx={{ borderRadius: 3 }}>
-              <CardHeader
-                title={
-                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                    {q.text}
-                  </Typography>
-                }
-                subheader={
-                  <Box>
-                    <Typography variant="caption" color="text.secondary">
-                      Modul: {getModulName(q.modul)}
-                    </Typography>
-                    {auth.isAdmin && (
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        sx={{ display: 'block' }}
-                      >
-                        Modul ID: {q.modul}
-                      </Typography>
-                    )}
-                  </Box>
-                }
-              />
-              <CardContent>
-                {Object.entries(q.options).map(([key, value]) => (
-                  <Box
-                    key={key}
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      mb: 1,
-                      p: 1,
-                      bgcolor: q.correct === key ? 'primary.light' : 'background.paper',
-                      borderRadius: 2
-                    }}
-                  >
-                    <Chip
-                      label={answerLetterToLabel[key]}
-                      color={q.correct === key ? 'primary' : 'default'}
-                      size="small"
-                      sx={{ mr: 1 }}
-                    />
-                    <Typography
-                      variant="body1"
-                      sx={{
-                        fontWeight: q.correct === key ? 700 : 400,
-                        color: q.correct === key ? 'primary.main' : 'text.primary'
-                      }}
-                    >
-                      {value}
-                    </Typography>
-                  </Box>
-                ))}
-                {/* <Typography variant="caption" color="text.secondary">
-                  Vytvorené: {new Date(q.createdAt).toLocaleString()}
-                </Typography> */}
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
+      {/* Debug controls */}
+      <Box
+        sx={{
+          mb: 3,
+          p: 2,
+          bgcolor: 'warning.50',
+          borderRadius: 1,
+          border: '1px solid',
+          borderColor: 'warning.200'
+        }}
+      >
+        <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+          Debug: Manuálne prepnutie týždňa
+        </Typography>
+        <ButtonGroup variant="outlined" size="small">
+          <Button
+            onClick={() => setDebugWeekOverride(1)}
+            color={debugWeekOverride === 1 ? 'primary' : 'inherit'}
+          >
+            Týždeň 1
+          </Button>
+          <Button
+            onClick={() => setDebugWeekOverride(2)}
+            color={debugWeekOverride === 2 ? 'primary' : 'inherit'}
+          >
+            Týždeň 2
+          </Button>
+          <Button
+            onClick={() => setDebugWeekOverride(3)}
+            color={debugWeekOverride === 3 ? 'primary' : 'inherit'}
+          >
+            Týždeň 3
+          </Button>
+          <Button
+            onClick={() => setDebugWeekOverride(4)}
+            color={debugWeekOverride === 4 ? 'primary' : 'inherit'}
+          >
+            Dokončené
+          </Button>
+          <Button onClick={() => setDebugWeekOverride(null)}>Reset</Button>
+        </ButtonGroup>
+        {debugWeekOverride && (
+          <Chip
+            label={`Aktívny: ${debugWeekOverride === 4 ? 'Dokončené' : `Týždeň ${debugWeekOverride}`}`}
+            size="small"
+            sx={{ ml: 1 }}
+          />
+        )}
+      </Box>
+
+      {/* Questions grouped by module */}
+      {Object.entries(questionsByModule).map(([modulId, moduleQuestions], index) => {
+        const modul = subjectModuls.find((m) => m._id === modulId);
+        const currentWeek = getCurrentWeek(modul);
+        const weekStatus =
+          currentWeek === 0 ? 'Nezačalo' : currentWeek >= 4 ? 'Dokončené' : `Týždeň ${currentWeek}`;
+
+        return (
+          <Box key={modulId}>
+            {index > 0 && <Divider sx={{ my: 4 }} />}
+
+            {/* Module header */}
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="h5" sx={{ fontWeight: 600, mb: 1 }}>
+                {getModulName(modulId)}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Status: {weekStatus} • {moduleQuestions.length} otázok
+              </Typography>
+            </Box>
+
+            {/* Questions in a row (2 per row) */}
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {moduleQuestions.map((question) => renderQuestion(question, currentWeek))}
+            </Box>
+          </Box>
+        );
+      })}
     </Box>
   );
 };
