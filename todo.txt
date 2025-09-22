@@ -1,0 +1,15 @@
+-------------------------------------------
+bugy
+
+pri pridavani pouzivatela moze mat viac userov rovnaku group number
+vytvoril som noveho usera a ma rovnake otazky v prvom a druhom tyzdni ako user 2 ? 
+ked je aurat week 1 alebo 2 vo week 3 napravo nema byt nic vidno 
+-------------------------------------------
+
+
+
+
+
+-------------------------------------------
+todo
+-------------------------------------------

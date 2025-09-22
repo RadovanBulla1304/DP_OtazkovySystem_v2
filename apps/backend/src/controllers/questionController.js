@@ -126,3 +126,81 @@ exports.deleteQuestion = [
         }
     }
 ];
+
+/**
+ * VALIDATE a question (Week 2 functionality)
+ */
+exports.validateQuestion = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { valid, comment } = req.body;
+
+        console.log('Validate question called:', { id, valid, comment, user: req.user }); // Debug log
+
+        // Validate input
+        if (typeof valid !== 'boolean') {
+            return res.status(400).json({ message: "Valid field must be a boolean." });
+        }
+
+        const question = await Question.findById(id);
+        if (!question) {
+            return res.status(404).json({ message: "Question not found." });
+        }
+
+        console.log('Question found before update:', question.toObject()); // Debug log
+
+        // Update question with validation info
+        question.validated = valid;
+        question.validation_comment = comment || '';
+        question.validated_at = new Date();
+        question.validated_by = req.user?.user_id || req.user?.id || req.user?._id || null; // Fixed to use user_id from auth middleware
+
+        await question.save();
+
+        console.log('Question after update:', question.toObject()); // Debug log
+
+        res.status(200).json({
+            message: "Question validation saved successfully.",
+            question: question
+        });
+    } catch (err) {
+        console.error('Error in validateQuestion:', err); // Debug log
+        throwError(`Error validating question: ${err.message}`, 500);
+    }
+};
+
+/**
+ * RESPOND to question validation (Week 3 functionality)  
+ */
+exports.respondToValidation = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { agreed, comment } = req.body;
+
+        // Validate input
+        if (typeof agreed !== 'boolean') {
+            return res.status(400).json({ message: "Agreed field must be a boolean." });
+        }
+
+        const question = await Question.findById(id);
+        if (!question) {
+            return res.status(404).json({ message: "Question not found." });
+        }
+
+        // Update question with user's response to validation
+        question.user_agreement = {
+            agreed: agreed,
+            comment: comment || '',
+            responded_at: new Date()
+        };
+
+        await question.save();
+
+        res.status(200).json({
+            message: "Response to validation saved successfully.",
+            question: question
+        });
+    } catch (err) {
+        throwError(`Error saving validation response: ${err.message}`, 500);
+    }
+};

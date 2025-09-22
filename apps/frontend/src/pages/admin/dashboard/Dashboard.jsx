@@ -1,7 +1,15 @@
 import * as authService from '@app/pages/auth/authService';
-import { useGetQuestionsByModulQuery, useLazyGetModulsBySubjectQuery } from '@app/redux/api';
+import {
+  useGetQuestionsByModulQuery,
+  useLazyGetModulsBySubjectQuery,
+  useRespondToValidationMutation,
+  useValidateQuestionMutation
+} from '@app/redux/api';
 import {
   Box,
+  Button,
+  ButtonGroup,
+  Chip,
   CircularProgress,
   FormControl,
   InputLabel,
@@ -10,14 +18,23 @@ import {
   Typography
 } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
-import AddQuestionModal from '../components/AddQuestionModal';
+import RespondToValidationModal from '../components/RespondToValidationModal';
 import ValidateQuestionModal from '../components/ValidateQuestionModal';
+import DefaultWeek from './weeks/DefaultWeek';
+import Week1 from './weeks/Week1';
+import Week2 from './weeks/Week2';
+import Week3 from './weeks/Week3';
 
 const Dashboard = () => {
   const [currentSubjectId, setCurrentSubjectId] = useState(null);
   const [selectedModulId, setSelectedModulId] = useState('');
   const [trigger, { data: moduls = [], isFetching }] = useLazyGetModulsBySubjectQuery();
   const [selectedModul, setSelectedModul] = useState(null);
+
+  // RTK Query mutations for validation and responses
+  const [validateQuestion] = useValidateQuestionMutation();
+  const [respondToValidation] = useRespondToValidationMutation();
+
   // localCreated stores newly created questions client-side until server returns them
   const [localCreated, setLocalCreated] = useState({}); // { modulId: { weekNumber: [questions] } }
 
@@ -112,6 +129,11 @@ const Dashboard = () => {
   const [selectedWeekNumber, setSelectedWeekNumber] = useState(1);
   const [validateOpen, setValidateOpen] = useState(false);
   const [questionToValidate, setQuestionToValidate] = useState(null);
+  const [respondOpen, setRespondOpen] = useState(false);
+  const [questionToRespond, setQuestionToRespond] = useState(null);
+
+  // Debug: manual week override
+  const [debugWeekOverride, setDebugWeekOverride] = useState(null);
 
   // When selected module changes, reset selectedWeekNumber to the current week (or 1)
   useEffect(() => {
@@ -178,6 +200,35 @@ const Dashboard = () => {
     }
   };
 
+  // State management helpers
+  const getWeekStorageKey = (moduleId, weekNum, type) =>
+    `module-${moduleId}-week-${weekNum}-${type}`;
+
+  const saveWeekState = (moduleId, weekNum, type, data) => {
+    try {
+      localStorage.setItem(getWeekStorageKey(moduleId, weekNum, type), JSON.stringify(data));
+    } catch {
+      // ignore storage errors
+    }
+  };
+
+  const getWeekState = (moduleId, weekNum, type) => {
+    try {
+      const raw = localStorage.getItem(getWeekStorageKey(moduleId, weekNum, type));
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  };
+
+  // Get effective current week (considering debug override)
+  const getEffectiveCurrentWeek = (weeks, now) => {
+    if (debugWeekOverride !== null && weeks[debugWeekOverride - 1]) {
+      return weeks[debugWeekOverride - 1];
+    }
+    return weeks.find((w) => isDateInRange(now, w.start, w.end)) || weeks[0] || null;
+  };
+
   return (
     <Box sx={{ pt: 2 }}>
       {isFetching ? (
@@ -199,6 +250,46 @@ const Dashboard = () => {
               ))}
             </Select>
           </FormControl>
+
+          {/* Debug controls */}
+          <Box
+            sx={{
+              mb: 3,
+              p: 2,
+              bgcolor: 'warning.50',
+              borderRadius: 1,
+              border: '1px solid',
+              borderColor: 'warning.200'
+            }}
+          >
+            <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+              Debug: Manuálne prepnutie týždňa
+            </Typography>
+            <ButtonGroup variant="outlined" size="small">
+              <Button
+                onClick={() => setDebugWeekOverride(1)}
+                color={debugWeekOverride === 1 ? 'primary' : 'inherit'}
+              >
+                Týždeň 1
+              </Button>
+              <Button
+                onClick={() => setDebugWeekOverride(2)}
+                color={debugWeekOverride === 2 ? 'primary' : 'inherit'}
+              >
+                Týždeň 2
+              </Button>
+              <Button
+                onClick={() => setDebugWeekOverride(3)}
+                color={debugWeekOverride === 3 ? 'primary' : 'inherit'}
+              >
+                Týždeň 3
+              </Button>
+              <Button onClick={() => setDebugWeekOverride(null)}>Reset</Button>
+            </ButtonGroup>
+            {debugWeekOverride && (
+              <Chip label={`Aktívny: Týždeň ${debugWeekOverride}`} size="small" sx={{ ml: 1 }} />
+            )}
+          </Box>
         </>
       ) : (
         <Typography color="text.secondary">Pre tento predmet nie sú žiadne moduly.</Typography>
@@ -209,8 +300,7 @@ const Dashboard = () => {
         ? (() => {
             const weeks = buildWeeks(selectedModul);
             const now = new Date();
-            const currentWeek =
-              weeks.find((w) => isDateInRange(now, w.start, w.end)) || weeks[0] || null;
+            const currentWeek = getEffectiveCurrentWeek(weeks, now);
 
             const renderWeek = (w, isCurrent) => {
               const status = isCurrent
@@ -218,188 +308,59 @@ const Dashboard = () => {
                 : now < w.start
                   ? 'Coming soon'
                   : 'Completed';
-              // default questions for this week (server + local)
-              let questions =
-                (questionsByWeekMerged[selectedModul._id] &&
-                  questionsByWeekMerged[selectedModul._id][w.weekNumber]) ||
-                [];
 
-              // If this is week 2, instead show two random questions from the module
-              // where the owner is NOT the current user.
-              let externalSelection = [];
-              if (w.weekNumber === 2) {
-                try {
-                  const pool = (modulQuestions || []).filter(
-                    (q) => String(q.createdBy ?? q.created_by) !== String(userId)
-                  );
+              const commonProps = {
+                week: w,
+                isCurrent,
+                status,
+                formatDate
+              };
 
-                  const storageKey = `module-${selectedModul._id}-week-2-selection`;
-                  const stored = (() => {
-                    try {
-                      const raw = localStorage.getItem(storageKey);
-                      return raw ? JSON.parse(raw) : null;
-                    } catch {
-                      return null;
-                    }
-                  })();
-
-                  if (stored && Array.isArray(stored) && stored.length > 0) {
-                    // restore from stored ids if they still exist in pool
-                    const restored = stored
-                      .map((id) => pool.find((p) => String(p._id) === String(id)))
-                      .filter(Boolean)
-                      .slice(0, 2);
-                    if (restored.length === stored.length && restored.length > 0) {
-                      externalSelection = restored;
-                    } else {
-                      // stored ids missing or invalid -> choose new and persist
-                      for (let i = pool.length - 1; i > 0; i--) {
-                        const j = Math.floor(Math.random() * (i + 1));
-                        [pool[i], pool[j]] = [pool[j], pool[i]];
-                      }
-                      externalSelection = pool.slice(0, 2);
-                      try {
-                        localStorage.setItem(
-                          storageKey,
-                          JSON.stringify(externalSelection.map((q) => q._id))
-                        );
-                      } catch {
-                        // ignore storage errors
-                      }
-                    }
-                  } else {
-                    // no stored selection -> pick and persist
-                    for (let i = pool.length - 1; i > 0; i--) {
-                      const j = Math.floor(Math.random() * (i + 1));
-                      [pool[i], pool[j]] = [pool[j], pool[i]];
-                    }
-                    externalSelection = pool.slice(0, 2);
-                    try {
-                      localStorage.setItem(
-                        storageKey,
-                        JSON.stringify(externalSelection.map((q) => q._id))
-                      );
-                    } catch {
-                      // ignore storage errors
-                    }
-                  }
-                } catch {
-                  externalSelection = [];
-                }
-                // use externalSelection for rendering slots below
-                questions = externalSelection;
+              // Week 1: Add questions
+              if (w.weekNumber === 1) {
+                return (
+                  <Week1
+                    {...commonProps}
+                    questionsByWeekMerged={questionsByWeekMerged}
+                    selectedModul={selectedModul}
+                    getWeekState={getWeekState}
+                    saveWeekState={saveWeekState}
+                    setLocalCreated={setLocalCreated}
+                  />
+                );
               }
-              return (
-                <Box
-                  key={w.weekNumber}
-                  sx={{
-                    p: 2,
-                    mb: 1,
-                    borderRadius: 1,
-                    border: 1,
-                    borderColor: isCurrent ? 'primary.main' : 'grey.300',
-                    backgroundColor: isCurrent ? 'rgba(25,118,210,0.08)' : 'transparent'
-                  }}
-                >
-                  <Typography variant="h6">
-                    Týždeň {w.weekNumber} ({formatDate(w.start)} - {formatDate(w.end)})
-                  </Typography>
-                  <Typography color="text.secondary">{status}</Typography>
-                  <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
-                    {(() => {
-                      const slots = [];
-                      for (let i = 0; i < 2; i++) {
-                        // For week 2, use externalSelection (already set on questions variable) which comes from modulQuestions
-                        const q = questions[i];
-                        // If this is week 2 and question belongs to another user, render as clickable validation card
-                        if (
-                          w.weekNumber === 2 &&
-                          q &&
-                          String(q.createdBy ?? q.created_by) !== String(userId)
-                        ) {
-                          slots.push(
-                            <Box
-                              key={`ext-${i}`}
-                              sx={{
-                                p: 1,
-                                border: '1px solid',
-                                borderColor: 'grey.300',
-                                borderRadius: 1,
-                                cursor: 'pointer',
-                                '&:hover': { backgroundColor: 'grey.50' }
-                              }}
-                              onClick={() => {
-                                setQuestionToValidate(q);
-                                setValidateOpen(true);
-                              }}
-                            >
-                              <Typography sx={{ fontWeight: 600 }}>{q.text}</Typography>
-                              <Typography color="text.secondary">Odpoveď: {q.correct}</Typography>
-                            </Box>
-                          );
-                        } else if (q) {
-                          slots.push(
-                            <Box
-                              key={i}
-                              sx={{
-                                p: 1,
-                                border: '1px solid',
-                                borderColor: 'grey.300',
-                                borderRadius: 1
-                              }}
-                            >
-                              <Typography sx={{ fontWeight: 600 }}>{q.text}</Typography>
-                              <Typography color="text.secondary">Odpoveď: {q.correct}</Typography>
-                            </Box>
-                          );
-                        } else {
-                          if (w.weekNumber === 2) {
-                            // For week 2 we intentionally do not render AddQuestionModal rows.
-                            // If there is no question (e.g. not enough external questions), show an empty placeholder.
-                            slots.push(
-                              <Box
-                                key={`empty-${i}`}
-                                sx={{
-                                  p: 2,
-                                  border: '1px dashed',
-                                  borderColor: 'grey.200',
-                                  borderRadius: 1,
-                                  color: 'text.disabled'
-                                }}
-                              >
-                                <Typography>Žiadna otázka</Typography>
-                              </Box>
-                            );
-                          } else {
-                            slots.push(
-                              <Box key={i} sx={{ display: 'flex', alignItems: 'center' }}>
-                                <AddQuestionModal
-                                  modulId={selectedModul._id}
-                                  disabled={!isCurrent}
-                                  onCreated={(created) => {
-                                    setLocalCreated((prev) => {
-                                      const next = { ...prev };
-                                      if (!next[selectedModul._id]) next[selectedModul._id] = {};
-                                      if (!next[selectedModul._id][w.weekNumber])
-                                        next[selectedModul._id][w.weekNumber] = [];
-                                      next[selectedModul._id][w.weekNumber].push(created);
-                                      return next;
-                                    });
-                                  }}
-                                />
-                                <Typography color="text.secondary" sx={{ ml: 1 }}>
-                                  Pridať otázku
-                                </Typography>
-                              </Box>
-                            );
-                          }
-                        }
-                      }
-                      return slots;
-                    })()}
-                  </Box>
-                </Box>
-              );
+
+              // Week 2: Validate external questions
+              if (w.weekNumber === 2) {
+                return (
+                  <Week2
+                    {...commonProps}
+                    modulQuestions={modulQuestions}
+                    userId={userId}
+                    selectedModul={selectedModul}
+                    getWeekState={getWeekState}
+                    saveWeekState={saveWeekState}
+                    setQuestionToValidate={setQuestionToValidate}
+                    setValidateOpen={setValidateOpen}
+                  />
+                );
+              }
+
+              // Week 3: Respond to validations
+              if (w.weekNumber === 3) {
+                return (
+                  <Week3
+                    {...commonProps}
+                    modulQuestions={modulQuestions}
+                    userId={userId}
+                    setQuestionToRespond={setQuestionToRespond}
+                    setRespondOpen={setRespondOpen}
+                  />
+                );
+              }
+
+              // Default for other weeks
+              return <DefaultWeek {...commonProps} />;
             };
 
             return (
@@ -465,11 +426,44 @@ const Dashboard = () => {
                     const isChosenCurrent = chosen
                       ? isDateInRange(now, chosen.start, chosen.end)
                       : false;
-                    return chosen ? (
-                      renderWeek(chosen, isChosenCurrent)
-                    ) : (
-                      <Typography>Vyberte týždeň</Typography>
-                    );
+
+                    // Check if the chosen week should be accessible
+                    const effectiveCurrentWeek = getEffectiveCurrentWeek(weeks, now);
+                    const currentWeekNumber = effectiveCurrentWeek
+                      ? effectiveCurrentWeek.weekNumber
+                      : 1;
+                    const isWeekAccessible = chosen && chosen.weekNumber <= currentWeekNumber;
+
+                    if (!chosen) {
+                      return <Typography>Vyberte týždeň</Typography>;
+                    }
+
+                    if (!isWeekAccessible) {
+                      return (
+                        <Box
+                          sx={{
+                            p: 3,
+                            textAlign: 'center',
+                            border: '1px dashed',
+                            borderColor: 'grey.300',
+                            borderRadius: 1,
+                            bgcolor: 'grey.50'
+                          }}
+                        >
+                          <Typography variant="h6" color="text.secondary" sx={{ mb: 1 }}>
+                            Týždeň {chosen.weekNumber}
+                          </Typography>
+                          <Typography color="text.secondary">
+                            Tento týždeň ešte nie je dostupný
+                          </Typography>
+                          <Typography variant="body2" color="text.disabled" sx={{ mt: 1 }}>
+                            Bude dostupný počas týždňa {chosen.weekNumber}
+                          </Typography>
+                        </Box>
+                      );
+                    }
+
+                    return renderWeek(chosen, isChosenCurrent);
                   })()}
                 </Box>
               </Box>
@@ -484,15 +478,40 @@ const Dashboard = () => {
         onClose={() => setValidateOpen(false)}
         onSubmit={async (questionId, payload) => {
           try {
-            // submit validation to backend - endpoint may not exist, so ignore errors
-            await fetch(`/api/questions/${questionId}/validate`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(payload)
-            });
-          } catch {
-            // swallow - backend may not support this yet
+            // Submit validation using RTK Query - this will save to database
+            await validateQuestion({
+              questionId,
+              valid: payload.valid,
+              comment: payload.comment
+            }).unwrap();
+
+            // The RTK Query will automatically invalidate cache and refresh data
+            console.log('Validation submitted successfully');
+          } catch (error) {
+            console.error('Error submitting validation:', error);
             // In future: show toast / update UI
+          }
+        }}
+      />
+
+      {/* Response modal for week 3 */}
+      <RespondToValidationModal
+        open={respondOpen}
+        question={questionToRespond}
+        onClose={() => setRespondOpen(false)}
+        onSubmit={async (questionId, payload) => {
+          try {
+            // Submit response using RTK Query - this will save to database
+            await respondToValidation({
+              questionId,
+              agreed: payload.agreed,
+              comment: payload.comment
+            }).unwrap();
+
+            // The RTK Query will automatically invalidate cache and refresh data
+            console.log('Response submitted successfully');
+          } catch (error) {
+            console.error('Error submitting response:', error);
           }
         }}
       />

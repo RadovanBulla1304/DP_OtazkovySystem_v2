@@ -7,7 +7,9 @@ const {
     getQuestionById,
     getQuestionsByModuleId,
     getQuestionsBySubjectId,
-    getQuestionsByUserId
+    getQuestionsByUserId,
+    validateQuestion,
+    respondToValidation
 } = require("../controllers/questionController");
 
 const router = express.Router();
@@ -20,6 +22,10 @@ router.get("/:id", getQuestionById);                        // Get a question by
 router.get("/", getAllQuestions);                           // Get all questions
 router.post("/", createQuestion);                           // Create a new question
 router.put("/:id", editQuestion);                           // Edit a question by ID
-router.delete("/:id", deleteQuestion);// Delete a question by ID
+router.delete("/:id", deleteQuestion);                      // Delete a question by ID
+
+// Week 2 & 3 functionality
+router.post("/:id/validate", validateQuestion);             // Validate a question (Week 2)
+router.post("/:id/respond", respondToValidation);           // Respond to validation (Week 3)
 
 module.exports = router;

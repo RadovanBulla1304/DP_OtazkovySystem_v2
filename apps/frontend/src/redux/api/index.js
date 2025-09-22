@@ -256,6 +256,28 @@ export const api = createApi({
       }),
       invalidatesTags: ['Questions']
     }),
+    validateQuestion: builder.mutation({
+      query: ({ questionId, valid, comment }) => ({
+        url: `/question/${questionId}/validate`,
+        method: 'POST',
+        body: { valid, comment }
+      }),
+      invalidatesTags: (result, error, { questionId }) => [
+        { type: 'Questions', id: questionId },
+        'Questions'
+      ]
+    }),
+    respondToValidation: builder.mutation({
+      query: ({ questionId, agreed, comment }) => ({
+        url: `/question/${questionId}/respond`,
+        method: 'POST',
+        body: { agreed, comment }
+      }),
+      invalidatesTags: (result, error, { questionId }) => [
+        { type: 'Questions', id: questionId },
+        'Questions'
+      ]
+    }),
     getQuestionsBySubjectId: builder.query({
       query: (subjectId) => ({
         url: `/question/subject/${subjectId}`,
@@ -384,6 +406,8 @@ export const {
   useGetQuestionsByModulQuery,
   useLazyGetQuestionsByModulQuery,
   useDeleteQuestionMutation,
+  useValidateQuestionMutation,
+  useRespondToValidationMutation,
   useGetQuestionsBySubjectIdQuery,
   useLazyGetQuestionsBySubjectIdQuery,
   useGetQuestionByIdQuery,
