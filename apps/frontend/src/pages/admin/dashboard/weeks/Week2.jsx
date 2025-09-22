@@ -135,7 +135,21 @@ const Week2 = ({
                 }}
               >
                 <Typography sx={{ fontWeight: 600 }}>{q.text}</Typography>
-                <Typography color="text.secondary">Odpoveď: {q.correct}</Typography>
+                <Box sx={{ mt: 1 }}>
+                  {q.options &&
+                    Object.entries(q.options).map(([key, value]) => (
+                      <Typography
+                        key={key}
+                        variant="body2"
+                        sx={{
+                          color: 'text.secondary',
+                          ml: 1
+                        }}
+                      >
+                        {key.toUpperCase()}) {value}
+                      </Typography>
+                    ))}
+                </Box>
                 {validated && (
                   <Box sx={{ mt: 1 }}>
                     <Chip

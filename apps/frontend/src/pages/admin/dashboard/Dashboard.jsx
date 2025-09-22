@@ -24,6 +24,7 @@ import DefaultWeek from './weeks/DefaultWeek';
 import Week1 from './weeks/Week1';
 import Week2 from './weeks/Week2';
 import Week3 from './weeks/Week3';
+import WeekSelector from './weeks/WeekSelector';
 
 const Dashboard = () => {
   const [currentSubjectId, setCurrentSubjectId] = useState(null);
@@ -387,85 +388,25 @@ const Dashboard = () => {
                   }}
                 />
 
-                {/* Right column - 50% width */}
-                <Box sx={{ width: '50%', pl: 2 }}>
-                  {/* Spinner + date range at top of right column */}
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                    {selectedModul && (
-                      <Box>
-                        <Typography sx={{ fontWeight: 600 }}>
-                          {selectedModul.name || selectedModul.title || ''}
-                        </Typography>
-                        <Typography color="text.secondary">
-                          {selectedModul.date_start ? formatDate(selectedModul.date_start) : '-'} —{' '}
-                          {selectedModul.date_end ? formatDate(selectedModul.date_end) : '-'}
-                        </Typography>
-                      </Box>
-                    )}
-                  </Box>
-
-                  <FormControl fullWidth sx={{ mb: 2 }}>
-                    <InputLabel id="week-select-label">Týždeň</InputLabel>
-                    <Select
-                      labelId="week-select-label"
-                      value={selectedWeekNumber}
-                      label="Týždeň"
-                      onChange={(e) => setSelectedWeekNumber(Number(e.target.value))}
-                    >
-                      {weeks.map((w) => (
-                        <MenuItem key={w.weekNumber} value={w.weekNumber}>
-                          Týždeň {w.weekNumber} ({formatDate(w.start)})
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-
-                  {(() => {
-                    const chosen =
-                      weeks.find((x) => x.weekNumber === selectedWeekNumber) || weeks[0] || null;
-                    const isChosenCurrent = chosen
-                      ? isDateInRange(now, chosen.start, chosen.end)
-                      : false;
-
-                    // Check if the chosen week should be accessible
-                    const effectiveCurrentWeek = getEffectiveCurrentWeek(weeks, now);
-                    const currentWeekNumber = effectiveCurrentWeek
-                      ? effectiveCurrentWeek.weekNumber
-                      : 1;
-                    const isWeekAccessible = chosen && chosen.weekNumber <= currentWeekNumber;
-
-                    if (!chosen) {
-                      return <Typography>Vyberte týždeň</Typography>;
-                    }
-
-                    if (!isWeekAccessible) {
-                      return (
-                        <Box
-                          sx={{
-                            p: 3,
-                            textAlign: 'center',
-                            border: '1px dashed',
-                            borderColor: 'grey.300',
-                            borderRadius: 1,
-                            bgcolor: 'grey.50'
-                          }}
-                        >
-                          <Typography variant="h6" color="text.secondary" sx={{ mb: 1 }}>
-                            Týždeň {chosen.weekNumber}
-                          </Typography>
-                          <Typography color="text.secondary">
-                            Tento týždeň ešte nie je dostupný
-                          </Typography>
-                          <Typography variant="body2" color="text.disabled" sx={{ mt: 1 }}>
-                            Bude dostupný počas týždňa {chosen.weekNumber}
-                          </Typography>
-                        </Box>
-                      );
-                    }
-
-                    return renderWeek(chosen, isChosenCurrent);
-                  })()}
-                </Box>
+                {/* Right column - Week Selector Component */}
+                <WeekSelector
+                  selectedModul={selectedModul}
+                  weeks={weeks}
+                  selectedWeekNumber={selectedWeekNumber}
+                  setSelectedWeekNumber={setSelectedWeekNumber}
+                  formatDate={formatDate}
+                  questionsByWeekMerged={questionsByWeekMerged}
+                  modulQuestions={modulQuestions}
+                  userId={userId}
+                  getWeekState={getWeekState}
+                  saveWeekState={saveWeekState}
+                  setLocalCreated={setLocalCreated}
+                  setQuestionToValidate={setQuestionToValidate}
+                  setValidateOpen={setValidateOpen}
+                  setQuestionToRespond={setQuestionToRespond}
+                  setRespondOpen={setRespondOpen}
+                  currentWeekNumber={getEffectiveCurrentWeek(weeks, now)?.weekNumber || 1}
+                />
               </Box>
             );
           })()
