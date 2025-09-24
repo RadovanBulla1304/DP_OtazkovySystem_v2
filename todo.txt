@@ -1,27 +1,17 @@
 -------------------------------------------
-bugy
-
-pri pridavani pouzivatela moze mat viac userov rovnaku group number
-vytvoril som noveho usera a ma rovnake otazky v prvom a druhom tyzdni ako user 2 ? 
-ked je aurat week 1 alebo 2 vo week 3 napravo nema byt nic vidno 
--------------------------------------------
-
-
-
-
-
--------------------------------------------
 todo
 
+users pridat stlpec predmet a body -> double click na row otvori modal s bodmi 
+otazky na receziu davat najprv len otazky ktore este neboli recenzovane. ak uz tieto otazky dosli vybrat random 
+    -> ak ma otazka viac ako 2 recenzie vybrat nahodne jednu z nich. 
+forum ukladat tagy aby ich netrebalo vzdy pisat. -> vsetky dat to loewrcase 
+forum zoradit prispevky podla like/dislike -> defaultne nastavit takto 
 vsade skontrolovat a dorobit pekne joi schemy
--------------------------------------------
 
+kazdy user ma vlastne otazky na teste 
+ak projektu dam 10/10 kazdy user dostane 10 bodov k osobnemu hodnoteniu v tabulke s bodi pod stlpec projekty 
+pouzivatelia si vedia hodnotit projekty navzajomnu znamku. spravi sa avg . flag pri useroch ktory neohodnotili projekty
+import pouzivatelov z csv -> iba pre predmet nie vytvorenie novych uzivatelov
 
--------------------------------------------
-otazky
-
--> nechat v main menu policko "Moje otazky" pre userov ? user si uz teraz vie pozriet vsetky svoje otazky 
-a reakcie na dashboarde podla predmetu a modulu
-
--> nechat vsekty otazky kde user vidi otazky daneho predmetu modulu od vsetkych uzivatelov ? 
+Do 6.10 spravit funkcnu verrziu na testovanie ! 
 -------------------------------------------

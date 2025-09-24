@@ -1,4 +1,5 @@
-import { Box, Chip, Typography } from '@mui/material';
+import { useGetUserPointsQuery } from '@app/redux/api';
+import { Box, Chip, Stack, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
 
 const Week2 = ({
@@ -14,11 +15,23 @@ const Week2 = ({
   setQuestionToValidate,
   setValidateOpen
 }) => {
+  // Get points data for the current user
+  const { data: pointsData } = useGetUserPointsQuery(userId, {
+    skip: !userId
+  });
+
   // Check validation completion by counting questions validated by current user
   const questionsValidatedByUser = (modulQuestions || []).filter(
     (q) => q.validated_by && String(q.validated_by) === String(userId)
   ).length;
   const isCompleted = questionsValidatedByUser >= 2;
+
+  // Calculate points for Week 2 - validation (1 point per validation, max 2)
+  const validationPoints =
+    pointsData?.data?.filter((point) => point.category === 'question_validation') || [];
+
+  const earnedPoints = validationPoints.length;
+  const maxPoints = 2;
 
   // Always get/generate questions for validation (don't switch based on completion)
   let questions = [];
@@ -106,9 +119,18 @@ const Week2 = ({
       <Typography variant="body2" sx={{ mt: 1, fontStyle: 'italic' }}>
         Validuj 2 otázky od iných študentov
       </Typography>
-      {isCompleted && (
-        <Chip label="Validácia dokončená" color="success" size="small" sx={{ mt: 1 }} />
-      )}
+      <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
+        {isCompleted && <Chip label="Validácia dokončená" color="success" size="small" />}
+        <Chip
+          label={`${earnedPoints}/${maxPoints} bodov`}
+          color={earnedPoints > 0 ? (earnedPoints >= maxPoints ? 'success' : 'warning') : 'default'}
+          size="small"
+          variant="outlined"
+        />
+        {earnedPoints >= maxPoints && (
+          <Chip label="Všetky body získané" color="success" size="small" />
+        )}
+      </Stack>
       <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
         {[0, 1].map((i) => {
           const q = questions[i];

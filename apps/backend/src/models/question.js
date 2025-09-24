@@ -54,6 +54,13 @@ const QuestionSchema = new mongoose.Schema(
             total_ratings: { type: Number, default: 0 },
         },
 
+        // Track points awarded for this question
+        pointsAwarded: {
+            creation: { type: Boolean, default: false }, // Week 1 - Creation
+            validation: { type: Boolean, default: false }, // Week 2 - Validation
+            reparation: { type: Boolean, default: false }, // Week 3 - Reparation
+        },
+
         is_active: { type: Boolean, default: true },
     },
     {

@@ -1,4 +1,5 @@
-import { Box, Chip, Typography } from '@mui/material';
+import { useGetUserPointsQuery } from '@app/redux/api';
+import { Box, Chip, Stack, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
 
 const Week3 = ({
@@ -11,6 +12,11 @@ const Week3 = ({
   setQuestionToRespond,
   setRespondOpen
 }) => {
+  // Get points data for the current user
+  const { data: pointsData } = useGetUserPointsQuery(userId, {
+    skip: !userId
+  });
+
   // Get user's questions that should have been validated
   const userQuestions = (modulQuestions || []).filter(
     (q) => String(q.createdBy ?? q.created_by) === String(userId)
@@ -28,6 +34,17 @@ const Week3 = ({
       user_agreement: q.user_agreement
     };
   });
+
+  // Count how many questions have responses
+  const questionsWithResponses = questionsWithValidations.filter((q) => q.user_agreement).length;
+  const isCompleted = questionsWithResponses >= 2;
+
+  // Calculate points for Week 3 - reparation (1 point per response, max 2)
+  const reparationPoints =
+    pointsData?.data?.filter((point) => point.category === 'question_reparation') || [];
+
+  const earnedPoints = reparationPoints.length;
+  const maxPoints = 2;
 
   return (
     <Box
@@ -48,6 +65,18 @@ const Week3 = ({
       <Typography variant="body2" sx={{ mt: 1, fontStyle: 'italic' }}>
         Reaguj na validácie tvojích otázok
       </Typography>
+      <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
+        {isCompleted && <Chip label="Odpovede dokončené" color="success" size="small" />}
+        <Chip
+          label={`${earnedPoints}/${maxPoints} bodov`}
+          color={earnedPoints > 0 ? (earnedPoints >= maxPoints ? 'success' : 'warning') : 'default'}
+          size="small"
+          variant="outlined"
+        />
+        {earnedPoints >= maxPoints && (
+          <Chip label="Všetky body získané" color="success" size="small" />
+        )}
+      </Stack>
       <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
         {questionsWithValidations.slice(0, 2).map((q, i) => {
           const responded = q.user_agreement; // Use database field instead of localStorage

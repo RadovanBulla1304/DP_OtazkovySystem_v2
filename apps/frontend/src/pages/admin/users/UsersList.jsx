@@ -9,6 +9,7 @@ import { toast } from 'react-toastify';
 import AddUserModal from '../components/AddUserModal';
 import AssignToSubject from '../components/AssignToSubject';
 import EditUserModal from '../components/EditUserModal';
+import UserPointsModal from '../components/UserPointsModal';
 
 const UsersList = () => {
   const { data, isLoading } = useGetUsersListQuery();
@@ -18,6 +19,8 @@ const UsersList = () => {
   const [selectedUserIds, setSelectedUserIds] = useState([]);
   // State for assign modal
   const [assignModalOpen, setAssignModalOpen] = useState(false);
+  // State for points modal
+  const [pointsModalOpen, setPointsModalOpen] = useState(false);
 
   const onRemoveHandler = async (id) => {
     const response = await removeUser(id);
@@ -35,6 +38,8 @@ const UsersList = () => {
     { field: 'email', headerName: 'Email', flex: 1 },
     { field: 'groupNumber', headerName: 'Skupina', flex: 1, minWidth: 100 },
     { field: 'studentNumber', headerName: 'Študentské číslo', flex: 1, minWidth: 120 },
+    // Points column is calculated client-side, so we'll see it in the UI but not use it for any calculations yet
+    { field: 'points', headerName: 'Body', flex: 1, minWidth: 80, valueGetter: () => '...' },
     {
       field: 'is_active',
       headerName: 'Účet aktívny',
@@ -80,7 +85,18 @@ const UsersList = () => {
     setSelectedUserIds([]);
   };
 
-  // ...columns are now defined above...
+  // Handler for opening points modal
+  const handleOpenPointsModal = () => {
+    if (selectedUserIds.length === 0) {
+      toast.warn('Vyberte aspoň jedného používateľa');
+      return;
+    }
+    setPointsModalOpen(true);
+  };
+
+  const handleClosePointsModal = () => {
+    setPointsModalOpen(false);
+  };
 
   return (
     <Box py={2}>
@@ -90,15 +106,24 @@ const UsersList = () => {
             Používatelia
           </Typography>
         </Grid2>
-        <Grid2 size={{ xs: 12, sm: 3 }} justifyContent={'flex-end'} display={'flex'} gap={1}>
+        <Grid2 size={{ xs: 12, sm: 6 }} justifyContent={'flex-end'} display={'flex'} gap={1}>
           <Button
             variant="outlined"
             color="primary"
             disabled={selectedUserIds.length === 0}
-            sx={{ m: 1, minWidth: 150 }}
+            sx={{ m: 1 }}
             onClick={handleOpenAssignModal}
           >
             Priraď k predmetu
+          </Button>
+          <Button
+            variant="outlined"
+            color="secondary"
+            disabled={selectedUserIds.length === 0}
+            sx={{ m: 1 }}
+            onClick={handleOpenPointsModal}
+          >
+            Zobraziť body
           </Button>
           <AddUserModal />
         </Grid2>
@@ -133,6 +158,11 @@ const UsersList = () => {
         onClose={handleCloseAssignModal}
         userIds={selectedUserIds}
         onSuccess={handleAssignSuccess}
+      />
+      <UserPointsModal
+        open={pointsModalOpen}
+        onClose={handleClosePointsModal}
+        userIds={selectedUserIds}
       />
     </Box>
   );

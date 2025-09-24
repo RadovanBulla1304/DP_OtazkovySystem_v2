@@ -1,0 +1,4 @@
+-------------------------------------------
+otazky
+-> nechat vsekty otazky kde user vidi otazky daneho predmetu modulu od vsetkych uzivatelov ? 
+-------------------------------------------

@@ -1,4 +1,5 @@
-import { Box, Typography } from '@mui/material';
+import { useGetUserPointsQuery } from '@app/redux/api';
+import { Box, Chip, Stack, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
 import AddQuestionModal from '../../components/AddQuestionModal';
 
@@ -11,8 +12,13 @@ const Week1 = ({
   selectedModul,
   getWeekState,
   saveWeekState,
-  setLocalCreated
+  setLocalCreated,
+  userId
 }) => {
+  // Get points data for the current user
+  const { data: pointsData } = useGetUserPointsQuery(userId, {
+    skip: !userId
+  });
   const userQuestions =
     (questionsByWeekMerged[selectedModul._id] &&
       questionsByWeekMerged[selectedModul._id][week.weekNumber]) ||
@@ -22,6 +28,18 @@ const Week1 = ({
     ...userQuestions,
     ...savedQuestions.filter((sq) => !userQuestions.some((uq) => uq._id === sq._id))
   ];
+
+  // Calculate points for Week 1 - question creation (1 point per question, max 2)
+  const creationPoints =
+    pointsData?.data?.filter(
+      (point) =>
+        point.category === 'question_creation' &&
+        point.related_entity?.entity_type === 'Question' &&
+        allQuestions.some((q) => q._id === point.related_entity?.entity_id)
+    ) || [];
+
+  const earnedPoints = creationPoints.length;
+  const maxPoints = 2;
 
   return (
     <Box
@@ -42,6 +60,17 @@ const Week1 = ({
       <Typography variant="body2" sx={{ mt: 1, fontStyle: 'italic' }}>
         Pridaj 2 otázky pre tento týždeň
       </Typography>
+      <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
+        <Chip
+          label={`${earnedPoints}/${maxPoints} bodov`}
+          color={earnedPoints > 0 ? (earnedPoints >= maxPoints ? 'success' : 'warning') : 'default'}
+          size="small"
+          variant="outlined"
+        />
+        {earnedPoints >= maxPoints && (
+          <Chip label="Všetky body získané" color="success" size="small" />
+        )}
+      </Stack>
       <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
         {[0, 1].map((i) => {
           const q = allQuestions[i];
@@ -123,7 +152,8 @@ Week1.propTypes = {
   }).isRequired,
   getWeekState: PropTypes.func.isRequired,
   saveWeekState: PropTypes.func.isRequired,
-  setLocalCreated: PropTypes.func.isRequired
+  setLocalCreated: PropTypes.func.isRequired,
+  userId: PropTypes.string.isRequired
 };
 
 export default Week1;

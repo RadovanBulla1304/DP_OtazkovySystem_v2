@@ -1,4 +1,4 @@
-import { useCreateQuestionMutation } from '@app/redux/api';
+import { useCreateQuestionMutation, useGetTeacherMeQuery } from '@app/redux/api';
 import {
   Alert,
   Button,
@@ -31,10 +31,14 @@ const CreateQuestionModal = ({ open, onClose, modules, onQuestionCreated }) => {
     modul: ''
   });
 
-  //   const subjectId = useCurrentSubjectId();
+  // Fetch the current teacher's data
+  const { data: teacherData, isLoading: isLoadingTeacher } = useGetTeacherMeQuery();
   const [createQuestion, { isLoading }] = useCreateQuestionMutation();
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Combined loading state
+  const isLoadingData = isLoading || isLoadingTeacher;
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({
@@ -58,6 +62,11 @@ const CreateQuestionModal = ({ open, onClose, modules, onQuestionCreated }) => {
     setError(null);
 
     try {
+      // Make sure we have teacher data
+      if (!teacherData || !teacherData._id) {
+        throw new Error('Teacher data not available. Please try again.');
+      }
+
       const selectedModule = modules.find((m) => m._id === formData.modul);
 
       if (!selectedModule) {
@@ -70,6 +79,7 @@ const CreateQuestionModal = ({ open, onClose, modules, onQuestionCreated }) => {
         options: formData.options,
         correct: formData.correct,
         modul: formData.modul,
+        createdBy: teacherData?._id, // Add the teacher ID as creator
         validated_by_teacher: true,
         validated_by_teacher_comment: 'Created directly by teacher',
         valid: true, // Add valid flag for backend compatibility
@@ -98,6 +108,7 @@ const CreateQuestionModal = ({ open, onClose, modules, onQuestionCreated }) => {
             id: selectedModule._id, // Include both for compatibility
             name: selectedModule.name || selectedModule.title || 'Modul bez názvu'
           },
+          createdBy: teacherData?._id, // Add the teacher ID as creator
           validated_by_teacher: true,
           validated_by_teacher_at: new Date(),
           validated_by_teacher_comment: 'Created directly by teacher',
@@ -219,10 +230,10 @@ const CreateQuestionModal = ({ open, onClose, modules, onQuestionCreated }) => {
         <Button
           onClick={handleSubmit}
           variant="contained"
-          disabled={isSubmitting || !isFormValid() || isLoading}
-          startIcon={isSubmitting || isLoading ? <CircularProgress size={20} /> : null}
+          disabled={isSubmitting || !isFormValid() || isLoadingData}
+          startIcon={isSubmitting || isLoadingData ? <CircularProgress size={20} /> : null}
         >
-          {isSubmitting || isLoading ? 'Vytváram...' : 'Vytvoriť otázku'}
+          {isSubmitting || isLoadingData ? 'Vytváram...' : 'Vytvoriť otázku'}
         </Button>
       </DialogActions>
     </Dialog>

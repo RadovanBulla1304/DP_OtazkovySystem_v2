@@ -25,7 +25,8 @@ const PointSchema = new mongoose.Schema(
             type: String,
             enum: [
                 "question_creation",
-                "question_rating",
+                "question_validation",
+                "question_reparation",
                 "test_performance",
                 "forum_participation",
                 "project_work",

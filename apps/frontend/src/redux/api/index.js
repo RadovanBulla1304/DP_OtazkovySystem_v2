@@ -16,7 +16,7 @@ const baseQuery = fetchBaseQuery({
 export const api = createApi({
   reducerPath: 'api',
   baseQuery,
-  tagTypes: ['Users', 'Subjects', 'Moduls', 'Questions', 'QuestionRatings', 'ForumQuestions', 'Comments', 'Tests'],
+  tagTypes: ['Users', 'Subjects', 'Moduls', 'Questions', 'QuestionRatings', 'ForumQuestions', 'Comments', 'Tests', 'Points'],
   endpoints: (builder) => ({
     // USERS
     getUserMe: builder.query({
@@ -731,6 +731,68 @@ export const api = createApi({
         { type: 'Tests', id: `STATS-${arg}` }
       ]
     }),
+
+    // POINTS
+    getUserPoints: builder.query({
+      query: (userId) => ({
+        url: `/point/user/${userId}`,
+        method: 'GET'
+      }),
+      providesTags: (result, error, arg) => [
+        { type: 'Points', id: `USER-${arg}` },
+        'Points'
+      ]
+    }),
+    getUserPointsSummary: builder.query({
+      query: (userId) => ({
+        url: `/point/user/${userId}/summary`,
+        method: 'GET'
+      }),
+      providesTags: (result, error, arg) => [
+        { type: 'Points', id: `SUMMARY-USER-${arg}` },
+        'Points'
+      ]
+    }),
+    getUsersPointsSummary: builder.mutation({
+      query: (userIds) => ({
+        url: `/point/users/summary`,
+        method: 'POST',
+        body: { userIds }
+      }),
+      invalidatesTags: ['Points']
+    }),
+    awardPointsForQuestionCreation: builder.mutation({
+      query: (teacherId) => ({
+        url: '/point/award/week1',
+        method: 'POST',
+        body: { teacherId }
+      }),
+      invalidatesTags: ['Points']
+    }),
+    awardPointsForQuestionValidation: builder.mutation({
+      query: (teacherId) => ({
+        url: '/point/award/week2',
+        method: 'POST',
+        body: { teacherId }
+      }),
+      invalidatesTags: ['Points']
+    }),
+    awardPointsForQuestionReparation: builder.mutation({
+      query: (teacherId) => ({
+        url: '/point/award/week3',
+        method: 'POST',
+        body: { teacherId }
+      }),
+      invalidatesTags: ['Points']
+    }),
+    awardCustomPoints: builder.mutation({
+      query: (data) => ({
+        url: '/point/award/custom',
+        method: 'POST',
+        body: data
+      }),
+      invalidatesTags: ['Points']
+    }),
   })
 });
 
@@ -815,4 +877,14 @@ export const {
   useToggleTestPublicationMutation,
   useGetTestStatisticsQuery,
   useLazyGetTestStatisticsQuery,
+  // POINTS
+  useGetUserPointsQuery,
+  useLazyGetUserPointsQuery,
+  useGetUserPointsSummaryQuery,
+  useLazyGetUserPointsSummaryQuery,
+  useGetUsersPointsSummaryMutation,
+  useAwardPointsForQuestionCreationMutation,
+  useAwardPointsForQuestionValidationMutation,
+  useAwardPointsForQuestionReparationMutation,
+  useAwardCustomPointsMutation,
 } = api;
