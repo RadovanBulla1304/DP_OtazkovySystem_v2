@@ -201,27 +201,6 @@ const Dashboard = () => {
     }
   };
 
-  // State management helpers
-  const getWeekStorageKey = (moduleId, weekNum, type) =>
-    `module-${moduleId}-week-${weekNum}-${type}`;
-
-  const saveWeekState = (moduleId, weekNum, type, data) => {
-    try {
-      localStorage.setItem(getWeekStorageKey(moduleId, weekNum, type), JSON.stringify(data));
-    } catch {
-      // ignore storage errors
-    }
-  };
-
-  const getWeekState = (moduleId, weekNum, type) => {
-    try {
-      const raw = localStorage.getItem(getWeekStorageKey(moduleId, weekNum, type));
-      return raw ? JSON.parse(raw) : null;
-    } catch {
-      return null;
-    }
-  };
-
   // Get effective current week (considering debug override)
   const getEffectiveCurrentWeek = (weeks, now) => {
     if (debugWeekOverride !== null && weeks[debugWeekOverride - 1]) {
@@ -324,9 +303,8 @@ const Dashboard = () => {
                     {...commonProps}
                     questionsByWeekMerged={questionsByWeekMerged}
                     selectedModul={selectedModul}
-                    getWeekState={getWeekState}
-                    saveWeekState={saveWeekState}
                     setLocalCreated={setLocalCreated}
+                    userId={userId}
                   />
                 );
               }
@@ -338,9 +316,6 @@ const Dashboard = () => {
                     {...commonProps}
                     modulQuestions={modulQuestions}
                     userId={userId}
-                    selectedModul={selectedModul}
-                    getWeekState={getWeekState}
-                    saveWeekState={saveWeekState}
                     setQuestionToValidate={setQuestionToValidate}
                     setValidateOpen={setValidateOpen}
                   />
@@ -398,8 +373,6 @@ const Dashboard = () => {
                   questionsByWeekMerged={questionsByWeekMerged}
                   modulQuestions={modulQuestions}
                   userId={userId}
-                  getWeekState={getWeekState}
-                  saveWeekState={saveWeekState}
                   setLocalCreated={setLocalCreated}
                   setQuestionToValidate={setQuestionToValidate}
                   setValidateOpen={setValidateOpen}

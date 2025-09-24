@@ -10,7 +10,6 @@ const PointSchema = new mongoose.Schema(
         assigned_by: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Teacher",
-            required: true,
         },
         reason: {
             type: String,

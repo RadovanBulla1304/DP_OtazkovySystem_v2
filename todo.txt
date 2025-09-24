@@ -1,7 +1,7 @@
 -------------------------------------------
 todo
 
-users pridat stlpec predmet a body -> double click na row otvori modal s bodmi 
+//users pridat stlpec predmet a body -> double click na row otvori modal s bodmi 
 otazky na receziu davat najprv len otazky ktore este neboli recenzovane. ak uz tieto otazky dosli vybrat random 
     -> ak ma otazka viac ako 2 recenzie vybrat nahodne jednu z nich. 
 forum ukladat tagy aby ich netrebalo vzdy pisat. -> vsetky dat to loewrcase 

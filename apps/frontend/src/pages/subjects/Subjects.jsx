@@ -1,12 +1,23 @@
-import ConfirmationDialog from '@app/components/ConfirmationDialog';
 import {
   useDeleteAllModulsBySubjectMutation,
   useDeleteSubjectMutation,
   useGetAllSubjectsQuery
 } from '@app/redux/api';
-import { Box, Button, Card, CardContent, CircularProgress, Grid, Typography } from '@mui/material';
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Grid,
+  Typography
+} from '@mui/material';
+import { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import AddModulModal from '../admin/components/AddModulModal';
 import AddSubjectModal from '../admin/components/AddSubjectModal';
@@ -16,13 +27,24 @@ const Subjects = () => {
   const [deleteSubject] = useDeleteSubjectMutation();
   const [deleteAllModulsBySubject] = useDeleteAllModulsBySubjectMutation();
 
+  const location = useLocation();
+  const navigate = useNavigate();
+
   const [isSubjectModalOpen, setIsSubjectModalOpen] = useState(false);
   const [isModulModalOpen, setIsModulModalOpen] = useState(false);
   const [selectedSubjectId, setSelectedSubjectId] = useState(null);
   const [subjectToDelete, setSubjectToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const navigate = useNavigate();
+  // Check if we need to refresh the data (e.g., coming back from subject detail after deletion)
+  useEffect(() => {
+    if (location.state?.refresh) {
+      console.log('Refreshing subjects data after navigation...');
+      refetch();
+      // Clear the state to avoid repeated refreshes
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, refetch, navigate, location.pathname]);
 
   const handleOpenSubjectModal = () => setIsSubjectModalOpen(true);
   const handleCloseSubjectModal = () => setIsSubjectModalOpen(false);
@@ -88,6 +110,7 @@ const Subjects = () => {
         toast.error('Chyba pri odstraňovaní predmetu: ' + subjectResponse.error?.data?.message);
       } else {
         toast.success('Predmet a všetky jeho moduly boli úspešne odstránené');
+        // Force refetch to update the UI immediately
         await refetch();
       }
     } catch (error) {
@@ -95,6 +118,8 @@ const Subjects = () => {
       toast.error('Chyba pri odstraňovaní predmetu a modulov');
     } finally {
       setIsDeleting(false);
+      // Clear the subject to delete after the operation
+      setSubjectToDelete(null);
     }
   };
 
@@ -169,24 +194,57 @@ const Subjects = () => {
                   justifyContent: 'flex-end',
                   gap: 1
                 }}
-              ></Box>
+              >
+                <Button
+                  variant="outlined"
+                  color="error"
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    console.log('Delete button clicked for subject:', subject.name);
+                    setSubjectToDelete(subject);
+                  }}
+                >
+                  Odstrániť
+                </Button>
+              </Box>
             </Card>
           </Grid>
         ))}
       </Grid>
 
-      {/* Use ConfirmationDialog as a wrapper with children */}
+      {/* Confirmation Dialog for Delete Subject */}
       {subjectToDelete && (
-        <ConfirmationDialog
-          title={`Naozaj chcete odstrániť predmet ${subjectToDelete.name} a všetky jeho moduly?`}
-          onAccept={() => {
-            console.log('Delete confirmed for subject:', subjectToDelete._id);
-            confirmDelete(subjectToDelete);
-            setSubjectToDelete(null);
-          }}
+        <Dialog
+          open={!!subjectToDelete}
+          onClose={() => setSubjectToDelete(null)}
+          aria-labelledby="delete-subject-dialog-title"
+          aria-describedby="delete-subject-dialog-description"
         >
-          <div style={{ display: 'none' }} />
-        </ConfirmationDialog>
+          <DialogTitle id="delete-subject-dialog-title">Vymazať predmet?</DialogTitle>
+          <DialogContent>
+            <Typography id="delete-subject-dialog-description">
+              Naozaj chcete odstrániť predmet <strong>{subjectToDelete.name}</strong> a všetky jeho
+              moduly? Táto akcia je nevratná.
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setSubjectToDelete(null)} disabled={isDeleting}>
+              Zrušiť
+            </Button>
+            <Button
+              onClick={() => {
+                console.log('Delete confirmed for subject:', subjectToDelete._id);
+                confirmDelete(subjectToDelete);
+              }}
+              color="error"
+              variant="contained"
+              disabled={isDeleting}
+            >
+              {isDeleting ? 'Mazanie...' : 'Vymazať'}
+            </Button>
+          </DialogActions>
+        </Dialog>
       )}
     </div>
   );

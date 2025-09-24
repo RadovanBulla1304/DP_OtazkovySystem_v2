@@ -2,7 +2,6 @@ const { throwError } = require("../util/universal");
 const Point = require("../models/point");
 const Question = require("../models/question");
 const User = require("../models/user"); // Assuming you have a User model
-const Teacher = require("../models/teacher"); // Assuming you have a Teacher model
 
 /**
  * Get all points for a user
@@ -147,23 +146,9 @@ exports.getUsersPointsSummary = async (req, res) => {
  */
 exports.awardPointsForQuestionCreation = async (req, res) => {
     try {
-        const { teacherId } = req.body;
         const week = 1;
-
-        if (!teacherId) {
-            return throwError("Teacher ID is required", 400);
-        }
-
-        // Find the teacher
-        const teacher = await Teacher.findById(teacherId);
-        if (!teacher) {
-            return throwError("Teacher not found", 404);
-        }
-
         // Find questions created during Week 1 that haven't been awarded points yet
-        // We'll need to track this somehow - could use a field in the question model or a separate tracking collection
         const questions = await Question.find({
-            // Find questions without points awarded for creation
             "pointsAwarded.creation": { $ne: true }
         });
 
@@ -195,7 +180,6 @@ exports.awardPointsForQuestionCreation = async (req, res) => {
                 // Create point record
                 const point = new Point({
                     student: studentId,
-                    assigned_by: teacherId,
                     reason: `Vytvorenie otázky v týždni ${week}`,
                     points: 1, // 1 point per question
                     category: "question_creation",
@@ -208,6 +192,12 @@ exports.awardPointsForQuestionCreation = async (req, res) => {
                 await point.save();
                 pointsAwarded.push(point);
                 totalPointsAwarded += 1;
+
+                // Add point to user's points array
+                await User.findByIdAndUpdate(
+                    studentId,
+                    { $push: { points: point._id } }
+                );
 
                 // Mark question as having points awarded
                 question.pointsAwarded = question.pointsAwarded || {};
@@ -234,18 +224,7 @@ exports.awardPointsForQuestionCreation = async (req, res) => {
  */
 exports.awardPointsForQuestionValidation = async (req, res) => {
     try {
-        const { teacherId } = req.body;
         const week = 2;
-
-        if (!teacherId) {
-            return throwError("Teacher ID is required", 400);
-        }
-
-        // Find the teacher
-        const teacher = await Teacher.findById(teacherId);
-        if (!teacher) {
-            return throwError("Teacher not found", 404);
-        }
 
         // Find questions that have been validated but not awarded points yet
         const validatedQuestions = await Question.find({
@@ -283,7 +262,6 @@ exports.awardPointsForQuestionValidation = async (req, res) => {
                 // Create point record
                 const point = new Point({
                     student: validatorId,
-                    assigned_by: teacherId,
                     reason: `Validácia otázky v týždni ${week}`,
                     points: 1, // 1 point per validation
                     category: "question_validation",
@@ -296,6 +274,12 @@ exports.awardPointsForQuestionValidation = async (req, res) => {
                 await point.save();
                 pointsAwarded.push(point);
                 totalPointsAwarded += 1;
+
+                // Add point to user's points array
+                await User.findByIdAndUpdate(
+                    validatorId,
+                    { $push: { points: point._id } }
+                );
 
                 // Mark question as having validation points awarded
                 question.pointsAwarded = question.pointsAwarded || {};
@@ -322,18 +306,7 @@ exports.awardPointsForQuestionValidation = async (req, res) => {
  */
 exports.awardPointsForQuestionReparation = async (req, res) => {
     try {
-        const { teacherId } = req.body;
         const week = 3;
-
-        if (!teacherId) {
-            return throwError("Teacher ID is required", 400);
-        }
-
-        // Find the teacher
-        const teacher = await Teacher.findById(teacherId);
-        if (!teacher) {
-            return throwError("Teacher not found", 404);
-        }
 
         // Find questions that have user agreement responses but haven't been awarded points
         const respondedQuestions = await Question.find({
@@ -361,7 +334,6 @@ exports.awardPointsForQuestionReparation = async (req, res) => {
             // Create point record
             const point = new Point({
                 student: studentId,
-                assigned_by: teacherId,
                 reason: `Reakcia na validáciu v týždni ${week}`,
                 points: 1, // 1 point per response
                 category: "question_reparation",
@@ -374,6 +346,12 @@ exports.awardPointsForQuestionReparation = async (req, res) => {
             await point.save();
             pointsAwarded.push(point);
             totalPointsAwarded += 1;
+
+            // Add point to user's points array
+            await User.findByIdAndUpdate(
+                studentId,
+                { $push: { points: point._id } }
+            );
 
             // Mark question as having reparation points awarded
             question.pointsAwarded = question.pointsAwarded || {};
@@ -398,10 +376,10 @@ exports.awardPointsForQuestionReparation = async (req, res) => {
  */
 exports.awardCustomPoints = async (req, res) => {
     try {
-        const { studentId, teacherId, points, reason, category = "other" } = req.body;
+        const { studentId, points, reason, category = "other" } = req.body;
 
         // Validate input
-        if (!studentId || !teacherId || !points || !reason) {
+        if (!studentId || !points || !reason) {
             return throwError("Student ID, teacher ID, points amount, and reason are required", 400);
         }
 
@@ -415,21 +393,23 @@ exports.awardCustomPoints = async (req, res) => {
             return throwError("Student not found", 404);
         }
 
-        const teacher = await Teacher.findById(teacherId);
-        if (!teacher) {
-            return throwError("Teacher not found", 404);
-        }
+
 
         // Create the point record
         const point = new Point({
             student: studentId,
-            assigned_by: teacherId,
             reason,
             points,
             category
         });
 
         await point.save();
+
+        // Add point to user's points array
+        await User.findByIdAndUpdate(
+            studentId,
+            { $push: { points: point._id } }
+        );
 
         res.status(201).json({
             success: true,

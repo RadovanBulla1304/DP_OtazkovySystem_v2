@@ -9,9 +9,6 @@ const Week2 = ({
   formatDate,
   modulQuestions,
   userId,
-  selectedModul,
-  getWeekState,
-  saveWeekState,
   setQuestionToValidate,
   setValidateOpen
 }) => {
@@ -33,72 +30,22 @@ const Week2 = ({
   const earnedPoints = validationPoints.length;
   const maxPoints = 2;
 
-  // Always get/generate questions for validation (don't switch based on completion)
-  let questions = [];
-  const stored = getWeekState(selectedModul._id, 2, 'selection');
-
-  const pool = (modulQuestions || []).filter(
+  // Get questions for validation - show questions from other users
+  // Include both validated and unvalidated questions so users can see their progress
+  const availableQuestions = (modulQuestions || []).filter(
     (q) => String(q.createdBy ?? q.created_by) !== String(userId)
   );
 
-  if (stored && Array.isArray(stored) && stored.length > 0) {
-    // Try to restore questions in the same order as stored
-    questions = [];
-    const missingIndices = [];
+  // Show up to 2 questions for validation (prioritize unvalidated ones)
+  const unvalidatedQuestions = availableQuestions.filter(
+    (q) => !q.validated_by || String(q.validated_by) !== String(userId)
+  );
+  const validatedQuestions = availableQuestions.filter(
+    (q) => q.validated_by && String(q.validated_by) === String(userId)
+  );
 
-    stored.forEach((id, index) => {
-      const foundQuestion = pool.find((p) => String(p._id) === String(id));
-      if (foundQuestion) {
-        questions[index] = foundQuestion;
-      } else {
-        missingIndices.push(index);
-      }
-    });
-
-    // If some questions are missing, only replace those specific slots
-    if (missingIndices.length > 0) {
-      // Get questions not already selected
-      const usedIds = questions.filter(Boolean).map((q) => q._id);
-      const availablePool = pool.filter((q) => !usedIds.includes(q._id));
-
-      // Shuffle only the available pool
-      for (let i = availablePool.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [availablePool[i], availablePool[j]] = [availablePool[j], availablePool[i]];
-      }
-
-      // Fill missing slots
-      missingIndices.forEach((index, replacementIndex) => {
-        if (availablePool[replacementIndex]) {
-          questions[index] = availablePool[replacementIndex];
-        }
-      });
-
-      // Update storage with new selection (maintaining order)
-      const newStoredIds = questions.filter(Boolean).map((q) => q._id);
-      // Pad to ensure we have 2 items if needed
-      while (newStoredIds.length < 2 && availablePool[newStoredIds.length]) {
-        newStoredIds.push(availablePool[newStoredIds.length]._id);
-        questions.push(availablePool[newStoredIds.length - 1]);
-      }
-      saveWeekState(selectedModul._id, 2, 'selection', newStoredIds);
-    }
-
-    // Filter out any null/undefined entries and ensure we have up to 2 questions
-    questions = questions.filter(Boolean).slice(0, 2);
-  } else {
-    for (let i = pool.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [pool[i], pool[j]] = [pool[j], pool[i]];
-    }
-    questions = pool.slice(0, 2);
-    saveWeekState(
-      selectedModul._id,
-      2,
-      'selection',
-      questions.map((q) => q._id)
-    );
-  }
+  // Combine: show unvalidated first, then validated ones, up to 2 total
+  const questions = [...unvalidatedQuestions, ...validatedQuestions].slice(0, 2);
 
   return (
     <Box
@@ -224,11 +171,6 @@ Week2.propTypes = {
   formatDate: PropTypes.func.isRequired,
   modulQuestions: PropTypes.array,
   userId: PropTypes.string.isRequired,
-  selectedModul: PropTypes.shape({
-    _id: PropTypes.string.isRequired
-  }).isRequired,
-  getWeekState: PropTypes.func.isRequired,
-  saveWeekState: PropTypes.func.isRequired,
   setQuestionToValidate: PropTypes.func.isRequired,
   setValidateOpen: PropTypes.func.isRequired
 };

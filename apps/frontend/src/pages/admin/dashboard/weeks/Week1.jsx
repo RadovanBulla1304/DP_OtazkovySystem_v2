@@ -10,8 +10,6 @@ const Week1 = ({
   formatDate,
   questionsByWeekMerged,
   selectedModul,
-  getWeekState,
-  saveWeekState,
   setLocalCreated,
   userId
 }) => {
@@ -19,15 +17,14 @@ const Week1 = ({
   const { data: pointsData } = useGetUserPointsQuery(userId, {
     skip: !userId
   });
+
   const userQuestions =
     (questionsByWeekMerged[selectedModul._id] &&
       questionsByWeekMerged[selectedModul._id][week.weekNumber]) ||
     [];
-  const savedQuestions = getWeekState(selectedModul._id, 1, 'added') || [];
-  const allQuestions = [
-    ...userQuestions,
-    ...savedQuestions.filter((sq) => !userQuestions.some((uq) => uq._id === sq._id))
-  ];
+
+  // Only use database questions, no localStorage
+  const allQuestions = userQuestions;
 
   // Calculate points for Week 1 - question creation (1 point per question, max 2)
   const creationPoints =
@@ -120,9 +117,7 @@ const Week1 = ({
                       next[selectedModul._id][week.weekNumber].push(created);
                       return next;
                     });
-                    // Save to persistent storage
-                    const current = getWeekState(selectedModul._id, 1, 'added') || [];
-                    saveWeekState(selectedModul._id, 1, 'added', [...current, created]);
+                    // No need to save to localStorage anymore - data comes from DB
                   }}
                 />
                 <Typography color="text.secondary" sx={{ ml: 1 }}>
@@ -150,8 +145,6 @@ Week1.propTypes = {
   selectedModul: PropTypes.shape({
     _id: PropTypes.string.isRequired
   }).isRequired,
-  getWeekState: PropTypes.func.isRequired,
-  saveWeekState: PropTypes.func.isRequired,
   setLocalCreated: PropTypes.func.isRequired,
   userId: PropTypes.string.isRequired
 };

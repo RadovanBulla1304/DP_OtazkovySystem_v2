@@ -129,7 +129,10 @@ const SubjectDetail = () => {
 
       if (modulesResponse.error) {
         console.error('Error deleting modules:', modulesResponse.error);
-        alert('Chyba pri odstraňovaní modulov.');
+        toast.error(
+          'Chyba pri odstraňovaní modulov: ' +
+            (modulesResponse.error?.data?.message || 'Neznáma chyba')
+        );
         setIsDeleting(false);
         setIsDeleteDialogOpen(false);
         return;
@@ -140,14 +143,18 @@ const SubjectDetail = () => {
 
       if (subjectResponse.error) {
         console.error('Error deleting subject:', subjectResponse.error);
-        alert('Chyba pri odstraňovaní predmetu.');
+        toast.error(
+          'Chyba pri odstraňovaní predmetu: ' +
+            (subjectResponse.error?.data?.message || 'Neznáma chyba')
+        );
       } else {
-        alert('Predmet a všetky jeho moduly boli úspešne odstránené.');
-        navigate('/subjects');
+        toast.success('Predmet a všetky jeho moduly boli úspešne odstránené');
+        // Navigate back to subjects with a timestamp to force refresh
+        navigate('/subjects', { replace: true, state: { refresh: Date.now() } });
       }
     } catch (error) {
       console.error('Error during deletion:', error);
-      alert('Chyba pri odstraňovaní predmetu a modulov.');
+      toast.error('Chyba pri odstraňovaní predmetu a modulov');
     } finally {
       setIsDeleting(false);
       setIsDeleteDialogOpen(false);

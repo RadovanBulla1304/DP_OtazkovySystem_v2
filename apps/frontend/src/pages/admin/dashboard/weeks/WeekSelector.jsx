@@ -14,8 +14,6 @@ const WeekSelector = ({
   questionsByWeekMerged,
   modulQuestions,
   userId,
-  getWeekState,
-  saveWeekState,
   setLocalCreated,
   setQuestionToValidate,
   setValidateOpen,
@@ -43,9 +41,8 @@ const WeekSelector = ({
           {...commonProps}
           questionsByWeekMerged={questionsByWeekMerged}
           selectedModul={selectedModul}
-          getWeekState={getWeekState}
-          saveWeekState={saveWeekState}
           setLocalCreated={setLocalCreated}
+          userId={userId}
         />
       );
     }
@@ -57,9 +54,6 @@ const WeekSelector = ({
           {...commonProps}
           modulQuestions={modulQuestions}
           userId={userId}
-          selectedModul={selectedModul}
-          getWeekState={getWeekState}
-          saveWeekState={saveWeekState}
           setQuestionToValidate={setQuestionToValidate}
           setValidateOpen={setValidateOpen}
         />
@@ -170,8 +164,6 @@ WeekSelector.propTypes = {
   questionsByWeekMerged: PropTypes.object.isRequired,
   modulQuestions: PropTypes.array,
   userId: PropTypes.string.isRequired,
-  getWeekState: PropTypes.func.isRequired,
-  saveWeekState: PropTypes.func.isRequired,
   setLocalCreated: PropTypes.func.isRequired,
   setQuestionToValidate: PropTypes.func.isRequired,
   setValidateOpen: PropTypes.func.isRequired,
