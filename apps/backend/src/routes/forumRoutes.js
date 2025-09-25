@@ -8,7 +8,8 @@ const {
     likeForumQuestion,
     dislikeForumQuestion,
     likeComment,
-    dislikeComment
+    dislikeComment,
+    getForumTags
 } = require('../controllers/forumController')
 
 // Forum question routes
@@ -35,5 +36,9 @@ router.route('/comments/:id/like')
 
 router.route('/comments/:id/dislike')
     .post(dislikeComment)
+
+// Tags route
+router.route('/tags')
+    .get(getForumTags)
 
 module.exports = router

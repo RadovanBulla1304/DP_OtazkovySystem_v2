@@ -1,6 +1,8 @@
-import { useGetUserPointsQuery } from '@app/redux/api';
-import { Box, Chip, Stack, Typography } from '@mui/material';
+import { useGetUserPointsQuery, useUpdateQuestionMutation } from '@app/redux/api';
+import { Box, Button, Chip, Stack, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
+import { useState } from 'react';
+import EditQuestionModal from '../../components/EditQuestionModal';
 
 const Week3 = ({
   week,
@@ -16,6 +18,13 @@ const Week3 = ({
   const { data: pointsData } = useGetUserPointsQuery(userId, {
     skip: !userId
   });
+
+  // Mutation for updating questions (only available during Week 3)
+  const [updateQuestion] = useUpdateQuestionMutation();
+
+  // State for edit modal
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [questionToEdit, setQuestionToEdit] = useState(null);
 
   // Get user's questions that should have been validated
   const userQuestions = (modulQuestions || []).filter(
@@ -63,7 +72,7 @@ const Week3 = ({
       </Typography>
       <Typography color="text.secondary">{status}</Typography>
       <Typography variant="body2" sx={{ mt: 1, fontStyle: 'italic' }}>
-        Reaguj na validácie tvojích otázok
+        Reaguj na validácie tvojích otázok {isCurrent && '• Môžeš upraviť svoje otázky'}
       </Typography>
       <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
         {isCompleted && <Chip label="Odpovede dokončené" color="success" size="small" />}
@@ -124,7 +133,7 @@ const Week3 = ({
                     </Typography>
                   ))}
               </Box>
-              <Box sx={{ mt: 1, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+              <Box sx={{ mt: 1, display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
                 {hasValidation ? (
                   <Chip
                     label={q.validated ? 'Validná' : 'Nevalidná'}
@@ -151,6 +160,23 @@ const Week3 = ({
                     size="small"
                   />
                 )}
+
+                {/* Edit button - only show during Week 3 (current week) */}
+                {isCurrent && (
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    color="primary"
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent triggering the respond modal
+                      setQuestionToEdit(q);
+                      setEditModalOpen(true);
+                    }}
+                    sx={{ ml: 'auto' }}
+                  >
+                    Upraviť
+                  </Button>
+                )}
               </Box>
               {q.validation_comment && (
                 <Typography
@@ -172,6 +198,26 @@ const Week3 = ({
           );
         })}
       </Box>
+
+      {/* Edit Question Modal - only available during Week 3 */}
+      <EditQuestionModal
+        open={editModalOpen}
+        question={questionToEdit}
+        onClose={() => {
+          setEditModalOpen(false);
+          setQuestionToEdit(null);
+        }}
+        onSubmit={async (questionId, updatedData) => {
+          try {
+            await updateQuestion({ questionId, ...updatedData }).unwrap();
+            console.log('Question updated successfully');
+            // The RTK Query will automatically invalidate cache and refresh data
+          } catch (error) {
+            console.error('Error updating question:', error);
+            throw error; // Re-throw so the modal can handle it
+          }
+        }}
+      />
     </Box>
   );
 };

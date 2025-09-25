@@ -1,10 +1,15 @@
 import { useCurrentSubjectId } from '@app/hooks/useCurrentSubjectId';
-import { useGetForumQuestionsQuery, useGetModulsBySubjectQuery } from '@app/redux/api';
+import {
+  useGetForumQuestionsQuery,
+  useGetForumTagsQuery,
+  useGetModulsBySubjectQuery
+} from '@app/redux/api';
 import { Add, Search } from '@mui/icons-material';
 import {
   Alert,
   Box,
   Button,
+  Chip,
   CircularProgress,
   Container,
   FormControl,
@@ -27,7 +32,8 @@ const Forum = () => {
   const [filters, setFilters] = useState({
     modul: '',
     search: '',
-    tags: ''
+    tags: [], // Changed to array for visual selector
+    sortBy: 'likes' // Default to likes sorting as requested
   });
 
   const {
@@ -37,7 +43,9 @@ const Forum = () => {
   } = useGetForumQuestionsQuery({
     page,
     limit: 10,
-    ...filters
+    ...filters,
+    // Convert tags array to comma-separated string for backend
+    tags: filters.tags.length > 0 ? filters.tags.join(',') : ''
   });
 
   const currentSubjectId = useCurrentSubjectId();
@@ -45,11 +53,32 @@ const Forum = () => {
     skip: !currentSubjectId
   });
 
+  const { data: tagsData = [] } = useGetForumTagsQuery(currentSubjectId, {
+    skip: !currentSubjectId
+  });
+
+  const availableTags = Array.isArray(tagsData?.data)
+    ? tagsData.data
+    : Array.isArray(tagsData)
+      ? tagsData
+      : [];
+
   const handleFilterChange = (field) => (event) => {
     setFilters((prev) => ({
       ...prev,
       [field]: event.target.value
     }));
+    setPage(1); // Reset to first page when filtering
+  };
+
+  const handleTagToggle = (tag) => {
+    setFilters((prev) => {
+      const isSelected = prev.tags.includes(tag);
+      return {
+        ...prev,
+        tags: isSelected ? prev.tags.filter((t) => t !== tag) : [...prev.tags, tag]
+      };
+    });
     setPage(1); // Reset to first page when filtering
   };
 
@@ -61,7 +90,8 @@ const Forum = () => {
     setFilters({
       modul: '',
       search: '',
-      tags: ''
+      tags: [], // Reset to empty array
+      sortBy: 'likes' // Reset to default sorting
     });
     setPage(1);
   };
@@ -121,15 +151,65 @@ const Forum = () => {
             </Select>
           </FormControl>
 
-          {/* Tags filter */}
-          <TextField
-            label="Tagy"
-            value={filters.tags}
-            onChange={handleFilterChange('tags')}
-            placeholder="javascript,react,..."
-            sx={{ minWidth: 200 }}
-            helperText="Oddeľte čiarkou"
-          />
+          {/* Tags filter - Chips */}
+          <Box sx={{ minWidth: 300 }}>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+              Filtrovať podľa tagov
+            </Typography>
+            <Box
+              sx={{
+                display: 'flex',
+                gap: 1,
+                flexWrap: 'wrap',
+                maxHeight: 140,
+                overflowY: 'auto',
+                p: 1,
+                border: '1px solid',
+                borderColor: 'divider',
+                borderRadius: 1
+              }}
+            >
+              {availableTags.length > 0 ? (
+                availableTags.map((tagItem) => (
+                  <Chip
+                    key={tagItem.tag}
+                    label={`${tagItem.tag} (${tagItem.count})`}
+                    variant={filters.tags.includes(tagItem.tag) ? 'filled' : 'outlined'}
+                    color={filters.tags.includes(tagItem.tag) ? 'primary' : 'default'}
+                    clickable
+                    onClick={() => handleTagToggle(tagItem.tag)}
+                    size="small"
+                  />
+                ))
+              ) : (
+                <Typography variant="body2" color="text.secondary">
+                  Žiadne dostupné tagy
+                </Typography>
+              )}
+            </Box>
+            {filters.tags.length > 0 && (
+              <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
+                Vybrané: {filters.tags.join(', ')}
+              </Typography>
+            )}
+          </Box>
+
+          {/* Sort filter */}
+          <FormControl sx={{ minWidth: 200 }}>
+            <InputLabel>Zoradiť podľa</InputLabel>
+            <Select
+              value={filters.sortBy}
+              onChange={handleFilterChange('sortBy')}
+              label="Zoradiť podľa"
+            >
+              <MenuItem value="likes">Najobľúbenejšie (Like)</MenuItem>
+              <MenuItem value="dislikes">Najnegatívnejšie (Dislike)</MenuItem>
+              <MenuItem value="popular">Najpopulárnejšie</MenuItem>
+              <MenuItem value="comments">Najviac komentárov</MenuItem>
+              <MenuItem value="newest">Najnovšie</MenuItem>
+              <MenuItem value="oldest">Najstaršie</MenuItem>
+            </Select>
+          </FormControl>
 
           {/* Clear filters */}
           <Button onClick={handleClearFilters} variant="outlined" sx={{ height: 'fit-content' }}>

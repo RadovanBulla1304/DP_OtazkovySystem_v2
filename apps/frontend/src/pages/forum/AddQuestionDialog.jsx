@@ -1,6 +1,9 @@
 import { useCurrentSubjectId } from '@app/hooks/useCurrentSubjectId';
-import { useCreateForumQuestionMutation, useGetModulsBySubjectQuery } from '@app/redux/api';
-import { Add, Close } from '@mui/icons-material';
+import {
+  useCreateForumQuestionMutation,
+  useGetForumTagsQuery,
+  useGetModulsBySubjectQuery
+} from '@app/redux/api';
 import {
   Alert,
   Box,
@@ -16,7 +19,8 @@ import {
   InputLabel,
   MenuItem,
   Select,
-  TextField
+  TextField,
+  Typography
 } from '@mui/material';
 import PropTypes from 'prop-types';
 import { useState } from 'react';
@@ -28,7 +32,7 @@ const AddQuestionDialog = ({ open, onClose }) => {
     modul: '',
     tags: []
   });
-  const [tagInput, setTagInput] = useState('');
+  const [newTagInput, setNewTagInput] = useState('');
   const [errors, setErrors] = useState({});
 
   const currentSubjectId = useCurrentSubjectId();
@@ -38,7 +42,16 @@ const AddQuestionDialog = ({ open, onClose }) => {
       skip: !currentSubjectId
     }
   );
+  const { data: tagsData = [] } = useGetForumTagsQuery(currentSubjectId, {
+    skip: !currentSubjectId
+  });
   const [createQuestion, { isLoading, error }] = useCreateForumQuestionMutation();
+
+  const availableTags = Array.isArray(tagsData?.data)
+    ? tagsData.data
+    : Array.isArray(tagsData)
+      ? tagsData
+      : [];
 
   const handleInputChange = (field) => (event) => {
     setFormData((prev) => ({
@@ -55,28 +68,37 @@ const AddQuestionDialog = ({ open, onClose }) => {
     }
   };
 
-  const handleAddTag = () => {
-    const tag = tagInput.trim().toLowerCase();
+  const handleTagToggle = (tag) => {
+    setFormData((prev) => {
+      if (prev.tags.includes(tag)) {
+        return {
+          ...prev,
+          tags: prev.tags.filter((t) => t !== tag)
+        };
+      }
+
+      return {
+        ...prev,
+        tags: [...prev.tags, tag]
+      };
+    });
+  };
+
+  const handleAddNewTag = () => {
+    const tag = newTagInput.trim().toLowerCase();
     if (tag && !formData.tags.includes(tag)) {
       setFormData((prev) => ({
         ...prev,
         tags: [...prev.tags, tag]
       }));
     }
-    setTagInput('');
+    setNewTagInput('');
   };
 
-  const handleRemoveTag = (tagToRemove) => {
-    setFormData((prev) => ({
-      ...prev,
-      tags: prev.tags.filter((tag) => tag !== tagToRemove)
-    }));
-  };
-
-  const handleTagInputKeyDown = (event) => {
+  const handleNewTagKeyDown = (event) => {
     if (event.key === 'Enter') {
       event.preventDefault();
-      handleAddTag();
+      handleAddNewTag();
     }
   };
 
@@ -119,6 +141,7 @@ const AddQuestionDialog = ({ open, onClose }) => {
         modul: '',
         tags: []
       });
+      setNewTagInput('');
       setErrors({});
       onClose();
     } catch (err) {
@@ -133,6 +156,7 @@ const AddQuestionDialog = ({ open, onClose }) => {
       modul: '',
       tags: []
     });
+    setNewTagInput('');
     setErrors({});
     onClose();
   };
@@ -190,43 +214,81 @@ const AddQuestionDialog = ({ open, onClose }) => {
             {errors.modul && <FormHelperText>{errors.modul}</FormHelperText>}
           </FormControl>
 
+          {/* Tags Section */}
           <Box>
-            <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
-              <TextField
-                label="Tagy"
-                value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
-                onKeyDown={handleTagInputKeyDown}
-                placeholder="Pridajte tag a stlačte Enter"
-                size="small"
-                sx={{ flexGrow: 1 }}
-              />
-              <Button
-                onClick={handleAddTag}
-                variant="outlined"
-                size="small"
-                startIcon={<Add />}
-                disabled={!tagInput.trim()}
-              >
-                Pridať
-              </Button>
-            </Box>
+            <InputLabel sx={{ mb: 2, color: 'text.primary', fontWeight: 600 }}>Tagy</InputLabel>
 
-            {formData.tags.length > 0 && (
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                {formData.tags.map((tag, index) => (
-                  <Chip
-                    key={index}
-                    label={tag}
-                    onDelete={() => handleRemoveTag(tag)}
-                    deleteIcon={<Close />}
-                    size="small"
-                    color="primary"
-                    variant="outlined"
-                  />
-                ))}
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                  Dostupné tagy
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                  {availableTags.length > 0 ? (
+                    availableTags.map((tagItem) => (
+                      <Chip
+                        key={tagItem.tag}
+                        label={`${tagItem.tag} (${tagItem.count})`}
+                        variant={formData.tags.includes(tagItem.tag) ? 'filled' : 'outlined'}
+                        color={formData.tags.includes(tagItem.tag) ? 'primary' : 'default'}
+                        onClick={() => handleTagToggle(tagItem.tag)}
+                        clickable
+                        size="small"
+                      />
+                    ))
+                  ) : (
+                    <Typography variant="body2" color="text.secondary">
+                      Žiadne dostupné tagy
+                    </Typography>
+                  )}
+                </Box>
               </Box>
-            )}
+
+              {formData.tags.length > 0 && (
+                <Box>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                    Vybrané tagy
+                  </Typography>
+                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                    {formData.tags.map((tag, index) => (
+                      <Chip
+                        key={`${tag}-${index}`}
+                        label={tag}
+                        size="small"
+                        color="primary"
+                        variant="filled"
+                        onDelete={() =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            tags: prev.tags.filter((t) => t !== tag)
+                          }))
+                        }
+                      />
+                    ))}
+                  </Box>
+                </Box>
+              )}
+
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <TextField
+                  label="Pridať nový tag"
+                  value={newTagInput}
+                  onChange={(e) => setNewTagInput(e.target.value)}
+                  onKeyDown={handleNewTagKeyDown}
+                  placeholder="Napíšte nový tag"
+                  size="small"
+                  sx={{ flexGrow: 1 }}
+                />
+                <Button
+                  onClick={handleAddNewTag}
+                  variant="outlined"
+                  size="small"
+                  disabled={!newTagInput.trim()}
+                >
+                  Pridať
+                </Button>
+              </Box>
+            </Box>
           </Box>
         </Box>
       </DialogContent>

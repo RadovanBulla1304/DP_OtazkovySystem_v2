@@ -39,7 +39,7 @@ const toValidObjectIdArray = (items) => {
 // @access Private
 const getForumQuestions = async (req, res) => {
     try {
-        const { page = 1, limit = 10, modul, tags, search } = req.query
+        const { page = 1, limit = 10, modul, tags, search, sortBy = 'likes' } = req.query
         const user_id = req.user?.user_id
 
         if (!user_id) {
@@ -69,13 +69,92 @@ const getForumQuestions = async (req, res) => {
             ]
         }
 
-        const questions = await ForumQuestion.find(filter)
-            .populate('createdBy', 'username email avatar')
-            .populate('modul', 'name')
-            .sort({ is_pinned: -1, createdAt: -1 })
-            .limit(limit * 1)
-            .skip((page - 1) * limit)
-            .lean()
+        // Build sort object
+        let sortObj = { is_pinned: -1 } // Always prioritize pinned posts
+
+        switch (sortBy) {
+            case 'likes':
+                sortObj.likes_count = -1
+                sortObj.createdAt = -1 // Secondary sort by date
+                break
+            case 'dislikes':
+                sortObj.dislikes_count = -1
+                sortObj.createdAt = -1
+                break
+            case 'comments':
+                sortObj.comments_count = -1
+                sortObj.createdAt = -1
+                break
+            case 'newest':
+                sortObj.createdAt = -1
+                break
+            case 'oldest':
+                sortObj.createdAt = 1
+                break
+            case 'popular': // Best ratio of likes to dislikes + comments
+                // For this we'll need to use aggregation
+                break
+            default:
+                sortObj.likes_count = -1
+                sortObj.createdAt = -1
+        }
+
+        let questions
+
+        if (sortBy === 'popular') {
+            // Use aggregation for complex popularity calculation
+            const aggregationPipeline = [
+                { $match: filter },
+                {
+                    $addFields: {
+                        popularity_score: {
+                            $add: [
+                                { $multiply: ['$likes_count', 2] }, // Likes worth 2 points
+                                '$comments_count', // Comments worth 1 point
+                                { $multiply: ['$dislikes_count', -1] } // Dislikes subtract 1 point
+                            ]
+                        }
+                    }
+                },
+                { $sort: { is_pinned: -1, popularity_score: -1, createdAt: -1 } },
+                { $skip: (page - 1) * limit },
+                { $limit: limit * 1 },
+                {
+                    $lookup: {
+                        from: 'users',
+                        localField: 'createdBy',
+                        foreignField: '_id',
+                        as: 'createdBy',
+                        pipeline: [{ $project: { username: 1, email: 1, avatar: 1 } }]
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'modules',
+                        localField: 'modul',
+                        foreignField: '_id',
+                        as: 'modul',
+                        pipeline: [{ $project: { name: 1 } }]
+                    }
+                },
+                {
+                    $addFields: {
+                        createdBy: { $arrayElemAt: ['$createdBy', 0] },
+                        modul: { $arrayElemAt: ['$modul', 0] }
+                    }
+                }
+            ]
+
+            questions = await ForumQuestion.aggregate(aggregationPipeline)
+        } else {
+            questions = await ForumQuestion.find(filter)
+                .populate('createdBy', 'username email avatar')
+                .populate('modul', 'name')
+                .sort(sortObj)
+                .limit(limit * 1)
+                .skip((page - 1) * limit)
+                .lean()
+        }
 
         // Add user interaction status
         const questionsWithUserStatus = questions.map(question => {
@@ -824,6 +903,52 @@ const dislikeComment = async (req, res) => {
     }
 }
 
+// @desc Get all unique tags from forum questions  
+// @route GET /api/forum/tags
+// @access Private
+const getForumTags = async (req, res) => {
+    try {
+        const user_id = req.user?.user_id
+
+        if (!user_id) {
+            return res.status(401).json({
+                success: false,
+                message: "User not authenticated"
+            })
+        }
+
+        // Use aggregation to get all unique tags
+        const tagAggregation = await ForumQuestion.aggregate([
+            { $unwind: "$tags" },
+            {
+                $group: {
+                    _id: "$tags",
+                    count: { $sum: 1 }
+                }
+            },
+            { $sort: { count: -1, _id: 1 } }, // Sort by usage count (most used first), then alphabetically
+            { $limit: 100 } // Limit to prevent too many tags
+        ])
+
+        const tags = tagAggregation.map(item => ({
+            tag: item._id,
+            count: item.count
+        }))
+
+        res.status(200).json({
+            success: true,
+            data: tags
+        })
+    } catch (error) {
+        console.error('Get forum tags error:', error)
+        res.status(500).json({
+            success: false,
+            message: "Server error while fetching forum tags",
+            error: error.message
+        })
+    }
+}
+
 module.exports = {
     getForumQuestions,
     getForumQuestion,
@@ -832,5 +957,6 @@ module.exports = {
     likeForumQuestion,
     dislikeForumQuestion,
     likeComment,
-    dislikeComment
+    dislikeComment,
+    getForumTags
 }

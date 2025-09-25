@@ -289,6 +289,17 @@ export const api = createApi({
         'Questions'
       ]
     }),
+    updateQuestion: builder.mutation({
+      query: ({ questionId, ...data }) => ({
+        url: `/question/${questionId}`,
+        method: 'PUT',
+        body: data
+      }),
+      invalidatesTags: (result, error, { questionId }) => [
+        { type: 'Questions', id: questionId },
+        'Questions'
+      ]
+    }),
     getQuestionsBySubjectId: builder.query({
       query: (subjectId) => ({
         url: `/question/subject/${subjectId}`,
@@ -657,6 +668,15 @@ export const api = createApi({
       invalidatesTags: ['ForumQuestions']
     }),
 
+    // Get all forum tags for suggestions
+    getForumTags: builder.query({
+      query: () => ({
+        url: '/forum/tags',
+        method: 'GET'
+      }),
+      providesTags: ['ForumQuestions']
+    }),
+
     // TESTS
     createTest: builder.mutation({
       query: (data) => ({
@@ -840,6 +860,7 @@ export const {
   useValidateQuestionMutation,
   useRespondToValidationMutation,
   useTeacherValidateQuestionMutation,
+  useUpdateQuestionMutation,
   useGetQuestionsBySubjectIdQuery,
   useLazyGetQuestionsBySubjectIdQuery,
   useGetValidatedQuestionsWithAgreementBySubjectQuery,
@@ -864,6 +885,8 @@ export const {
   useDislikeForumQuestionMutation,
   useLikeCommentMutation,
   useDislikeCommentMutation,
+  useGetForumTagsQuery,
+  useLazyGetForumTagsQuery,
   // TESTS
   useCreateTestMutation,
   useGetTestsBySubjectQuery,

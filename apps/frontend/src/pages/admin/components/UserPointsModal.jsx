@@ -1,5 +1,5 @@
-import { useGetUsersPointsSummaryMutation, useGetModulsBySubjectQuery } from '@app/redux/api';
 import { useCurrentSubjectId } from '@app/hooks/useCurrentSubjectId';
+import { useGetModulsBySubjectQuery, useGetUsersPointsSummaryMutation } from '@app/redux/api';
 import CloseIcon from '@mui/icons-material/Close';
 import {
   Box,
@@ -202,7 +202,7 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
                       const module = modules[moduleIndex];
                       const moduleName = module ? module.title : `Modul ${i + 1}`;
                       const displayName = module ? moduleName : '-';
-                      
+
                       return (
                         <TableCell
                           key={`module-${i + 1}`}
@@ -328,8 +328,9 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
 
                         // First priority: try to find by question_id in modules
                         if (detail.question_id) {
-                          const moduleWithQuestion = modules.find(module => 
-                            module.questions && module.questions.includes(detail.question_id)
+                          const moduleWithQuestion = modules.find(
+                            (module) =>
+                              module.questions && module.questions.includes(detail.question_id)
                           );
                           if (moduleWithQuestion) {
                             targetModuleId = moduleWithQuestion._id;
@@ -365,8 +366,11 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
                         }
 
                         // Add points to the target module
-                        if (pointsByModule[targetModuleId] && detail.category && 
-                            pointsByModule[targetModuleId][detail.category] !== undefined) {
+                        if (
+                          pointsByModule[targetModuleId] &&
+                          detail.category &&
+                          pointsByModule[targetModuleId][detail.category] !== undefined
+                        ) {
                           pointsByModule[targetModuleId][detail.category] += detail.points;
                         }
                       });
@@ -394,19 +398,20 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
                             {/* Modules 1-12 */}
                             {Array.from({ length: 12 }, (_, moduleIndex) => {
                               const moduleId = modules[moduleIndex]?._id || `empty-${moduleIndex}`;
-                              const modulePoints = pointsByModule[moduleId] || { 
-                                question_creation: 0, 
-                                question_validation: 0, 
-                                question_reparation: 0 
+                              const modulePoints = pointsByModule[moduleId] || {
+                                question_creation: 0,
+                                question_validation: 0,
+                                question_reparation: 0
                               };
-                              
+
                               return (
                                 <React.Fragment key={`module-${moduleIndex}`}>
                                   <TableCell
                                     align="center"
                                     sx={{
                                       borderRight: '1px solid rgba(224, 224, 224, 0.5)',
-                                      bgcolor: moduleIndex % 2 === 0 ? 'rgba(0, 0, 0, 0.02)' : 'inherit'
+                                      bgcolor:
+                                        moduleIndex % 2 === 0 ? 'rgba(0, 0, 0, 0.02)' : 'inherit'
                                     }}
                                   >
                                     {modulePoints.question_creation || '-'}
@@ -415,7 +420,8 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
                                     align="center"
                                     sx={{
                                       borderRight: '1px solid rgba(224, 224, 0.5)',
-                                      bgcolor: moduleIndex % 2 === 0 ? 'rgba(0, 0, 0, 0.02)' : 'inherit'
+                                      bgcolor:
+                                        moduleIndex % 2 === 0 ? 'rgba(0, 0, 0, 0.02)' : 'inherit'
                                     }}
                                   >
                                     {modulePoints.question_validation || '-'}
@@ -424,7 +430,8 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
                                     align="center"
                                     sx={{
                                       borderRight: '2px solid rgba(224, 224, 224, 1)',
-                                      bgcolor: moduleIndex % 2 === 0 ? 'rgba(0, 0, 0, 0.02)' : 'inherit'
+                                      bgcolor:
+                                        moduleIndex % 2 === 0 ? 'rgba(0, 0, 0, 0.02)' : 'inherit'
                                     }}
                                   >
                                     {modulePoints.question_reparation || '-'}
@@ -499,39 +506,47 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
                                   {/* Group points by module for better organization */}
                                   {Array.from({ length: 12 }, (_, moduleIndex) => {
                                     const module = modules[moduleIndex];
-                                    
+
                                     // Filter points for this module
-                                    const modulePoints = userData.points.details.filter((detail) => {
-                                      // Special categories don't belong to modules
-                                      if (['test', 'project', 'bonus'].includes(detail.category)) {
+                                    const modulePoints = userData.points.details.filter(
+                                      (detail) => {
+                                        // Special categories don't belong to modules
+                                        if (
+                                          ['test', 'project', 'bonus'].includes(detail.category)
+                                        ) {
+                                          return false;
+                                        }
+
+                                        // First priority: try question-based matching
+                                        if (detail.question_id && module?.questions) {
+                                          return module.questions.includes(detail.question_id);
+                                        }
+
+                                        // Second priority: try week-based matching with intelligent distribution
+                                        const weekMatch =
+                                          detail.reason?.match(/týždni (\d+)/i) ||
+                                          detail.reason?.match(/[Tt]ýždeň (\d+)/);
+
+                                        if (weekMatch && weekMatch[1]) {
+                                          const week = parseInt(weekMatch[1]);
+                                          if (modules.length > 0) {
+                                            // Distribute weeks across available modules (Week 1-3 -> Module 1, Week 4-6 -> Module 2, etc.)
+                                            const targetModuleIndex =
+                                              Math.floor((week - 1) / 3) % modules.length;
+                                            return targetModuleIndex === moduleIndex;
+                                          } else {
+                                            // Fallback for empty modules
+                                            const targetModuleIndex = Math.min(
+                                              Math.floor((week - 1) / 3),
+                                              11
+                                            );
+                                            return targetModuleIndex === moduleIndex;
+                                          }
+                                        }
+
                                         return false;
                                       }
-
-                                      // First priority: try question-based matching
-                                      if (detail.question_id && module?.questions) {
-                                        return module.questions.includes(detail.question_id);
-                                      }
-                                      
-                                      // Second priority: try week-based matching with intelligent distribution
-                                      const weekMatch =
-                                        detail.reason?.match(/týždni (\d+)/i) ||
-                                        detail.reason?.match(/[Tt]ýždeň (\d+)/);
-                                      
-                                      if (weekMatch && weekMatch[1]) {
-                                        const week = parseInt(weekMatch[1]);
-                                        if (modules.length > 0) {
-                                          // Distribute weeks across available modules (Week 1-3 -> Module 1, Week 4-6 -> Module 2, etc.)
-                                          const targetModuleIndex = Math.floor((week - 1) / 3) % modules.length;
-                                          return targetModuleIndex === moduleIndex;
-                                        } else {
-                                          // Fallback for empty modules
-                                          const targetModuleIndex = Math.min(Math.floor((week - 1) / 3), 11);
-                                          return targetModuleIndex === moduleIndex;
-                                        }
-                                      }
-                                      
-                                      return false;
-                                    });
+                                    );
 
                                     // Show all modules, even empty ones to maintain structure
                                     const hasPoints = modulePoints.length > 0;
