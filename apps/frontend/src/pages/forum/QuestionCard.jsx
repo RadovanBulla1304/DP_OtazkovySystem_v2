@@ -36,15 +36,23 @@ const QuestionCard = ({ question, onQuestionClick }) => {
   const auth = authService.getUserFromStorage();
 
   const authId = auth?.id || auth?._id;
-  const createdById = question.createdBy?._id ? String(question.createdBy._id) : undefined;
+
+  // Handle createdBy being either a string (ObjectId) or an object
+  const createdByObj = typeof question.createdBy === 'string' ? null : question.createdBy;
+  const createdById = createdByObj?._id
+    ? String(createdByObj._id)
+    : typeof question.createdBy === 'string'
+      ? String(question.createdBy)
+      : undefined;
+
   const authIdStr = authId ? String(authId) : undefined;
   const isTeacherAuthor =
     question.createdByModel === 'Teacher' ||
     (!!auth?.isTeacher && !!authIdStr && !!createdById && createdById === authIdStr);
 
   const teacherFullName =
-    question.createdBy?.fullName ||
-    [question.createdBy?.name, question.createdBy?.surname].filter(Boolean).join(' ') ||
+    createdByObj?.fullName ||
+    [createdByObj?.name, createdByObj?.surname].filter(Boolean).join(' ') ||
     auth?.fullName ||
     [auth?.name, auth?.surname].filter(Boolean).join(' ');
 
@@ -294,14 +302,17 @@ QuestionCard.propTypes = {
     user_disliked: PropTypes.bool,
     comments_count: PropTypes.number,
     createdAt: PropTypes.string.isRequired,
-    createdBy: PropTypes.shape({
-      _id: PropTypes.string,
-      username: PropTypes.string,
-      avatar: PropTypes.string,
-      fullName: PropTypes.string,
-      name: PropTypes.string,
-      surname: PropTypes.string
-    }),
+    createdBy: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.shape({
+        _id: PropTypes.string,
+        username: PropTypes.string,
+        avatar: PropTypes.string,
+        fullName: PropTypes.string,
+        name: PropTypes.string,
+        surname: PropTypes.string
+      })
+    ]),
     createdByModel: PropTypes.oneOf(['User', 'Teacher']),
     modul: PropTypes.shape({
       name: PropTypes.string

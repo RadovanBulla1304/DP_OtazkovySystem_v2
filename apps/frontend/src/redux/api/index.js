@@ -397,11 +397,13 @@ export const api = createApi({
 
     // FORUM QUESTIONS
     getForumQuestions: builder.query({
-      query: ({ page = 1, limit = 10, modul, tags, search } = {}) => {
+      query: ({ page = 1, limit = 10, modul, tags, search, sortBy, createdByModel } = {}) => {
         const params = new URLSearchParams({ page, limit });
         if (modul) params.append('modul', modul);
         if (tags) params.append('tags', tags);
         if (search) params.append('search', search);
+        if (sortBy) params.append('sortBy', sortBy);
+        if (createdByModel) params.append('createdByModel', createdByModel);
 
         return {
           url: `/forum/questions?${params.toString()}`,

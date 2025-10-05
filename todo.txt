@@ -1,11 +1,8 @@
 -------------------------------------------
 todo
 
-//users pridat stlpec predmet a body -> double click na row otvori modal s bodmi 
 otazky na receziu davat najprv len otazky ktore este neboli recenzovane. ak uz tieto otazky dosli vybrat random 
     -> ak ma otazka viac ako 2 recenzie vybrat nahodne jednu z nich. 
-forum ukladat tagy aby ich netrebalo vzdy pisat. -> vsetky dat to loewrcase 
-forum zoradit prispevky podla like/dislike -> defaultne nastavit takto 
 vsade skontrolovat a dorobit pekne joi schemy
 
 kazdy user ma vlastne otazky na teste 
@@ -15,3 +12,10 @@ import pouzivatelov z csv -> iba pre predmet nie vytvorenie novych uzivatelov
 
 Do 6.10 spravit funkcnu verrziu na testovanie ! 
 -------------------------------------------
+
+
+opravene
+-------------------------------------------
+//users pridat stlpec predmet a body -> double click na row otvori modal s bodmi 
+//forum ukladat tagy aby ich netrebalo vzdy pisat. -> vsetky dat to loewrcase 
+//forum zoradit prispevky podla like/dislike -> defaultne nastavit takto 

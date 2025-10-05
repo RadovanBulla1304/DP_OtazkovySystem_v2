@@ -3,7 +3,6 @@ bugy
 
 week1 - 0/2 bodov nerefreshuje
 pri pridavani pouzivatela moze mat viac userov rovnaku group number
-user ma moznost si upravil otazku a odpovede v 3 tyzdni 
 -------------------------------------------
 
 
@@ -13,3 +12,4 @@ user ma moznost si upravil otazku a odpovede v 3 tyzdni
 -------------------------------------------
 ked je aurat week 1 alebo 2 vo week 3 napravo nema byt nic vidno 
 odstranenie predmetu je zobrazene az po refresh 
+user ma moznost si upravil otazku a odpovede v 3 tyzdni 

@@ -147,7 +147,7 @@ const toValidObjectIdArray = (items) => {
 // @access Private
 const getForumQuestions = async (req, res) => {
     try {
-        const { page = 1, limit = 10, modul, tags, search, sortBy = 'likes' } = req.query
+        const { page = 1, limit = 10, modul, tags, search, sortBy = 'likes', createdByModel } = req.query
         const user_id = req.user?.user_id
 
         if (!user_id) {
@@ -175,6 +175,11 @@ const getForumQuestions = async (req, res) => {
                 { description: { $regex: search, $options: 'i' } },
                 { tags: { $regex: search, $options: 'i' } }
             ]
+        }
+
+        // Filter by author type (User/Teacher)
+        if (createdByModel && (createdByModel === 'User' || createdByModel === 'Teacher')) {
+            filter.createdByModel = createdByModel
         }
 
         // Build sort object

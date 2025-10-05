@@ -166,7 +166,7 @@ const Dashboard = () => {
           s.setDate(start.getDate() + i * 7);
           const e = new Date(s);
           e.setDate(s.getDate() + 6);
-          weeks.push({ weekNumber: i + 1, start: s, end: e });
+          weeks.push({ weekNumber: i + 1, start: s.toISOString(), end: e.toISOString() });
         }
         return weeks;
       }
@@ -183,7 +183,7 @@ const Dashboard = () => {
       s.setDate(now.getDate() + i * 7);
       const e = new Date(s);
       e.setDate(s.getDate() + 6);
-      weeks.push({ weekNumber: i + 1, start: s, end: e });
+      weeks.push({ weekNumber: i + 1, start: s.toISOString(), end: e.toISOString() });
     }
     return weeks;
   };

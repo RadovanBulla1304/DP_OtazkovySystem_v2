@@ -33,20 +33,34 @@ const Forum = () => {
     modul: '',
     search: '',
     tags: [], // Changed to array for visual selector
-    sortBy: 'likes' // Default to likes sorting as requested
+    sortBy: 'likes', // Default to likes sorting as requested
+    createdByModel: '' // Filter by author type: '', 'User', or 'Teacher'
   });
+
+  // Build query params - keep empty string for sortBy, remove undefined/empty for others
+  const rawParams = {
+    page,
+    limit: 10,
+    modul: filters.modul || undefined,
+    search: filters.search || undefined,
+    tags: filters.tags.length > 0 ? filters.tags.join(',') : undefined,
+    sortBy: filters.sortBy,
+    createdByModel: filters.createdByModel || undefined
+  };
+
+  // Remove undefined values but keep empty strings for sortBy
+  const queryParams = Object.fromEntries(
+    Object.entries(rawParams).filter(([key, value]) => {
+      if (key === 'sortBy') return true; // Always include sortBy
+      return value !== undefined && value !== '';
+    })
+  );
 
   const {
     data: questionsData,
     isLoading: questionsLoading,
     error: questionsError
-  } = useGetForumQuestionsQuery({
-    page,
-    limit: 10,
-    ...filters,
-    // Convert tags array to comma-separated string for backend
-    tags: filters.tags.length > 0 ? filters.tags.join(',') : ''
-  });
+  } = useGetForumQuestionsQuery(queryParams);
 
   const currentSubjectId = useCurrentSubjectId();
   const { data: modulesData = [] } = useGetModulsBySubjectQuery(currentSubjectId, {
@@ -91,7 +105,8 @@ const Forum = () => {
       modul: '',
       search: '',
       tags: [], // Reset to empty array
-      sortBy: 'likes' // Reset to default sorting
+      sortBy: 'likes', // Reset to default sorting
+      createdByModel: '' // Reset author type filter
     });
     setPage(1);
   };
@@ -212,6 +227,20 @@ const Forum = () => {
               <MenuItem value="comments">Najviac komentárov</MenuItem>
               <MenuItem value="newest">Najnovšie</MenuItem>
               <MenuItem value="oldest">Najstaršie</MenuItem>
+            </Select>
+          </FormControl>
+
+          {/* Author type filter */}
+          <FormControl sx={{ minWidth: 200 }}>
+            <InputLabel>Autor</InputLabel>
+            <Select
+              value={filters.createdByModel}
+              onChange={handleFilterChange('createdByModel')}
+              label="Autor"
+            >
+              <MenuItem value="">Všetci</MenuItem>
+              <MenuItem value="User">Anonymní používatelia</MenuItem>
+              <MenuItem value="Teacher">Učitelia</MenuItem>
             </Select>
           </FormControl>
 
