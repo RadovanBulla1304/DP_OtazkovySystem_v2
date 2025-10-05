@@ -689,12 +689,13 @@ export const api = createApi({
       invalidatesTags: ['Tests']
     }),
     getTestsBySubject: builder.query({
-      query: (subjectId) => ({
+      query: ({ subjectId, is_published }) => ({
         url: `/test/subject/${subjectId}`,
-        method: 'GET'
+        method: 'GET',
+        params: is_published !== undefined ? { is_published } : {}
       }),
       providesTags: (result, error, arg) => [
-        { type: 'Tests', id: `SUBJECT-${arg}` },
+        { type: 'Tests', id: `SUBJECT-${arg.subjectId}` },
         'Tests'
       ]
     }),
@@ -752,6 +753,81 @@ export const api = createApi({
       providesTags: (result, error, arg) => [
         { type: 'Tests', id: `STATS-${arg}` }
       ]
+    }),
+    startTestAttempt: builder.mutation({
+      query: (testId) => ({
+        url: `/test/${testId}/start-attempt`,
+        method: 'POST'
+      }),
+      invalidatesTags: ['TestAttempts']
+    }),
+    submitTestAttempt: builder.mutation({
+      query: ({ attemptId, answers }) => ({
+        url: `/test/attempt/${attemptId}/submit`,
+        method: 'POST',
+        body: { answers }
+      }),
+      invalidatesTags: (result, error, arg) => [
+        'TestAttempts',
+        { type: 'TestAttempt', id: arg.attemptId }
+      ]
+    }),
+    getTestAttemptById: builder.query({
+      query: (attemptId) => ({
+        url: `/test/attempt/${attemptId}`,
+        method: 'GET'
+      }),
+      providesTags: (result, error, arg) => [{ type: 'TestAttempt', id: arg }]
+    }),
+    getUserTestAttempts: builder.query({
+      query: (testId) => ({
+        url: `/test/${testId}/user-attempts`,
+        method: 'GET'
+      }),
+      providesTags: (result, error, arg) => [{ type: 'TestAttempts', id: `TEST-${arg}` }]
+    }),
+
+    // TEACHER VALIDATED QUESTIONS FOR TESTS
+    getValidatedQuestionsForTest: builder.query({
+      query: (testId) => ({
+        url: `/teacher-validated-questions/test/${testId}`,
+        method: 'GET'
+      }),
+      providesTags: (result, error, arg) => [
+        { type: 'ValidatedQuestions', id: `TEST-${arg}` },
+        'ValidatedQuestions'
+      ]
+    }),
+    getValidatedQuestionsByModules: builder.query({
+      query: (moduleIds) => ({
+        url: `/teacher-validated-questions/by-modules?moduleIds=${moduleIds}`,
+        method: 'GET'
+      }),
+      providesTags: ['ValidatedQuestions']
+    }),
+    getValidatedQuestionsCount: builder.query({
+      query: (moduleIds) => ({
+        url: `/teacher-validated-questions/count?moduleIds=${moduleIds}`,
+        method: 'GET'
+      })
+    }),
+    addQuestionToTestPool: builder.mutation({
+      query: (data) => ({
+        url: '/teacher-validated-questions',
+        method: 'POST',
+        body: data
+      }),
+      invalidatesTags: (result, error, { testId }) => [
+        { type: 'ValidatedQuestions', id: `TEST-${testId}` },
+        'ValidatedQuestions'
+      ]
+    }),
+    removeQuestionFromTestPool: builder.mutation({
+      query: (id) => ({
+        url: `/teacher-validated-questions/${id}`,
+        method: 'DELETE'
+      }),
+      invalidatesTags: ['ValidatedQuestions']
     }),
 
     // POINTS
@@ -902,6 +978,21 @@ export const {
   useToggleTestPublicationMutation,
   useGetTestStatisticsQuery,
   useLazyGetTestStatisticsQuery,
+  useStartTestAttemptMutation,
+  useSubmitTestAttemptMutation,
+  useGetTestAttemptByIdQuery,
+  useLazyGetTestAttemptByIdQuery,
+  useGetUserTestAttemptsQuery,
+  useLazyGetUserTestAttemptsQuery,
+  // TEACHER VALIDATED QUESTIONS
+  useGetValidatedQuestionsForTestQuery,
+  useLazyGetValidatedQuestionsForTestQuery,
+  useGetValidatedQuestionsByModulesQuery,
+  useLazyGetValidatedQuestionsByModulesQuery,
+  useGetValidatedQuestionsCountQuery,
+  useLazyGetValidatedQuestionsCountQuery,
+  useAddQuestionToTestPoolMutation,
+  useRemoveQuestionFromTestPoolMutation,
   // POINTS
   useGetUserPointsQuery,
   useLazyGetUserPointsQuery,

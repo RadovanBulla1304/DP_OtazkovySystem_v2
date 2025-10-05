@@ -2,6 +2,7 @@ const Test = require('../models/test');
 const TestAttempt = require('../models/testAttempt');
 const Module = require('../models/modul');
 const Question = require('../models/question');
+const TeacherValidatedQuestionForTest = require('../models/teacherValidatedQuestionForTest');
 
 // Create a new test
 createTest = async (req, res) => {
@@ -84,7 +85,7 @@ createTest = async (req, res) => {
             time_limit: time_limit || 30,
             subject,
             selected_modules,
-            createdBy: req.teacherId || req.userId,
+            createdBy: req.user.user_id,
             max_attempts: max_attempts || 1,
             passing_score: passing_score || 60
         });
@@ -112,13 +113,15 @@ const getTestsBySubject = async (req, res) => {
         const { page = 1, limit = 10, is_published } = req.query;
 
         const query = { subject: subjectId };
+
+        // Filter by publication status if specified
         if (is_published !== undefined) {
             query.is_published = is_published === 'true';
         }
 
         const tests = await Test.find(query)
             .populate('subject', 'name')
-            .populate('selected_modules', 'name')
+            .populate('selected_modules', 'title')
             .populate('createdBy', 'firstName lastName email')
             .sort({ createdAt: -1 })
             .limit(limit * 1)
@@ -144,7 +147,7 @@ const getTestsBySubject = async (req, res) => {
 // Get tests created by teacher
 const getTestsByTeacher = async (req, res) => {
     try {
-        const teacherId = req.teacherId;
+        const teacherId = req.user.user_id;
         const { page = 1, limit = 10 } = req.query;
 
         const tests = await Test.find({ createdBy: teacherId })
@@ -351,6 +354,313 @@ const getTestStatistics = async (req, res) => {
     }
 };
 
+// Start a new test attempt with random question selection
+const startTestAttempt = async (req, res) => {
+    try {
+        const { id: testId } = req.params;
+        const userId = req.user?.user_id;
+
+        if (!userId) {
+            return res.status(401).json({
+                success: false,
+                message: 'User not authenticated'
+            });
+        }
+
+        // Get test
+        const test = await Test.findById(testId);
+        if (!test) {
+            return res.status(404).json({
+                success: false,
+                message: 'Test not found'
+            });
+        }
+
+        // Check if test is published
+        if (!test.is_published) {
+            return res.status(403).json({
+                success: false,
+                message: 'Test is not published yet'
+            });
+        }
+
+        // Check if test is within date range
+        const now = new Date();
+        if (now < test.date_start || now > test.date_end) {
+            return res.status(403).json({
+                success: false,
+                message: 'Test is not available at this time'
+            });
+        }
+
+        // Check if user has exceeded max attempts
+        const previousAttempts = await TestAttempt.countDocuments({
+            test: testId,
+            user: userId,
+            isCompleted: true
+        });
+
+        if (previousAttempts >= test.max_attempts) {
+            return res.status(403).json({
+                success: false,
+                message: `Maximum attempts (${test.max_attempts}) reached for this test`
+            });
+        }
+
+        // Check if user has an ongoing attempt
+        const ongoingAttempt = await TestAttempt.findOne({
+            test: testId,
+            user: userId,
+            isCompleted: false
+        });
+
+        if (ongoingAttempt) {
+            // Populate questions for ongoing attempt
+            await ongoingAttempt.populate('questions.question');
+            await ongoingAttempt.populate('test');
+
+            return res.status(200).json({
+                success: true,
+                message: 'Ongoing attempt found',
+                data: ongoingAttempt
+            });
+        }
+
+        // Get all validated questions from test's pool
+        const validatedQuestionsInPool = await TeacherValidatedQuestionForTest.find({
+            test: testId,
+            modul: { $in: test.selected_modules }
+        }).populate('question');
+
+        // Also get all other teacher-validated questions from selected modules (not just those explicitly added to test)
+        const allValidatedQuestions = await Question.find({
+            modul: { $in: test.selected_modules },
+            validated: true
+        });
+
+        // Combine: prioritize questions explicitly added to test, then fill with other validated questions
+        const poolQuestionIds = new Set(validatedQuestionsInPool.map(vq => vq.question._id.toString()));
+        const additionalQuestions = allValidatedQuestions.filter(q => !poolQuestionIds.has(q._id.toString()));
+
+        const allAvailableQuestions = [
+            ...validatedQuestionsInPool.map(vq => vq.question),
+            ...additionalQuestions
+        ];
+
+        if (allAvailableQuestions.length < test.total_questions) {
+            return res.status(400).json({
+                success: false,
+                message: `Not enough questions available. Required: ${test.total_questions}, Available: ${allAvailableQuestions.length}`
+            });
+        }
+
+        // Randomly select questions
+        const shuffled = allAvailableQuestions.sort(() => 0.5 - Math.random());
+        const selectedQuestions = shuffled.slice(0, test.total_questions);
+
+        // Create test attempt with selected questions
+        const testAttempt = await TestAttempt.create({
+            test: testId,
+            user: userId,
+            questions: selectedQuestions.map(q => ({
+                question: q._id,
+                selected_answer: null,
+                is_correct: false,
+                time_spent: 0
+            })),
+            startedAt: new Date(),
+            isCompleted: false
+        });
+
+        // Populate the attempt for response
+        await testAttempt.populate('questions.question');
+        await testAttempt.populate('test');
+
+        res.status(201).json({
+            success: true,
+            message: 'Test attempt started successfully',
+            data: testAttempt
+        });
+    } catch (error) {
+        console.error('Error starting test attempt:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error starting test attempt',
+            error: error.message
+        });
+    }
+};
+
+const submitTestAttempt = async (req, res) => {
+    try {
+        const { attemptId } = req.params;
+        const { answers } = req.body; // Array of { question: questionId, selected_answer: "a"|"b"|"c"|"d" }
+        const userId = req.user.user_id;
+
+        // Find the test attempt
+        const testAttempt = await TestAttempt.findById(attemptId)
+            .populate('questions.question')
+            .populate('test');
+
+        if (!testAttempt) {
+            return res.status(404).json({
+                success: false,
+                message: 'Test attempt not found'
+            });
+        }
+
+        // Verify the attempt belongs to the user
+        // Convert both to strings for comparison
+        const attemptUserId = testAttempt.user.toString();
+        const requestUserId = userId.toString();
+
+        console.log('Attempt user ID:', attemptUserId);
+        console.log('Request user ID:', requestUserId);
+
+        if (attemptUserId !== requestUserId) {
+            return res.status(403).json({
+                success: false,
+                message: 'Unauthorized to submit this test attempt',
+                debug: {
+                    attemptUserId,
+                    requestUserId
+                }
+            });
+        }
+
+        // Check if already completed
+        if (testAttempt.isCompleted) {
+            return res.status(400).json({
+                success: false,
+                message: 'Test attempt already submitted'
+            });
+        }
+
+        // Create a map of answers for quick lookup
+        const answersMap = {};
+        answers.forEach((ans) => {
+            answersMap[ans.question] = ans.selected_answer;
+        });
+
+        // Calculate score and update answers
+        let correctAnswers = 0;
+        const totalQuestions = testAttempt.questions.length;
+
+        testAttempt.questions.forEach((questionItem) => {
+            const question = questionItem.question;
+            const selectedAnswer = answersMap[question._id.toString()];
+
+            questionItem.selected_answer = selectedAnswer || null;
+            questionItem.is_correct = selectedAnswer === question.correct;
+
+            if (questionItem.is_correct) {
+                correctAnswers++;
+            }
+        });
+
+        // Calculate score percentage
+        const score = Math.round((correctAnswers / totalQuestions) * 100);
+        const passed = score >= testAttempt.test.passing_score;
+
+        // Update test attempt
+        testAttempt.score = score;
+        testAttempt.passed = passed;
+        testAttempt.isCompleted = true;
+        testAttempt.submittedAt = new Date();
+
+        await testAttempt.save();
+
+        // Populate again to get fresh data
+        await testAttempt.populate('questions.question');
+        await testAttempt.populate('test');
+
+        res.status(200).json({
+            success: true,
+            message: 'Test submitted successfully',
+            data: {
+                attemptId: testAttempt._id,
+                score,
+                passed,
+                correctAnswers,
+                totalQuestions,
+                testAttempt
+            }
+        });
+    } catch (error) {
+        console.error('Error submitting test attempt:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error submitting test attempt',
+            error: error.message
+        });
+    }
+};
+
+const getTestAttemptById = async (req, res) => {
+    try {
+        const { attemptId } = req.params;
+        const userId = req.user.user_id;
+
+        const testAttempt = await TestAttempt.findById(attemptId)
+            .populate('questions.question')
+            .populate('test');
+
+        if (!testAttempt) {
+            return res.status(404).json({
+                success: false,
+                message: 'Test attempt not found'
+            });
+        }
+
+        // Verify the attempt belongs to the user
+        if (testAttempt.user.toString() !== userId.toString()) {
+            return res.status(403).json({
+                success: false,
+                message: 'Unauthorized to view this test attempt'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            data: testAttempt
+        });
+    } catch (error) {
+        console.error('Error fetching test attempt:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching test attempt',
+            error: error.message
+        });
+    }
+};
+
+const getUserTestAttempts = async (req, res) => {
+    try {
+        const { testId } = req.params;
+        const userId = req.user.user_id;
+
+        const attempts = await TestAttempt.find({
+            test: testId,
+            user: userId,
+            isCompleted: true
+        })
+            .select('score passed submittedAt')
+            .sort({ submittedAt: -1 });
+
+        res.status(200).json({
+            success: true,
+            data: attempts
+        });
+    } catch (error) {
+        console.error('Error fetching user test attempts:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching test attempts',
+            error: error.message
+        });
+    }
+};
+
 module.exports = {
     createTest,
     getTestsBySubject,
@@ -359,5 +669,9 @@ module.exports = {
     updateTest,
     deleteTest,
     toggleTestPublication,
-    getTestStatistics
+    getTestStatistics,
+    startTestAttempt,
+    submitTestAttempt,
+    getTestAttemptById,
+    getUserTestAttempts
 };

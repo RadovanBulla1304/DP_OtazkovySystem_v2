@@ -35,6 +35,19 @@ const QuestionsFilters = ({ currentSubject, filter, setFilter, subjectModuls }) 
         value={filter.date}
         onChange={(e) => setFilter((f) => ({ ...f, date: e.target.value }))}
       />
+      <FormControl size="small" sx={{ minWidth: 200 }}>
+        <InputLabel id="validated-filter-label">Validácia učiteľom</InputLabel>
+        <Select
+          labelId="validated-filter-label"
+          label="Validácia učiteľom"
+          value={filter.validated}
+          onChange={(e) => setFilter((f) => ({ ...f, validated: e.target.value }))}
+        >
+          <MenuItem value="">Všetky</MenuItem>
+          <MenuItem value="validated">Iba validované</MenuItem>
+          <MenuItem value="notValidated">Nevalidované</MenuItem>
+        </Select>
+      </FormControl>
     </Box>
   );
 };
@@ -45,7 +58,8 @@ QuestionsFilters.propTypes = {
   }),
   filter: PropTypes.shape({
     modulId: PropTypes.string,
-    date: PropTypes.string
+    date: PropTypes.string,
+    validated: PropTypes.string
   }).isRequired,
   setFilter: PropTypes.func.isRequired,
   subjectModuls: PropTypes.arrayOf(

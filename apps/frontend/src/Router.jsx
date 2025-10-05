@@ -12,6 +12,8 @@ import Moduls from './pages/moduls/ModulsList';
 import MyQuestions from './pages/my-questions/MyQuestions';
 import SubjectDetail from './pages/subjects/SubjectDetail';
 import Subjects from './pages/subjects/Subjects';
+import TakeTest from './pages/tests/TakeTest';
+import TestResults from './pages/tests/TestResults';
 import Tests from './pages/tests/Tests';
 export const router = createBrowserRouter([
   {
@@ -29,6 +31,8 @@ export const router = createBrowserRouter([
       { path: '/', element: <Dashboard /> },
       { path: '/moduls', element: <Moduls /> },
       { path: '/tests', element: <Tests /> },
+      { path: '/test/:testId/take', element: <TakeTest /> },
+      { path: '/test-results/:attemptId', element: <TestResults /> },
       { path: '/my-questions', element: <MyQuestions /> },
       { path: '/all-users-questions', element: <AllUsersQuestions /> },
       { path: '/forum', element: <Forum /> },

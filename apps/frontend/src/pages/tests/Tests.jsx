@@ -3,8 +3,11 @@ import {
   useCreateTestMutation,
   useDeleteTestMutation,
   useGetModulsBySubjectQuery,
+  useGetTeacherMeQuery,
   useGetTestsBySubjectQuery,
-  useGetValidatedQuestionsWithAgreementBySubjectQuery,
+  useGetUserTestAttemptsQuery,
+  useGetValidatedQuestionsByModulesQuery,
+  useGetValidatedQuestionsCountQuery,
   useToggleTestPublicationMutation,
   useUpdateTestMutation
 } from '@app/redux/api';
@@ -51,7 +54,9 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { format } from 'date-fns';
+import PropTypes from 'prop-types';
 import { useCallback, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import CreateQuestionModal from './components/CreateQuestionModal';
 
 const ITEM_HEIGHT = 48;
@@ -65,11 +70,51 @@ const MenuProps = {
   }
 };
 
+// Component to show user's attempt status
+const UserAttemptStatus = ({ testId }) => {
+  const { data: attemptsData } = useGetUserTestAttemptsQuery(testId);
+  const attempts = attemptsData?.data || [];
+
+  if (attempts.length === 0) return null;
+
+  const latestAttempt = attempts[0]; // Sorted by submittedAt desc
+
+  return (
+    <Box
+      mt={2}
+      p={1.5}
+      bgcolor={latestAttempt.passed ? 'success.light' : 'error.light'}
+      borderRadius={1}
+    >
+      <Typography variant="body2" fontWeight="bold">
+        Latest Attempt: {latestAttempt.score}%
+      </Typography>
+      <Typography variant="caption">
+        {latestAttempt.passed ? '✓ Passed' : '✗ Failed'} -{' '}
+        {format(new Date(latestAttempt.submittedAt), 'PPp')}
+      </Typography>
+      <Typography variant="caption" display="block" mt={0.5}>
+        Attempts: {attempts.length}
+      </Typography>
+    </Box>
+  );
+};
+
+UserAttemptStatus.propTypes = {
+  testId: PropTypes.string.isRequired
+};
+
 const Tests = () => {
   const subjectId = useCurrentSubjectId();
+  const navigate = useNavigate();
   const [openDialog, setOpenDialog] = useState(false);
   const [editingTest, setEditingTest] = useState(null);
   const [setShowStats] = useState(null);
+  const [confirmTestModal, setConfirmTestModal] = useState(null);
+
+  // Check if user is a teacher
+  const { data: teacher } = useGetTeacherMeQuery();
+  const isTeacher = !!teacher;
 
   // Form state
   const [formData, setFormData] = useState({
@@ -81,13 +126,10 @@ const Tests = () => {
     time_limit: 30,
     selected_modules: [],
     max_attempts: 1,
-    passing_score: 60,
-    generated_questions: [] // Store generated questions here
+    passing_score: 60
   });
 
-  // State for showing generated questions and creating new questions
-  const [showGeneratedQuestions, setShowGeneratedQuestions] = useState(false);
-  const [generatingQuestions, setGeneratingQuestions] = useState(false);
+  // State for creating new questions
   const [isCreateQuestionModalOpen, setIsCreateQuestionModalOpen] = useState(false);
 
   // API hooks
@@ -100,22 +142,35 @@ const Tests = () => {
     data,
     isLoading: testsLoading,
     refetch
-  } = useGetTestsBySubjectQuery(subjectId, {
-    skip: !subjectId
-  });
+  } = useGetTestsBySubjectQuery(
+    {
+      subjectId,
+      is_published: isTeacher ? undefined : 'true' // Users only see published tests
+    },
+    {
+      skip: !subjectId
+    }
+  );
 
-  // Ensure tests is always an array
-  const tests = Array.isArray(data) ? data : [];
+  // Extract tests from response (backend returns { tests: [...] })
+  const tests = data?.tests || [];
 
   const { data: modules = [] } = useGetModulsBySubjectQuery(subjectId, {
     skip: !subjectId
   });
 
-  // Fetch teacher-validated questions for the subject
-  const { data: validatedQuestions = [], isLoading: validatedQuestionsLoading } =
-    useGetValidatedQuestionsWithAgreementBySubjectQuery(subjectId, {
-      skip: !subjectId
+  // Fetch validated questions based on selected modules
+  const moduleIdsString = formData.selected_modules.join(',');
+  const { data: validatedQuestionsData, isLoading: validatedQuestionsLoading } =
+    useGetValidatedQuestionsByModulesQuery(moduleIdsString, {
+      skip: !formData.selected_modules.length
     });
+  const validatedQuestions = validatedQuestionsData?.data || [];
+
+  const { data: questionsCountData } = useGetValidatedQuestionsCountQuery(moduleIdsString, {
+    skip: !formData.selected_modules.length
+  });
+  const availableQuestionsCount = questionsCountData?.count || 0;
 
   const resetForm = useCallback(() => {
     setFormData({
@@ -127,196 +182,10 @@ const Tests = () => {
       time_limit: 30,
       selected_modules: [],
       max_attempts: 1,
-      passing_score: 60,
-      generated_questions: []
+      passing_score: 60
     });
     setEditingTest(null);
-    setShowGeneratedQuestions(false);
   }, []);
-
-  // Function to generate random questions from selected modules
-  const handleGenerateQuestions = () => {
-    setGeneratingQuestions(true);
-
-    try {
-      // Add debug logging to help identify issues
-      console.log('Generating questions with params:', {
-        validatedQuestionsCount: validatedQuestions.length,
-        selectedModules: formData.selected_modules,
-        validatedQuestions
-      });
-
-      // Filter questions that belong to selected modules and are validated by teacher
-      console.log('Selected modules:', formData.selected_modules);
-      console.log(
-        'Selected modules types:',
-        formData.selected_modules.map((id) => typeof id)
-      );
-
-      const filteredQuestions = validatedQuestions.filter((q) => {
-        // Ensure q.modul exists and has an _id or id property
-        if (!q.modul || typeof q.modul !== 'object') {
-          console.log('Question with invalid modul structure:', q);
-          return false;
-        }
-
-        const modulId = q.modul._id || q.modul.id;
-        if (!modulId) {
-          console.log('Question with missing modul ID:', q);
-          return false;
-        }
-
-        // Log the module ID for debugging
-        console.log('Processing question with modulId:', modulId, 'type:', typeof modulId);
-
-        // Print the module object for inspection
-        console.log('Module object structure:', JSON.stringify(q.modul));
-
-        // Check if any of the selected module IDs match the question's module ID
-        const isMatched = formData.selected_modules.some((selectedId) => {
-          // Convert both to strings for comparison
-          const selectedIdStr = String(selectedId);
-          const modulIdStr = String(modulId);
-
-          const isMatch =
-            selectedId === modulId ||
-            selectedIdStr === modulIdStr ||
-            selectedIdStr.includes(modulIdStr) ||
-            modulIdStr.includes(selectedIdStr);
-
-          console.log(
-            `Comparing: selected=${selectedId}(${typeof selectedId}) with question=${modulId}(${typeof modulId})`
-          );
-          console.log(
-            `String comparison: selected="${selectedIdStr}" with question="${modulIdStr}", match=${isMatch}`
-          );
-
-          if (isMatch) {
-            console.log(
-              'MATCH FOUND! Selected module:',
-              selectedId,
-              'matches question module:',
-              modulId
-            );
-          }
-
-          return isMatch;
-        });
-
-        return isMatched;
-      });
-
-      console.log('Filtered questions:', filteredQuestions);
-
-      let selectedQuestions = [];
-
-      if (filteredQuestions.length === 0) {
-        alert('Vo vybraných moduloch sa nenašli žiadne otázky validované učiteľom.');
-        setGeneratingQuestions(false);
-        return;
-      }
-
-      // If we have fewer questions than requested, use all of them
-      if (filteredQuestions.length <= formData.total_questions) {
-        selectedQuestions = [...filteredQuestions];
-      } else {
-        // Randomly select the required number of questions
-        const shuffled = [...filteredQuestions].sort(() => 0.5 - Math.random());
-        selectedQuestions = shuffled.slice(0, formData.total_questions);
-      }
-
-      console.log(
-        'Available modules for enrichment:',
-        modules.map((m) => ({ id: m._id, name: m.name || m.title }))
-      );
-
-      // Enhance selected questions with complete module information
-      const enhancedQuestions = selectedQuestions.map((q) => {
-        // Get module ID (either _id or id)
-        const modulId = q.modul._id || q.modul.id;
-        console.log('Enhancing question with modulId:', modulId);
-
-        // Find the complete module information from modules array
-        const completeModule = modules.find((m) => {
-          const isMatch =
-            m._id === modulId ||
-            m.id === modulId ||
-            (m._id && modulId && m._id.toString() === modulId.toString()) ||
-            (m._id && modulId && String(m._id) === String(modulId));
-
-          if (isMatch) {
-            console.log('Found matching module for enrichment:', {
-              moduleId: m._id,
-              moduleName: m.name || m.title,
-              questionModulId: modulId
-            });
-          }
-
-          return isMatch;
-        });
-
-        // Enhance the question with complete module data if found
-        if (completeModule) {
-          console.log(
-            'Enhanced module with name:',
-            completeModule.name || completeModule.title || 'Modul bez názvu'
-          );
-          return {
-            ...q,
-            // Add valid:true field to match backend expectations
-            valid: true,
-            modul: {
-              ...q.modul,
-              name: completeModule.name || completeModule.title || 'Modul bez názvu'
-            }
-          };
-        } else {
-          console.log('WARNING: No matching module found for modulId:', modulId);
-          // As a fallback, look for modules by similar string representation
-          const fallbackModule = modules.find(
-            (m) =>
-              String(m._id).includes(String(modulId)) || String(modulId).includes(String(m._id))
-          );
-
-          if (fallbackModule) {
-            console.log(
-              'Found fallback module by partial string match:',
-              fallbackModule.name || fallbackModule.title
-            );
-            return {
-              ...q,
-              // Add valid:true field to match backend expectations
-              valid: true,
-              modul: {
-                ...q.modul,
-                name: fallbackModule.name || fallbackModule.title || 'Modul bez názvu (fallback)'
-              }
-            };
-          }
-        }
-
-        // Even if we couldn't enhance the module info, mark as valid for backend
-        return {
-          ...q,
-          valid: true
-        };
-      });
-
-      // Update form data with enhanced questions
-      setFormData((prev) => ({
-        ...prev,
-        generated_questions: enhancedQuestions,
-        total_questions: enhancedQuestions.length // Update total questions to match what we found
-      }));
-
-      setShowGeneratedQuestions(true);
-    } catch (error) {
-      console.error('Error generating questions:', error);
-      alert('An error occurred while generating questions.');
-    } finally {
-      setGeneratingQuestions(false);
-    }
-  };
 
   const handleOpenCreate = () => {
     resetForm();
@@ -353,72 +222,28 @@ const Tests = () => {
 
   const handleSubmit = async () => {
     try {
-      console.log('Submitting test with questions:', formData.generated_questions);
-
-      // Check if we have enough generated questions
-      if (formData.generated_questions.length === 0) {
+      // Validate that we have enough questions available
+      if (availableQuestionsCount < formData.total_questions) {
         if (
           !window.confirm(
-            'Neboli vygenerované žiadne otázky pre tento test. Chcete pokračovať bez otázok?'
+            `Nie je dosť validovaných otázok. Požadované: ${formData.total_questions}, Dostupné: ${availableQuestionsCount}. Chcete pokračovať?`
           )
         ) {
           return;
         }
       }
 
-      // Process questions and ensure they have valid IDs
-      // First, filter questions that have a valid MongoDB _id (not temp IDs)
-      const mongoQuestions = formData.generated_questions.filter(
-        (q) => q._id && typeof q._id === 'string' && !q._id.startsWith('temp-')
-      );
-
-      console.log('Valid MongoDB questions:', mongoQuestions.length);
-
-      // If we don't have enough valid questions, show a warning but continue
-      if (mongoQuestions.length < formData.generated_questions.length) {
-        console.warn(
-          `Some questions have temporary IDs. Using ${mongoQuestions.length} out of ${formData.generated_questions.length} questions.`
-        );
-
-        if (mongoQuestions.length === 0) {
-          if (
-            !window.confirm(
-              "All questions have temporary IDs and cannot be saved with the test. This is common for newly created questions that haven't been saved to the database. Continue anyway?"
-            )
-          ) {
-            return;
-          }
-        }
-      }
-
-      // If total_questions is more than what we have, adjust it
-      const adjustedTotalQuestions = Math.max(1, mongoQuestions.length);
-
-      // Log the question IDs we're sending
-      console.log(
-        'Question IDs being sent to API:',
-        mongoQuestions.map((q) => q._id)
-      );
-
-      // Modify questions directly in backend format
-      const validQuestions = mongoQuestions.map((q) => ({
-        ...q,
-        valid: true // Add valid:true field to match backend check
-      }));
-
-      console.log('Modified questions with valid field:', validQuestions.length);
-
       const testData = {
-        ...formData,
-        subject: subjectId,
+        title: formData.title,
+        description: formData.description,
+        total_questions: formData.total_questions,
         date_start: formData.date_start.toISOString(),
         date_end: formData.date_end.toISOString(),
-        // Include only valid question IDs
-        questions: mongoQuestions.map((q) => q._id),
-        // Skip validation check in backend
-        skipValidationCheck: true,
-        // Ensure we have at least 1 for total_questions
-        total_questions: adjustedTotalQuestions || 1
+        time_limit: formData.time_limit,
+        subject: subjectId,
+        selected_modules: formData.selected_modules,
+        max_attempts: formData.max_attempts,
+        passing_score: formData.passing_score
       };
 
       if (editingTest) {
@@ -485,17 +310,19 @@ const Tests = () => {
           <Typography variant="h4" component="h1">
             Tests Management
           </Typography>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={handleOpenCreate}
-            disabled={!modules.length}
-          >
-            Create New Test
-          </Button>
+          {isTeacher && (
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={handleOpenCreate}
+              disabled={!modules.length}
+            >
+              Create New Test
+            </Button>
+          )}
         </Box>
 
-        {!modules.length && (
+        {!modules.length && isTeacher && (
           <Alert severity="info" sx={{ mb: 3 }}>
             No modules found for this subject. Please create modules first to be able to create
             tests.
@@ -524,9 +351,27 @@ const Tests = () => {
             ) : (
               tests.map((test) => {
                 const status = getTestStatus(test);
+                const isTestActive = status.label === 'Active';
+                const canTakeTest = !isTeacher && isTestActive;
+
                 return (
                   <Grid item xs={12} md={6} lg={4} key={test._id}>
-                    <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                    <Card
+                      sx={{
+                        height: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        cursor: canTakeTest ? 'pointer' : 'default',
+                        '&:hover': canTakeTest
+                          ? {
+                              boxShadow: 6,
+                              transform: 'translateY(-4px)',
+                              transition: 'all 0.3s'
+                            }
+                          : {}
+                      }}
+                      onClick={() => canTakeTest && setConfirmTestModal(test)}
+                    >
                       <CardContent sx={{ flexGrow: 1 }}>
                         <Box
                           display="flex"
@@ -583,54 +428,59 @@ const Tests = () => {
                             {test.selected_modules.map((module) => (
                               <Chip
                                 key={module._id}
-                                label={module.name}
+                                label={module.title || module.name || 'Modul'}
                                 size="small"
                                 variant="outlined"
                               />
                             ))}
                           </Box>
                         </Box>
+
+                        {/* Show user's attempt status if not a teacher */}
+                        {!isTeacher && <UserAttemptStatus testId={test._id} />}
                       </CardContent>
 
-                      <Box p={2} pt={0}>
-                        <Box display="flex" justifyContent="space-between" alignItems="center">
-                          <Box>
-                            <Tooltip title="Edit Test">
+                      {isTeacher && (
+                        <Box p={2} pt={0}>
+                          <Box display="flex" justifyContent="space-between" alignItems="center">
+                            <Box>
+                              <Tooltip title="Edit Test">
+                                <IconButton
+                                  size="small"
+                                  onClick={() => handleOpenEdit(test)}
+                                  disabled={updating || deleting}
+                                >
+                                  <EditIcon />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="Delete Test">
+                                <IconButton
+                                  size="small"
+                                  color="error"
+                                  onClick={() => handleDelete(test._id)}
+                                  disabled={updating || deleting}
+                                >
+                                  <DeleteIcon />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="View Statistics">
+                                <IconButton size="small" onClick={() => setShowStats(test._id)}>
+                                  <StatisticsIcon />
+                                </IconButton>
+                              </Tooltip>
+                            </Box>
+
+                            <Tooltip title={test.is_published ? 'Unpublish Test' : 'Publish Test'}>
                               <IconButton
-                                size="small"
-                                onClick={() => handleOpenEdit(test)}
-                                disabled={updating || deleting}
+                                onClick={() => handleTogglePublication(test)}
+                                color={test.is_published ? 'success' : 'default'}
                               >
-                                <EditIcon />
-                              </IconButton>
-                            </Tooltip>
-                            <Tooltip title="Delete Test">
-                              <IconButton
-                                size="small"
-                                color="error"
-                                onClick={() => handleDelete(test._id)}
-                                disabled={updating || deleting}
-                              >
-                                <DeleteIcon />
-                              </IconButton>
-                            </Tooltip>
-                            <Tooltip title="View Statistics">
-                              <IconButton size="small" onClick={() => setShowStats(test._id)}>
-                                <StatisticsIcon />
+                                {test.is_published ? <PublishIcon /> : <UnpublishIcon />}
                               </IconButton>
                             </Tooltip>
                           </Box>
-
-                          <Tooltip title={test.is_published ? 'Unpublish Test' : 'Publish Test'}>
-                            <IconButton
-                              onClick={() => handleTogglePublication(test)}
-                              color={test.is_published ? 'success' : 'default'}
-                            >
-                              {test.is_published ? <PublishIcon /> : <UnpublishIcon />}
-                            </IconButton>
-                          </Tooltip>
                         </Box>
-                      </Box>
+                      )}
                     </Card>
                   </Grid>
                 );
@@ -769,82 +619,84 @@ const Tests = () => {
               </Grid>
 
               <Grid item xs={12}>
-                <Box display="flex" justifyContent="space-between" mt={2}>
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    onClick={handleGenerateQuestions}
-                    disabled={
-                      formData.selected_modules.length === 0 ||
-                      generatingQuestions ||
-                      validatedQuestionsLoading
-                    }
-                    startIcon={generatingQuestions ? <CircularProgress size={20} /> : null}
+                {/* Show count of available questions */}
+                {formData.selected_modules.length > 0 && (
+                  <Box
+                    sx={{
+                      mt: 2,
+                      p: 2,
+                      bgcolor: 'background.paper',
+                      borderRadius: 1,
+                      border: '1px solid',
+                      borderColor: 'divider'
+                    }}
                   >
-                    {generatingQuestions ? 'Generujem...' : 'Generovať náhodné otázky'}
-                  </Button>
+                    <Typography variant="body2" color="text.secondary">
+                      {validatedQuestionsLoading
+                        ? 'Načítavam otázky...'
+                        : `Dostupných validovaných otázok: ${availableQuestionsCount}`}
+                    </Typography>
+                    {availableQuestionsCount < formData.total_questions &&
+                      availableQuestionsCount > 0 && (
+                        <Alert severity="warning" sx={{ mt: 1 }}>
+                          Nie je dosť validovaných otázok pre tento test. Požadované:{' '}
+                          {formData.total_questions}, Dostupné: {availableQuestionsCount}
+                        </Alert>
+                      )}
+                    {availableQuestionsCount === 0 && !validatedQuestionsLoading && (
+                      <Alert severity="error" sx={{ mt: 1 }}>
+                        Žiadne validované otázky v vybraných moduloch!
+                      </Alert>
+                    )}
+                  </Box>
+                )}
 
-                  {formData.generated_questions.length > 0 && (
-                    <Button
-                      variant="outlined"
-                      color="primary"
-                      onClick={() => setShowGeneratedQuestions(!showGeneratedQuestions)}
+                {/* Show list of validated questions from selected modules */}
+                {formData.selected_modules.length > 0 && validatedQuestions.length > 0 && (
+                  <Box sx={{ mt: 2 }}>
+                    <Typography variant="subtitle2" gutterBottom>
+                      Validované otázky z vybraných modulov ({validatedQuestions.length}):
+                    </Typography>
+                    <Paper sx={{ maxHeight: 300, overflow: 'auto', p: 2 }}>
+                      <List dense>
+                        {validatedQuestions.slice(0, 10).map((q) => (
+                          <ListItem key={q._id}>
+                            <ListItemText
+                              primary={q.text || q.question_text}
+                              secondary={`Modul: ${q.modul?.name || q.modul?.title || 'N/A'}`}
+                            />
+                          </ListItem>
+                        ))}
+                        {validatedQuestions.length > 10 && (
+                          <ListItem>
+                            <ListItemText
+                              secondary={`... a ${validatedQuestions.length - 10} ďalších otázok`}
+                            />
+                          </ListItem>
+                        )}
+                      </List>
+                    </Paper>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ mt: 1, display: 'block' }}
                     >
-                      {showGeneratedQuestions
-                        ? 'Skryť vygenerované otázky'
-                        : 'Zobraziť vygenerované otázky'}
-                    </Button>
-                  )}
+                      Pri spustení testu bude každému študentovi náhodne vybraných{' '}
+                      {formData.total_questions} otázok z týchto validovaných otázok.
+                    </Typography>
+                  </Box>
+                )}
 
-                  <Button
-                    variant="outlined"
-                    color="primary"
-                    onClick={() => setIsCreateQuestionModalOpen(true)}
-                  >
-                    Vytvoriť novú otázku
-                  </Button>
-                </Box>
+                {/* Button to create new question (optional) */}
+                <Button
+                  variant="outlined"
+                  startIcon={<AddIcon />}
+                  onClick={() => setIsCreateQuestionModalOpen(true)}
+                  sx={{ mt: 2 }}
+                >
+                  Vytvoriť novú otázku
+                </Button>
               </Grid>
-
-              {showGeneratedQuestions && formData.generated_questions.length > 0 && (
-                <Grid item xs={12}>
-                  <Typography variant="h6" mt={2} mb={1}>
-                    Generated Questions ({formData.generated_questions.length})
-                  </Typography>
-                  <Paper variant="outlined" sx={{ maxHeight: 300, overflow: 'auto', p: 2 }}>
-                    <List dense>
-                      {formData.generated_questions.map((question, index) => (
-                        <ListItem key={question._id}>
-                          <ListItemText
-                            primary={`${index + 1}. ${question.text}`}
-                            secondary={
-                              <>
-                                <Typography variant="body2" component="span" display="block">
-                                  Modul:{' '}
-                                  {question.modul
-                                    ? question.modul.name ||
-                                      question.modul.title ||
-                                      'Modul bez názvu'
-                                    : 'Neznámy modul'}
-                                </Typography>
-                                <Typography
-                                  variant="caption"
-                                  component="span"
-                                  display="block"
-                                  color="textSecondary"
-                                >
-                                  Možnosti: A: {question.options.a}, B: {question.options.b}, C:{' '}
-                                  {question.options.c}, D: {question.options.d}
-                                </Typography>
-                              </>
-                            }
-                          />
-                        </ListItem>
-                      ))}
-                    </List>
-                  </Paper>
-                </Grid>
-              )}
             </Grid>
           </DialogContent>
           <DialogActions>
@@ -866,20 +718,65 @@ const Tests = () => {
           open={isCreateQuestionModalOpen}
           onClose={() => setIsCreateQuestionModalOpen(false)}
           modules={modules}
-          onQuestionCreated={(newQuestion) => {
-            // Add the new question to the generated questions list
-            setFormData((prev) => ({
-              ...prev,
-              generated_questions: [...prev.generated_questions, newQuestion],
-              total_questions: prev.generated_questions.length + 1
-            }));
-
-            // Show the generated questions if not already shown
-            if (!showGeneratedQuestions) {
-              setShowGeneratedQuestions(true);
-            }
+          onQuestionCreated={() => {
+            // Question created successfully
+            // The question will be available in the validated questions pool
+            setIsCreateQuestionModalOpen(false);
           }}
         />
+
+        {/* Confirmation Modal for Starting Test */}
+        <Dialog
+          open={!!confirmTestModal}
+          onClose={() => setConfirmTestModal(null)}
+          maxWidth="sm"
+          fullWidth
+        >
+          <DialogTitle>Start Test?</DialogTitle>
+          <DialogContent>
+            {confirmTestModal && (
+              <Box>
+                <Typography variant="h6" gutterBottom>
+                  {confirmTestModal.title}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" paragraph>
+                  {confirmTestModal.description}
+                </Typography>
+                <Box sx={{ mt: 2 }}>
+                  <Typography variant="body2">
+                    <strong>Total Questions:</strong> {confirmTestModal.total_questions}
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>Time Limit:</strong> {confirmTestModal.time_limit} minutes
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>Passing Score:</strong> {confirmTestModal.passing_score}%
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>Max Attempts:</strong> {confirmTestModal.max_attempts}
+                  </Typography>
+                </Box>
+                <Alert severity="info" sx={{ mt: 2 }}>
+                  Once you start the test, the timer will begin immediately. Make sure you have a
+                  stable internet connection and enough time to complete the test.
+                </Alert>
+              </Box>
+            )}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setConfirmTestModal(null)}>Cancel</Button>
+            <Button
+              onClick={() => {
+                navigate(`/test/${confirmTestModal._id}/take`);
+                setConfirmTestModal(null);
+              }}
+              variant="contained"
+              color="primary"
+            >
+              Start Test
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Box>
     </LocalizationProvider>
   );

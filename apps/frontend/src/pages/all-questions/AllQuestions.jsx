@@ -14,7 +14,7 @@ const AllQuestions = () => {
   const currentSubject = useCurrentSubject();
   const subjectId = currentSubject?._id || currentSubject?.id || '';
 
-  const [filter, setFilter] = React.useState({ date: '', modulId: '' });
+  const [filter, setFilter] = React.useState({ date: '', modulId: '', validated: '' });
 
   const { data: subjectModuls = [] } = useGetModulsBySubjectQuery(subjectId, { skip: !subjectId });
 
@@ -36,9 +36,20 @@ const AllQuestions = () => {
     questions = subjectQuestions;
   }
 
-  const filteredQuestions = filter.date
-    ? questions.filter((q) => q.createdAt.slice(0, 10) === filter.date)
-    : questions;
+  // Apply filters
+  let filteredQuestions = questions;
+
+  // Filter by date
+  if (filter.date) {
+    filteredQuestions = filteredQuestions.filter((q) => q.createdAt.slice(0, 10) === filter.date);
+  }
+
+  // Filter by validated status
+  if (filter.validated === 'validated') {
+    filteredQuestions = filteredQuestions.filter((q) => q.validated === true);
+  } else if (filter.validated === 'notValidated') {
+    filteredQuestions = filteredQuestions.filter((q) => !q.validated || q.validated === false);
+  }
 
   const [openListModal, setOpenListModal] = React.useState(false);
   const [selectedQuestionId, setSelectedQuestionId] = React.useState(null);

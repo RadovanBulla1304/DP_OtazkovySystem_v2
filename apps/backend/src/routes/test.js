@@ -7,7 +7,11 @@ const {
     updateTest,
     deleteTest,
     toggleTestPublication,
-    getTestStatistics
+    getTestStatistics,
+    startTestAttempt,
+    submitTestAttempt,
+    getTestAttemptById,
+    getUserTestAttempts
 } = require("../controllers/testController");
 
 const router = express.Router();
@@ -25,5 +29,11 @@ router.patch("/:id/publish", toggleTestPublication);       // Publish/unpublish 
 
 // Test statistics
 router.get("/:id/statistics", getTestStatistics);          // Get test statistics
+
+// Test attempts
+router.post("/:id/start-attempt", startTestAttempt);       // Start a new test attempt with random questions
+router.post("/attempt/:attemptId/submit", submitTestAttempt); // Submit test attempt with answers
+router.get("/attempt/:attemptId", getTestAttemptById);     // Get test attempt details
+router.get("/:id/user-attempts", getUserTestAttempts);     // Get user's attempts for a test
 
 module.exports = router;

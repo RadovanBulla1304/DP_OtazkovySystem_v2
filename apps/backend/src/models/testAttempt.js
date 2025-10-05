@@ -21,12 +21,11 @@ const TestAttemptSchema = new mongoose.Schema(
                 },
                 selected_answer: {
                     type: String,
-                    enum: ["a", "b", "c", "d"],
-                    required: true,
+                    default: null,
                 },
                 is_correct: {
                     type: Boolean,
-                    required: true,
+                    default: false,
                 },
                 time_spent: {
                     // in seconds
