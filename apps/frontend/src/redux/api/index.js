@@ -767,10 +767,18 @@ export const api = createApi({
         method: 'POST',
         body: { answers }
       }),
-      invalidatesTags: (result, error, arg) => [
-        'TestAttempts',
-        { type: 'TestAttempt', id: arg.attemptId }
-      ]
+      invalidatesTags: (result, error, arg) => {
+        // Invalidate all test attempts queries
+        const tags = [
+          'TestAttempts',
+          { type: 'TestAttempt', id: arg.attemptId }
+        ];
+        // Also invalidate the specific test's attempts if we have the testId
+        if (result?.data?.testAttempt?.test) {
+          tags.push({ type: 'TestAttempts', id: `TEST-${result.data.testAttempt.test}` });
+        }
+        return tags;
+      }
     }),
     getTestAttemptById: builder.query({
       query: (attemptId) => ({

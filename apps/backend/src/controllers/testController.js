@@ -331,23 +331,106 @@ const getTestStatistics = async (req, res) => {
         const test = await Test.findById(id);
         if (!test) {
             return res.status(404).json({
+                success: false,
                 message: 'Test not found'
             });
         }
 
-        const attempts = await TestAttempt.find({ test: id, isCompleted: true });
+        // Get all completed attempts with user and question details
+        const attempts = await TestAttempt.find({ test: id, isCompleted: true })
+            .populate('user', 'name email username')
+            .populate('questions.question')
+            .sort({ submittedAt: -1 });
+
+        // Calculate basic statistics
+        const totalAttempts = attempts.length;
+        const averageScore = attempts.length > 0
+            ? attempts.reduce((sum, attempt) => sum + attempt.score, 0) / attempts.length
+            : 0;
+        const passedCount = attempts.filter(attempt => attempt.passed).length;
+        const passRate = attempts.length > 0 ? (passedCount / attempts.length) * 100 : 0;
+        const averageTime = attempts.length > 0
+            ? attempts.reduce((sum, attempt) => sum + (attempt.totalTime_spent || 0), 0) / attempts.length
+            : 0;
+
+        // Get unique users who took the test
+        const uniqueUsers = new Set(attempts.map(a => a.user?._id?.toString())).size;
+
+        // Calculate question-level statistics (most frequently wrong)
+        const questionStats = {};
+        attempts.forEach(attempt => {
+            attempt.questions.forEach(q => {
+                const questionId = q.question?._id?.toString();
+                if (!questionId) return;
+
+                if (!questionStats[questionId]) {
+                    questionStats[questionId] = {
+                        question: q.question,
+                        totalAttempts: 0,
+                        wrongAttempts: 0,
+                        wrongRate: 0
+                    };
+                }
+                questionStats[questionId].totalAttempts++;
+                if (!q.is_correct) {
+                    questionStats[questionId].wrongAttempts++;
+                }
+            });
+        });
+
+        // Calculate wrong rates and sort
+        const mostWrongQuestions = Object.values(questionStats)
+            .map(stat => ({
+                ...stat,
+                wrongRate: (stat.wrongAttempts / stat.totalAttempts) * 100
+            }))
+            .sort((a, b) => b.wrongRate - a.wrongRate)
+            .slice(0, 5); // Top 5 most frequently wrong questions
+
+        // Prepare user attempts data
+        const userAttempts = attempts.map(attempt => ({
+            _id: attempt._id,
+            user: {
+                _id: attempt.user?._id,
+                name: attempt.user?.name || attempt.user?.username || 'Unknown User',
+                email: attempt.user?.email
+            },
+            score: attempt.score,
+            passed: attempt.passed,
+            submittedAt: attempt.submittedAt,
+            totalTime_spent: attempt.totalTime_spent,
+            correctAnswers: attempt.questions.filter(q => q.is_correct).length,
+            totalQuestions: attempt.questions.length
+        }));
 
         const statistics = {
-            totalAttempts: attempts.length,
-            averageScore: attempts.length > 0 ? attempts.reduce((sum, attempt) => sum + attempt.score, 0) / attempts.length : 0,
-            passRate: attempts.length > 0 ? (attempts.filter(attempt => attempt.passed).length / attempts.length) * 100 : 0,
-            averageTime: attempts.length > 0 ? attempts.reduce((sum, attempt) => sum + attempt.totalTime_spent, 0) / attempts.length : 0
+            test: {
+                _id: test._id,
+                title: test.title,
+                total_questions: test.total_questions,
+                passing_score: test.passing_score
+            },
+            summary: {
+                totalAttempts,
+                uniqueUsers,
+                averageScore: Math.round(averageScore * 100) / 100,
+                passRate: Math.round(passRate * 100) / 100,
+                passedCount,
+                failedCount: totalAttempts - passedCount,
+                averageTime: Math.round(averageTime)
+            },
+            mostWrongQuestions,
+            userAttempts
         };
 
-        res.json(statistics);
+        res.status(200).json({
+            success: true,
+            data: statistics
+        });
     } catch (error) {
         console.error('Error fetching test statistics:', error);
         res.status(500).json({
+            success: false,
             message: 'Error fetching test statistics',
             error: error.message
         });
@@ -636,8 +719,13 @@ const getTestAttemptById = async (req, res) => {
 
 const getUserTestAttempts = async (req, res) => {
     try {
-        const { testId } = req.params;
+        const { id: testId } = req.params; // Route uses :id not :testId
         const userId = req.user.user_id;
+
+        console.log('getUserTestAttempts called:');
+        console.log('  testId:', testId);
+        console.log('  userId:', userId);
+        console.log('  userId type:', typeof userId);
 
         const attempts = await TestAttempt.find({
             test: testId,
@@ -646,6 +734,16 @@ const getUserTestAttempts = async (req, res) => {
         })
             .select('score passed submittedAt')
             .sort({ submittedAt: -1 });
+
+        console.log('  Found attempts:', attempts.length);
+        if (attempts.length > 0) {
+            console.log('  First attempt:', {
+                test: attempts[0].test,
+                user: attempts[0].user,
+                score: attempts[0].score,
+                passed: attempts[0].passed
+            });
+        }
 
         res.status(200).json({
             success: true,

@@ -5,6 +5,7 @@ import {
   useGetModulsBySubjectQuery,
   useGetTeacherMeQuery,
   useGetTestsBySubjectQuery,
+  useGetTestStatisticsQuery,
   useGetUserTestAttemptsQuery,
   useGetValidatedQuestionsByModulesQuery,
   useGetValidatedQuestionsCountQuery,
@@ -46,6 +47,12 @@ import {
   OutlinedInput,
   Paper,
   Select,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   TextField,
   Tooltip,
   Typography
@@ -72,8 +79,16 @@ const MenuProps = {
 
 // Component to show user's attempt status
 const UserAttemptStatus = ({ testId }) => {
-  const { data: attemptsData } = useGetUserTestAttemptsQuery(testId);
+  const { data: attemptsData, isLoading } = useGetUserTestAttemptsQuery(testId);
   const attempts = attemptsData?.data || [];
+
+  if (isLoading) {
+    return (
+      <Box mt={2} p={2} textAlign="center">
+        <CircularProgress size={20} />
+      </Box>
+    );
+  }
 
   if (attempts.length === 0) return null;
 
@@ -82,20 +97,29 @@ const UserAttemptStatus = ({ testId }) => {
   return (
     <Box
       mt={2}
-      p={1.5}
-      bgcolor={latestAttempt.passed ? 'success.light' : 'error.light'}
+      p={2}
+      bgcolor={latestAttempt.passed ? 'success.main' : 'error.main'}
       borderRadius={1}
+      sx={{ color: 'white' }}
     >
-      <Typography variant="body2" fontWeight="bold">
-        Latest Attempt: {latestAttempt.score}%
-      </Typography>
-      <Typography variant="caption">
-        {latestAttempt.passed ? '✓ Passed' : '✗ Failed'} -{' '}
-        {format(new Date(latestAttempt.submittedAt), 'PPp')}
-      </Typography>
-      <Typography variant="caption" display="block" mt={0.5}>
-        Attempts: {attempts.length}
-      </Typography>
+      <Box display="flex" justifyContent="space-between" alignItems="center">
+        <Box>
+          <Typography variant="h6" fontWeight="bold" color="inherit">
+            {latestAttempt.score}%
+          </Typography>
+          <Typography variant="body2" color="inherit">
+            {latestAttempt.passed ? '✓ PASSED' : '✗ FAILED'}
+          </Typography>
+        </Box>
+        <Box textAlign="right">
+          <Typography variant="caption" color="inherit" display="block">
+            Attempts: {attempts.length}
+          </Typography>
+          <Typography variant="caption" color="inherit" display="block">
+            {format(new Date(latestAttempt.submittedAt), 'PPp')}
+          </Typography>
+        </Box>
+      </Box>
     </Box>
   );
 };
@@ -104,12 +128,452 @@ UserAttemptStatus.propTypes = {
   testId: PropTypes.string.isRequired
 };
 
+// Component to show test statistics modal
+const TestStatisticsModal = ({ testId, open, onClose }) => {
+  const {
+    data: statsData,
+    isLoading,
+    error
+  } = useGetTestStatisticsQuery(testId, {
+    skip: !open || !testId
+  });
+
+  const stats = statsData?.data;
+
+  if (!open) return null;
+
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
+      <DialogTitle>
+        <Box display="flex" justifyContent="space-between" alignItems="center">
+          <Typography variant="h5">Test Statistics</Typography>
+          <IconButton onClick={onClose} size="small">
+            <CancelIcon />
+          </IconButton>
+        </Box>
+        {stats?.test && (
+          <Typography variant="subtitle2" color="text.secondary" sx={{ mt: 1 }}>
+            {stats.test.title}
+          </Typography>
+        )}
+      </DialogTitle>
+      <DialogContent dividers>
+        {isLoading ? (
+          <Box display="flex" justifyContent="center" py={4}>
+            <CircularProgress />
+          </Box>
+        ) : error ? (
+          <Alert severity="error">Failed to load statistics. Please try again.</Alert>
+        ) : !stats ? (
+          <Alert severity="info">No statistics available.</Alert>
+        ) : (
+          <Box>
+            {/* Summary Statistics */}
+            <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
+              Summary
+            </Typography>
+            <Grid container spacing={2} sx={{ mb: 3 }}>
+              <Grid item xs={12} sm={6} md={3}>
+                <Card variant="outlined">
+                  <CardContent>
+                    <Typography variant="body2" color="text.secondary">
+                      Total Attempts
+                    </Typography>
+                    <Typography variant="h4">{stats.summary.totalAttempts}</Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      by {stats.summary.uniqueUsers} user
+                      {stats.summary.uniqueUsers !== 1 ? 's' : ''}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <Card variant="outlined">
+                  <CardContent>
+                    <Typography variant="body2" color="text.secondary">
+                      Average Score
+                    </Typography>
+                    <Typography variant="h4">{stats.summary.averageScore}%</Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <Card variant="outlined">
+                  <CardContent>
+                    <Typography variant="body2" color="text.secondary">
+                      Pass Rate
+                    </Typography>
+                    <Typography variant="h4" color="success.main">
+                      {stats.summary.passRate}%
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {stats.summary.passedCount} passed / {stats.summary.failedCount} failed
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <Card variant="outlined">
+                  <CardContent>
+                    <Typography variant="body2" color="text.secondary">
+                      Avg. Time
+                    </Typography>
+                    <Typography variant="h4">
+                      {Math.floor(stats.summary.averageTime / 60)}m
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {stats.summary.averageTime % 60}s
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+            </Grid>
+
+            {/* Most Wrong Questions */}
+            {stats.mostWrongQuestions.length > 0 && (
+              <>
+                <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
+                  Most Frequently Wrong Questions
+                </Typography>
+                <TableContainer component={Paper} variant="outlined" sx={{ mb: 3 }}>
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>
+                          <strong>Question</strong>
+                        </TableCell>
+                        <TableCell align="center">
+                          <strong>Total Attempts</strong>
+                        </TableCell>
+                        <TableCell align="center">
+                          <strong>Wrong Attempts</strong>
+                        </TableCell>
+                        <TableCell align="center">
+                          <strong>Wrong Rate</strong>
+                        </TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {stats.mostWrongQuestions.map((q, idx) => (
+                        <TableRow key={idx}>
+                          <TableCell>
+                            <Typography variant="body2">
+                              {q.question?.text || q.question?.question_text || 'N/A'}
+                            </Typography>
+                          </TableCell>
+                          <TableCell align="center">{q.totalAttempts}</TableCell>
+                          <TableCell align="center">{q.wrongAttempts}</TableCell>
+                          <TableCell align="center">
+                            <Chip
+                              label={`${Math.round(q.wrongRate)}%`}
+                              color={
+                                q.wrongRate > 70
+                                  ? 'error'
+                                  : q.wrongRate > 40
+                                    ? 'warning'
+                                    : 'default'
+                              }
+                              size="small"
+                            />
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </>
+            )}
+
+            {/* User Attempts Table */}
+            <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
+              User Attempts
+            </Typography>
+            {stats.userAttempts.length === 0 ? (
+              <Alert severity="info">No completed attempts yet.</Alert>
+            ) : (
+              <TableContainer component={Paper} variant="outlined">
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>
+                        <strong>User</strong>
+                      </TableCell>
+                      <TableCell align="center">
+                        <strong>Score</strong>
+                      </TableCell>
+                      <TableCell align="center">
+                        <strong>Correct Answers</strong>
+                      </TableCell>
+                      <TableCell align="center">
+                        <strong>Status</strong>
+                      </TableCell>
+                      <TableCell align="center">
+                        <strong>Time Spent</strong>
+                      </TableCell>
+                      <TableCell align="center">
+                        <strong>Submitted At</strong>
+                      </TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {stats.userAttempts.map((attempt) => (
+                      <TableRow key={attempt._id}>
+                        <TableCell>
+                          <Box>
+                            <Typography variant="body2">{attempt.user.name}</Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {attempt.user.email}
+                            </Typography>
+                          </Box>
+                        </TableCell>
+                        <TableCell align="center">
+                          <Typography
+                            variant="h6"
+                            color={attempt.passed ? 'success.main' : 'error.main'}
+                          >
+                            {attempt.score}%
+                          </Typography>
+                        </TableCell>
+                        <TableCell align="center">
+                          {attempt.correctAnswers}/{attempt.totalQuestions}
+                        </TableCell>
+                        <TableCell align="center">
+                          <Chip
+                            label={attempt.passed ? 'PASSED' : 'FAILED'}
+                            color={attempt.passed ? 'success' : 'error'}
+                            size="small"
+                          />
+                        </TableCell>
+                        <TableCell align="center">
+                          {Math.floor((attempt.totalTime_spent || 0) / 60)}m{' '}
+                          {(attempt.totalTime_spent || 0) % 60}s
+                        </TableCell>
+                        <TableCell align="center">
+                          <Typography variant="body2">
+                            {format(new Date(attempt.submittedAt), 'PPp')}
+                          </Typography>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            )}
+          </Box>
+        )}
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>Close</Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
+
+TestStatisticsModal.propTypes = {
+  testId: PropTypes.string,
+  open: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired
+};
+
+// Individual Test Card Component
+const TestCard = ({
+  test,
+  status,
+  isTestActive,
+  isTeacher,
+  updating,
+  deleting,
+  onEdit,
+  onDelete,
+  onTogglePublication,
+  onStartTest,
+  onShowStats
+}) => {
+  // Fetch user attempts directly in the card component
+  const { data: attemptsData } = useGetUserTestAttemptsQuery(test._id, {
+    skip: isTeacher, // Don't fetch if user is a teacher
+    refetchOnMountOrArgChange: true // Always refetch when component mounts or testId changes
+  });
+  const userAttempts = attemptsData?.data || [];
+
+  // Check if user has reached max attempts or already completed
+  const hasReachedMaxAttempts = userAttempts.length >= test.max_attempts;
+  const canTakeTest = !isTeacher && isTestActive && !hasReachedMaxAttempts;
+
+  const handleCardClick = (e) => {
+    // Don't trigger if clicking on buttons inside the card
+    if (e.target.closest('button') || e.target.closest('a')) return;
+
+    if (canTakeTest) {
+      onStartTest(test);
+    }
+  };
+
+  return (
+    <Grid item xs={12} md={6} lg={4}>
+      <Card
+        sx={{
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          cursor: canTakeTest ? 'pointer' : 'default',
+          opacity: hasReachedMaxAttempts && !isTeacher ? 0.7 : 1,
+          '&:hover': canTakeTest
+            ? {
+                boxShadow: 6,
+                transform: 'translateY(-4px)',
+                transition: 'all 0.3s'
+              }
+            : {}
+        }}
+        onClick={handleCardClick}
+      >
+        <CardContent sx={{ flexGrow: 1 }}>
+          <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
+            <Typography variant="h6" component="h3" sx={{ fontWeight: 'bold' }}>
+              {test.title}
+            </Typography>
+            <Chip label={status.label} color={status.color} size="small" icon={status.icon} />
+          </Box>
+
+          {test.description && (
+            <Typography color="textSecondary" gutterBottom>
+              {test.description}
+            </Typography>
+          )}
+
+          <Divider sx={{ my: 2 }} />
+
+          <Typography variant="body2" gutterBottom>
+            <strong>Questions:</strong> {test.total_questions}
+          </Typography>
+          <Typography variant="body2" gutterBottom>
+            <strong>Time Limit:</strong> {test.time_limit} minutes
+          </Typography>
+          <Typography variant="body2" gutterBottom>
+            <strong>Passing Score:</strong> {test.passing_score}%
+          </Typography>
+          <Typography variant="body2" gutterBottom>
+            <strong>Max Attempts:</strong> {test.max_attempts}
+          </Typography>
+
+          <Box mt={1}>
+            <Typography variant="body2" color="textSecondary">
+              <strong>Start:</strong> {format(new Date(test.date_start), 'PPp')}
+            </Typography>
+            <Typography variant="body2" color="textSecondary">
+              <strong>End:</strong> {format(new Date(test.date_end), 'PPp')}
+            </Typography>
+          </Box>
+
+          <Box mt={2}>
+            <Typography variant="body2" gutterBottom>
+              <strong>Modules:</strong>
+            </Typography>
+            <Box display="flex" flexWrap="wrap" gap={0.5}>
+              {test.selected_modules.map((module) => (
+                <Chip
+                  key={module._id}
+                  label={module.title || module.name || 'Modul'}
+                  size="small"
+                  variant="outlined"
+                />
+              ))}
+            </Box>
+          </Box>
+
+          {/* Show user's attempt status if not a teacher */}
+          {!isTeacher && <UserAttemptStatus testId={test._id} />}
+
+          {/* Show message if max attempts reached */}
+          {!isTeacher && hasReachedMaxAttempts && (
+            <Alert severity="warning" sx={{ mt: 2 }}>
+              Maximum attempts reached ({userAttempts.length}/{test.max_attempts})
+            </Alert>
+          )}
+        </CardContent>
+
+        {isTeacher && (
+          <Box p={2} pt={0}>
+            <Box display="flex" justifyContent="space-between" alignItems="center">
+              <Box>
+                <Tooltip title="Edit Test">
+                  <IconButton
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEdit(test);
+                    }}
+                    disabled={updating || deleting}
+                  >
+                    <EditIcon />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Delete Test">
+                  <IconButton
+                    size="small"
+                    color="error"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDelete(test._id);
+                    }}
+                    disabled={updating || deleting}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="View Statistics">
+                  <IconButton
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onShowStats(test._id);
+                    }}
+                  >
+                    <StatisticsIcon />
+                  </IconButton>
+                </Tooltip>
+              </Box>
+
+              <Tooltip title={test.is_published ? 'Unpublish Test' : 'Publish Test'}>
+                <IconButton
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onTogglePublication(test);
+                  }}
+                  color={test.is_published ? 'success' : 'default'}
+                >
+                  {test.is_published ? <PublishIcon /> : <UnpublishIcon />}
+                </IconButton>
+              </Tooltip>
+            </Box>
+          </Box>
+        )}
+      </Card>
+    </Grid>
+  );
+};
+
+TestCard.propTypes = {
+  test: PropTypes.object.isRequired,
+  status: PropTypes.object.isRequired,
+  isTestActive: PropTypes.bool.isRequired,
+  isTeacher: PropTypes.bool.isRequired,
+  updating: PropTypes.bool.isRequired,
+  deleting: PropTypes.bool.isRequired,
+  onEdit: PropTypes.func.isRequired,
+  onDelete: PropTypes.func.isRequired,
+  onTogglePublication: PropTypes.func.isRequired,
+  onStartTest: PropTypes.func.isRequired,
+  onShowStats: PropTypes.func.isRequired
+};
+
 const Tests = () => {
   const subjectId = useCurrentSubjectId();
   const navigate = useNavigate();
   const [openDialog, setOpenDialog] = useState(false);
   const [editingTest, setEditingTest] = useState(null);
-  const [setShowStats] = useState(null);
+  const [showStatsTestId, setShowStatsTestId] = useState(null);
   const [confirmTestModal, setConfirmTestModal] = useState(null);
 
   // Check if user is a teacher
@@ -308,7 +772,7 @@ const Tests = () => {
       <Box p={3}>
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
           <Typography variant="h4" component="h1">
-            Tests Management
+            Testy
           </Typography>
           {isTeacher && (
             <Button
@@ -352,137 +816,22 @@ const Tests = () => {
               tests.map((test) => {
                 const status = getTestStatus(test);
                 const isTestActive = status.label === 'Active';
-                const canTakeTest = !isTeacher && isTestActive;
 
                 return (
-                  <Grid item xs={12} md={6} lg={4} key={test._id}>
-                    <Card
-                      sx={{
-                        height: '100%',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        cursor: canTakeTest ? 'pointer' : 'default',
-                        '&:hover': canTakeTest
-                          ? {
-                              boxShadow: 6,
-                              transform: 'translateY(-4px)',
-                              transition: 'all 0.3s'
-                            }
-                          : {}
-                      }}
-                      onClick={() => canTakeTest && setConfirmTestModal(test)}
-                    >
-                      <CardContent sx={{ flexGrow: 1 }}>
-                        <Box
-                          display="flex"
-                          justifyContent="space-between"
-                          alignItems="flex-start"
-                          mb={2}
-                        >
-                          <Typography variant="h6" component="h3" sx={{ fontWeight: 'bold' }}>
-                            {test.title}
-                          </Typography>
-                          <Chip
-                            label={status.label}
-                            color={status.color}
-                            size="small"
-                            icon={status.icon}
-                          />
-                        </Box>
-
-                        {test.description && (
-                          <Typography color="textSecondary" gutterBottom>
-                            {test.description}
-                          </Typography>
-                        )}
-
-                        <Divider sx={{ my: 2 }} />
-
-                        <Typography variant="body2" gutterBottom>
-                          <strong>Questions:</strong> {test.total_questions}
-                        </Typography>
-                        <Typography variant="body2" gutterBottom>
-                          <strong>Time Limit:</strong> {test.time_limit} minutes
-                        </Typography>
-                        <Typography variant="body2" gutterBottom>
-                          <strong>Passing Score:</strong> {test.passing_score}%
-                        </Typography>
-                        <Typography variant="body2" gutterBottom>
-                          <strong>Max Attempts:</strong> {test.max_attempts}
-                        </Typography>
-
-                        <Box mt={1}>
-                          <Typography variant="body2" color="textSecondary">
-                            <strong>Start:</strong> {format(new Date(test.date_start), 'PPp')}
-                          </Typography>
-                          <Typography variant="body2" color="textSecondary">
-                            <strong>End:</strong> {format(new Date(test.date_end), 'PPp')}
-                          </Typography>
-                        </Box>
-
-                        <Box mt={2}>
-                          <Typography variant="body2" gutterBottom>
-                            <strong>Modules:</strong>
-                          </Typography>
-                          <Box display="flex" flexWrap="wrap" gap={0.5}>
-                            {test.selected_modules.map((module) => (
-                              <Chip
-                                key={module._id}
-                                label={module.title || module.name || 'Modul'}
-                                size="small"
-                                variant="outlined"
-                              />
-                            ))}
-                          </Box>
-                        </Box>
-
-                        {/* Show user's attempt status if not a teacher */}
-                        {!isTeacher && <UserAttemptStatus testId={test._id} />}
-                      </CardContent>
-
-                      {isTeacher && (
-                        <Box p={2} pt={0}>
-                          <Box display="flex" justifyContent="space-between" alignItems="center">
-                            <Box>
-                              <Tooltip title="Edit Test">
-                                <IconButton
-                                  size="small"
-                                  onClick={() => handleOpenEdit(test)}
-                                  disabled={updating || deleting}
-                                >
-                                  <EditIcon />
-                                </IconButton>
-                              </Tooltip>
-                              <Tooltip title="Delete Test">
-                                <IconButton
-                                  size="small"
-                                  color="error"
-                                  onClick={() => handleDelete(test._id)}
-                                  disabled={updating || deleting}
-                                >
-                                  <DeleteIcon />
-                                </IconButton>
-                              </Tooltip>
-                              <Tooltip title="View Statistics">
-                                <IconButton size="small" onClick={() => setShowStats(test._id)}>
-                                  <StatisticsIcon />
-                                </IconButton>
-                              </Tooltip>
-                            </Box>
-
-                            <Tooltip title={test.is_published ? 'Unpublish Test' : 'Publish Test'}>
-                              <IconButton
-                                onClick={() => handleTogglePublication(test)}
-                                color={test.is_published ? 'success' : 'default'}
-                              >
-                                {test.is_published ? <PublishIcon /> : <UnpublishIcon />}
-                              </IconButton>
-                            </Tooltip>
-                          </Box>
-                        </Box>
-                      )}
-                    </Card>
-                  </Grid>
+                  <TestCard
+                    key={test._id}
+                    test={test}
+                    status={status}
+                    isTestActive={isTestActive}
+                    isTeacher={isTeacher}
+                    updating={updating}
+                    deleting={deleting}
+                    onEdit={handleOpenEdit}
+                    onDelete={handleDelete}
+                    onTogglePublication={handleTogglePublication}
+                    onStartTest={setConfirmTestModal}
+                    onShowStats={setShowStatsTestId}
+                  />
                 );
               })
             )}
@@ -777,6 +1126,13 @@ const Tests = () => {
             </Button>
           </DialogActions>
         </Dialog>
+
+        {/* Test Statistics Modal */}
+        <TestStatisticsModal
+          testId={showStatsTestId}
+          open={!!showStatsTestId}
+          onClose={() => setShowStatsTestId(null)}
+        />
       </Box>
     </LocalizationProvider>
   );
