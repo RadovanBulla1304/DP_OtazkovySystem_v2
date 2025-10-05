@@ -236,6 +236,16 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
                         fontWeight: 'bold'
                       }}
                     >
+                      Fórum
+                    </TableCell>
+                    <TableCell
+                      align="center"
+                      sx={{
+                        borderRight: '1px solid rgba(224, 224, 224, 1)',
+                        bgcolor: 'rgba(0, 0, 0, 0.08)',
+                        fontWeight: 'bold'
+                      }}
+                    >
                       Projekt
                     </TableCell>
                     <TableCell
@@ -246,7 +256,7 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
                         fontWeight: 'bold'
                       }}
                     >
-                      Bonus
+                      Iné
                     </TableCell>
                     <TableCell rowSpan={2} sx={{ fontWeight: 'bold' }}>
                       Akcie
@@ -305,22 +315,26 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
 
                       // Additional categories
                       const extraPoints = {
-                        test: 0,
-                        project: 0,
-                        bonus: 0
+                        test_performance: 0,
+                        forum_participation: 0,
+                        project_work: 0,
+                        other: 0
                       };
 
                       // Process details to calculate points by module and extra categories
                       userData.points.details.forEach((detail) => {
                         // Special categories first
-                        if (detail.category === 'test') {
-                          extraPoints.test += detail.points;
+                        if (detail.category === 'test_performance') {
+                          extraPoints.test_performance += detail.points;
                           return;
-                        } else if (detail.category === 'project') {
-                          extraPoints.project += detail.points;
+                        } else if (detail.category === 'forum_participation') {
+                          extraPoints.forum_participation += detail.points;
                           return;
-                        } else if (detail.category === 'bonus') {
-                          extraPoints.bonus += detail.points;
+                        } else if (detail.category === 'project_work') {
+                          extraPoints.project_work += detail.points;
+                          return;
+                        } else if (detail.category === 'other') {
+                          extraPoints.other += detail.points;
                           return;
                         }
 
@@ -449,7 +463,7 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
                                 fontWeight: 'bold'
                               }}
                             >
-                              {extraPoints.test || 0}
+                              {extraPoints.test_performance || 0}
                             </TableCell>
                             <TableCell
                               align="center"
@@ -459,7 +473,17 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
                                 fontWeight: 'bold'
                               }}
                             >
-                              {extraPoints.project || 0}
+                              {extraPoints.forum_participation || 0}
+                            </TableCell>
+                            <TableCell
+                              align="center"
+                              sx={{
+                                borderRight: '1px solid rgba(224, 224, 224, 1)',
+                                bgcolor: 'rgba(0, 0, 0, 0.03)',
+                                fontWeight: 'bold'
+                              }}
+                            >
+                              {extraPoints.project_work || 0}
                             </TableCell>
                             <TableCell
                               align="center"
@@ -469,7 +493,7 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
                                 fontWeight: 'bold'
                               }}
                             >
-                              {extraPoints.bonus || 0}
+                              {extraPoints.other || 0}
                             </TableCell>
 
                             <TableCell align="center">
@@ -512,7 +536,7 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
                                       (detail) => {
                                         // Special categories don't belong to modules
                                         if (
-                                          ['test', 'project', 'bonus'].includes(detail.category)
+                                          ['test_performance', 'forum_participation', 'project_work', 'other'].includes(detail.category)
                                         ) {
                                           return false;
                                         }
@@ -599,7 +623,7 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
                                   })}
 
                                   {/* Special categories section */}
-                                  {['test', 'project', 'bonus'].map((category) => {
+                                  {['test_performance', 'forum_participation', 'project_work', 'other'].map((category) => {
                                     const categoryPoints = userData.points.details.filter(
                                       (detail) => detail.category === category
                                     );

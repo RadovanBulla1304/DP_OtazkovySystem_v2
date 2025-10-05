@@ -899,6 +899,72 @@ export const api = createApi({
       }),
       invalidatesTags: ['Points']
     }),
+
+    // PROJECTS
+    createProject: builder.mutation({
+      query: (projectData) => ({
+        url: '/project',
+        method: 'POST',
+        body: projectData
+      }),
+      invalidatesTags: ['Projects']
+    }),
+    getAllProjects: builder.query({
+      query: ({ subject, status } = {}) => {
+        const params = new URLSearchParams();
+        if (subject) params.append('subject', subject);
+        if (status) params.append('status', status);
+        return {
+          url: `/project?${params.toString()}`,
+          method: 'GET'
+        };
+      },
+      providesTags: ['Projects']
+    }),
+    getProjectById: builder.query({
+      query: (id) => ({
+        url: `/project/${id}`,
+        method: 'GET'
+      }),
+      providesTags: (result, error, id) => [{ type: 'Projects', id }]
+    }),
+    getUserProjects: builder.query({
+      query: () => ({
+        url: '/project/my-projects',
+        method: 'GET'
+      }),
+      providesTags: ['Projects']
+    }),
+    updateProject: builder.mutation({
+      query: ({ id, ...projectData }) => ({
+        url: `/project/${id}`,
+        method: 'PUT',
+        body: projectData
+      }),
+      invalidatesTags: (result, error, { id }) => ['Projects', { type: 'Projects', id }]
+    }),
+    deleteProject: builder.mutation({
+      query: (id) => ({
+        url: `/project/${id}`,
+        method: 'DELETE'
+      }),
+      invalidatesTags: ['Projects']
+    }),
+    assignUsersToProject: builder.mutation({
+      query: ({ id, userIds }) => ({
+        url: `/project/${id}/assign-users`,
+        method: 'POST',
+        body: { userIds }
+      }),
+      invalidatesTags: (result, error, { id }) => ['Projects', { type: 'Projects', id }]
+    }),
+    removeUserFromProject: builder.mutation({
+      query: ({ projectId, userId }) => ({
+        url: `/project/${projectId}/users/${userId}`,
+        method: 'DELETE'
+      }),
+      invalidatesTags: (result, error, { projectId }) => ['Projects', { type: 'Projects', id: projectId }]
+    }),
   })
 });
 
@@ -1011,4 +1077,16 @@ export const {
   useAwardPointsForQuestionValidationMutation,
   useAwardPointsForQuestionReparationMutation,
   useAwardCustomPointsMutation,
+  // PROJECTS
+  useCreateProjectMutation,
+  useGetAllProjectsQuery,
+  useLazyGetAllProjectsQuery,
+  useGetProjectByIdQuery,
+  useLazyGetProjectByIdQuery,
+  useGetUserProjectsQuery,
+  useLazyGetUserProjectsQuery,
+  useUpdateProjectMutation,
+  useDeleteProjectMutation,
+  useAssignUsersToProjectMutation,
+  useRemoveUserFromProjectMutation,
 } = api;

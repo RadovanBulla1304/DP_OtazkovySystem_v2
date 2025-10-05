@@ -1,0 +1,350 @@
+import {
+  useDeleteProjectMutation,
+  useGetAllProjectsQuery,
+  useGetTeacherMeQuery,
+  useGetUserProjectsQuery
+} from '@app/redux/api';
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Grid,
+  Typography
+} from '@mui/material';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import AddProjectModal from './components/AddProjectModal';
+import AssignPointsToProject from './components/AssignPointsToProject';
+import AssignUsersToProject from './components/AssignUsersToProject';
+
+const Projects = () => {
+  // Check if user is a teacher
+  const { data: teacher } = useGetTeacherMeQuery();
+  const isTeacher = !!teacher;
+
+  // Teachers see all projects, users see only their assigned projects
+  const {
+    data: allProjectsData,
+    isLoading: isLoadingAll,
+    isError: isErrorAll,
+    refetch: refetchAll
+  } = useGetAllProjectsQuery(undefined, {
+    skip: !isTeacher
+  });
+
+  const {
+    data: userProjectsData,
+    isLoading: isLoadingUser,
+    isError: isErrorUser,
+    refetch: refetchUser
+  } = useGetUserProjectsQuery(undefined, {
+    skip: isTeacher
+  });
+
+  const navigate = useNavigate();
+
+  const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [assignUsersProjectId, setAssignUsersProjectId] = useState(null);
+  const [assignPointsProject, setAssignPointsProject] = useState(null);
+
+  const projects = isTeacher ? allProjectsData?.data || [] : userProjectsData?.data || [];
+  const isLoading = isTeacher ? isLoadingAll : isLoadingUser;
+  const isError = isTeacher ? isErrorAll : isErrorUser;
+  const refetch = isTeacher ? refetchAll : refetchUser;
+
+  const [deleteProject] = useDeleteProjectMutation();
+
+  const handleOpenProjectModal = () => setIsProjectModalOpen(true);
+  const handleCloseProjectModal = () => setIsProjectModalOpen(false);
+
+  const handleProjectCreated = async () => {
+    try {
+      await refetch();
+      handleCloseProjectModal();
+    } catch (error) {
+      console.error('Error handling project creation:', error);
+    }
+  };
+
+  const handleCardClick = (projectId) => {
+    navigate(`/projects/${projectId}`);
+  };
+
+  const confirmDelete = async (project) => {
+    try {
+      setIsDeleting(true);
+      console.log('Deleting project:', project._id);
+
+      const response = await deleteProject(project._id);
+
+      if (response.error) {
+        toast.error('Error deleting project: ' + response.error?.data?.message);
+      } else {
+        toast.success('Project deleted successfully');
+        await refetch();
+      }
+    } catch (error) {
+      console.error('Error during deletion process:', error);
+      toast.error('Error deleting project');
+    } finally {
+      setIsDeleting(false);
+      setProjectToDelete(null);
+    }
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'active':
+        return 'success';
+      case 'completed':
+        return 'info';
+      case 'cancelled':
+        return 'error';
+      default:
+        return 'default';
+    }
+  };
+
+  const handleOpenAssignUsers = (e, projectId) => {
+    e.stopPropagation();
+    setAssignUsersProjectId(projectId);
+  };
+
+  const handleCloseAssignUsers = () => {
+    setAssignUsersProjectId(null);
+  };
+
+  const handleOpenAssignPoints = (e, project) => {
+    e.stopPropagation();
+    setAssignPointsProject(project);
+  };
+
+  const handleCloseAssignPoints = () => {
+    setAssignPointsProject(null);
+  };
+
+  if (isLoading || isDeleting) {
+    return (
+      <Box display="flex" justifyContent="center" mt={4}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (isError) {
+    return (
+      <Box display="flex" justifyContent="center" mt={4}>
+        <Typography color="error">Error loading projects</Typography>
+      </Box>
+    );
+  }
+
+  return (
+    <div style={{ padding: '20px' }}>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
+        <Typography variant="h4">Projects</Typography>
+        {isTeacher && (
+          <Button variant="contained" color="primary" onClick={handleOpenProjectModal}>
+            New Project
+          </Button>
+        )}
+      </Box>
+
+      {isTeacher && (
+        <AddProjectModal
+          open={isProjectModalOpen}
+          onClose={handleCloseProjectModal}
+          onSuccess={handleProjectCreated}
+        />
+      )}
+
+      <Grid container spacing={3}>
+        {projects.length === 0 ? (
+          <Grid item xs={12}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" color="textSecondary" align="center">
+                  No projects created yet.
+                </Typography>
+                <Typography color="textSecondary" align="center" sx={{ mt: 1 }}>
+                  Click &quot;New Project&quot; to get started.
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+        ) : (
+          projects.map((project) => (
+            <Grid item xs={12} sm={6} md={4} lg={3} key={project._id}>
+              <Card
+                sx={{
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  cursor: 'pointer',
+                  '&:hover': {
+                    boxShadow: 3
+                  }
+                }}
+                onClick={() => handleCardClick(project._id)}
+              >
+                <CardContent sx={{ flexGrow: 1 }}>
+                  <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
+                    <Typography gutterBottom variant="h5" component="div">
+                      {project.name}
+                    </Typography>
+                    <Chip
+                      label={project.status}
+                      color={getStatusColor(project.status)}
+                      size="small"
+                    />
+                  </Box>
+
+                  {project.description && (
+                    <Typography variant="body2" color="text.secondary" mb={2}>
+                      {project.description.length > 100
+                        ? `${project.description.substring(0, 100)}...`
+                        : project.description}
+                    </Typography>
+                  )}
+
+                  {project.subject && (
+                    <Box mb={1}>
+                      <Chip label={project.subject.name} size="small" variant="outlined" />
+                    </Box>
+                  )}
+
+                  <Typography variant="body2" color="text.secondary">
+                    Members: {project.assigned_users?.length || 0} / {project.max_members}
+                  </Typography>
+
+                  <Typography variant="body2" color="text.secondary">
+                    Created: {new Date(project.createdAt).toLocaleDateString()}
+                  </Typography>
+
+                  {project.due_date && (
+                    <Typography variant="body2" color="text.secondary">
+                      Due: {new Date(project.due_date).toLocaleDateString()}
+                    </Typography>
+                  )}
+                </CardContent>
+                {isTeacher && (
+                  <Box
+                    sx={{
+                      p: 2,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 1
+                    }}
+                  >
+                    <Box display="flex" gap={1}>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={(e) => handleOpenAssignUsers(e, project._id)}
+                        fullWidth
+                      >
+                        Assign Users
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        color="secondary"
+                        size="small"
+                        onClick={(e) => handleOpenAssignPoints(e, project)}
+                        fullWidth
+                      >
+                        Assign Points
+                      </Button>
+                    </Box>
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      size="small"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        console.log('Delete button clicked for project:', project.name);
+                        setProjectToDelete(project);
+                      }}
+                      fullWidth
+                    >
+                      Delete
+                    </Button>
+                  </Box>
+                )}
+              </Card>
+            </Grid>
+          ))
+        )}
+      </Grid>
+
+      {/* Confirmation Dialog for Delete Project */}
+      {isTeacher && projectToDelete && (
+        <Dialog
+          open={!!projectToDelete}
+          onClose={() => setProjectToDelete(null)}
+          aria-labelledby="delete-project-dialog-title"
+          aria-describedby="delete-project-dialog-description"
+        >
+          <DialogTitle id="delete-project-dialog-title">Delete Project?</DialogTitle>
+          <DialogContent>
+            <Typography id="delete-project-dialog-description">
+              Are you sure you want to delete project <strong>{projectToDelete.name}</strong>? This
+              action cannot be undone.
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setProjectToDelete(null)} disabled={isDeleting}>
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                console.log('Delete confirmed for project:', projectToDelete._id);
+                confirmDelete(projectToDelete);
+              }}
+              color="error"
+              variant="contained"
+              disabled={isDeleting}
+            >
+              {isDeleting ? 'Deleting...' : 'Delete'}
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
+
+      {/* Assign Users Modal */}
+      {isTeacher && assignUsersProjectId && (
+        <AssignUsersToProject
+          open={!!assignUsersProjectId}
+          onClose={handleCloseAssignUsers}
+          projectId={assignUsersProjectId}
+          onSuccess={() => {
+            refetch();
+          }}
+        />
+      )}
+
+      {/* Assign Points Modal */}
+      {isTeacher && assignPointsProject && (
+        <AssignPointsToProject
+          open={!!assignPointsProject}
+          onClose={handleCloseAssignPoints}
+          project={assignPointsProject}
+          onSuccess={() => {
+            toast.success('Points assigned successfully');
+          }}
+        />
+      )}
+    </div>
+  );
+};
+
+export default Projects;

@@ -10,6 +10,7 @@ import AllUsersQuestions from './pages/all-users-questions/AllUsersQuestions';
 import Forum from './pages/forum/Forum';
 import Moduls from './pages/moduls/ModulsList';
 import MyQuestions from './pages/my-questions/MyQuestions';
+import Projects from './pages/projects/Projects';
 import SubjectDetail from './pages/subjects/SubjectDetail';
 import Subjects from './pages/subjects/Subjects';
 import TakeTest from './pages/tests/TakeTest';
@@ -38,6 +39,7 @@ export const router = createBrowserRouter([
       { path: '/forum', element: <Forum /> },
       { path: '/subjects', element: <Subjects /> },
       { path: '/subjects/:subjectId', element: <SubjectDetail /> },
+      { path: '/projects', element: <Projects /> },
       { path: 'admin', children: adminRoutes },
       { path: '*', element: <RouteNotFound /> }
     ]
