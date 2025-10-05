@@ -188,7 +188,11 @@ const Forum = () => {
               )}
             </Box>
             {filters.tags.length > 0 && (
-              <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ mt: 0.5, display: 'block' }}
+              >
                 Vybrané: {filters.tags.join(', ')}
               </Typography>
             )}

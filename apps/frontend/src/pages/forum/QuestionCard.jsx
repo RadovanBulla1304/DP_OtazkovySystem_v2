@@ -1,3 +1,4 @@
+import * as authService from '@app/pages/auth/authService';
 import {
   Comment as CommentIcon,
   ExpandLess,
@@ -32,6 +33,34 @@ const QuestionCard = ({ question, onQuestionClick }) => {
 
   const [likeQuestion, { isLoading: isLiking }] = useLikeForumQuestionMutation();
   const [dislikeQuestion, { isLoading: isDisliking }] = useDislikeForumQuestionMutation();
+  const auth = authService.getUserFromStorage();
+
+  const authId = auth?.id || auth?._id;
+  const createdById = question.createdBy?._id ? String(question.createdBy._id) : undefined;
+  const authIdStr = authId ? String(authId) : undefined;
+  const isTeacherAuthor =
+    question.createdByModel === 'Teacher' ||
+    (!!auth?.isTeacher && !!authIdStr && !!createdById && createdById === authIdStr);
+
+  const teacherFullName =
+    question.createdBy?.fullName ||
+    [question.createdBy?.name, question.createdBy?.surname].filter(Boolean).join(' ') ||
+    auth?.fullName ||
+    [auth?.name, auth?.surname].filter(Boolean).join(' ');
+
+  const authorLabel = isTeacherAuthor
+    ? `Pridané ${teacherFullName || 'učiteľom'}`
+    : 'Pridané anonymom';
+
+  const getInitials = (name) => {
+    if (!name) return 'A';
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return 'A';
+    if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+  };
+
+  const authorInitial = isTeacherAuthor ? getInitials(teacherFullName) : 'A';
 
   const formatDate = (date) => {
     return formatDistanceToNow(new Date(date), {
@@ -167,15 +196,19 @@ const QuestionCard = ({ question, onQuestionClick }) => {
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           {/* Author and date */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Avatar sx={{ width: 32, height: 32 }} src={question.createdBy?.avatar}>
-              {question.createdBy?.username?.charAt(0).toUpperCase()}
+            <Avatar
+              sx={{
+                width: 32,
+                height: 32,
+                bgcolor: isTeacherAuthor ? 'primary.main' : 'grey.500',
+                color: 'common.white'
+              }}
+            >
+              {authorInitial}
             </Avatar>
             <Box>
-              <Typography variant="body2" fontWeight={500}>
-                {question.createdBy?.username}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                {formatDate(question.createdAt)}
+              <Typography variant="body2" color="text.secondary">
+                {authorLabel} • {formatDate(question.createdAt)}
               </Typography>
             </Box>
           </Box>
@@ -262,9 +295,14 @@ QuestionCard.propTypes = {
     comments_count: PropTypes.number,
     createdAt: PropTypes.string.isRequired,
     createdBy: PropTypes.shape({
+      _id: PropTypes.string,
       username: PropTypes.string,
-      avatar: PropTypes.string
+      avatar: PropTypes.string,
+      fullName: PropTypes.string,
+      name: PropTypes.string,
+      surname: PropTypes.string
     }),
+    createdByModel: PropTypes.oneOf(['User', 'Teacher']),
     modul: PropTypes.shape({
       name: PropTypes.string
     })

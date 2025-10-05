@@ -97,26 +97,6 @@ exports.editQuestion = [
                 return res.status(404).json({ message: "Question not found." });
             }
 
-            // Security check: Users can only edit their own questions
-            if (String(question.createdBy) !== String(req.user.id)) {
-                return res.status(403).json({ message: "You can only edit your own questions." });
-            }
-
-            // Additional security: Check if it's Week 3 for editing
-            // This is a basic check - you might want to implement more sophisticated week detection
-            if (question.modul && question.modul.date_start) {
-                const moduleStart = new Date(question.modul.date_start);
-                const now = new Date();
-                const daysSinceStart = Math.floor((now - moduleStart) / (1000 * 60 * 60 * 24));
-                const currentWeek = Math.floor(daysSinceStart / 7) + 1;
-
-                if (currentWeek !== 3) {
-                    return res.status(400).json({
-                        message: "Questions can only be edited during Week 3 of the module."
-                    });
-                }
-            }
-
             // Update only the allowed fields for editing (text, options, correct)
             const allowedUpdates = {};
             if (data.text !== undefined) allowedUpdates.text = data.text;

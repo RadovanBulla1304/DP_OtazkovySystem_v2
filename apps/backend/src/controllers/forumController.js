@@ -1,7 +1,115 @@
 const ForumQuestion = require("../models/forumQuestion")
 const Comment = require("../models/comment")
 const Module = require("../models/modul")
+const Teacher = require("../models/teacher")
 const mongoose = require("mongoose")
+const User = require("../models/user")
+
+const buildDisplayName = (entity) => {
+    if (!entity) {
+        return null
+    }
+
+    if (entity.username) {
+        return entity.username
+    }
+
+    const parts = [entity.name, entity.surname].filter(Boolean)
+    if (parts.length) {
+        return parts.join(" ")
+    }
+
+    if (entity.email) {
+        return entity.email.split("@")[0]
+    }
+
+    return null
+}
+
+const enrichForumQuestions = async (items) => {
+    const questionsArray = Array.isArray(items) ? items : items ? [items] : []
+
+    if (!questionsArray.length) {
+        return Array.isArray(items) ? [] : null
+    }
+
+    const authorIds = new Set()
+    const moduleIds = new Set()
+
+    questionsArray.forEach((question) => {
+        if (question.createdBy) {
+            authorIds.add(question.createdBy.toString())
+        }
+        if (question.modul) {
+            moduleIds.add(question.modul.toString())
+        }
+    })
+
+    const [users, teachers, modules] = await Promise.all([
+        authorIds.size
+            ? User.find({ _id: { $in: Array.from(authorIds) } })
+                .select("username name surname email avatar")
+                .lean()
+            : Promise.resolve([]),
+        authorIds.size
+            ? Teacher.find({ _id: { $in: Array.from(authorIds) } })
+                .select("name surname email")
+                .lean()
+            : Promise.resolve([]),
+        moduleIds.size
+            ? Module.find({ _id: { $in: Array.from(moduleIds) } })
+                .select("name")
+                .lean()
+            : Promise.resolve([])
+    ])
+
+    const userMap = new Map(users.map((user) => [user._id.toString(), user]))
+    const teacherMap = new Map(teachers.map((teacher) => [teacher._id.toString(), teacher]))
+    const moduleMap = new Map(modules.map((modul) => [modul._id.toString(), modul]))
+
+    const enriched = questionsArray.map((question) => {
+        const authorId = question.createdBy ? question.createdBy.toString() : null
+        let author = authorId ? userMap.get(authorId) : null
+        let authorType = "student"
+
+        if (!author && authorId) {
+            const teacher = teacherMap.get(authorId)
+            if (teacher) {
+                author = {
+                    ...teacher,
+                    username: buildDisplayName(teacher),
+                    avatar: null
+                }
+                authorType = "teacher"
+            }
+        }
+
+        if (author) {
+            author = {
+                ...author,
+                username: buildDisplayName(author)
+            }
+        }
+
+        if (!author && authorId) {
+            // Unknown entity (possibly deleted); treat as anonym
+            authorType = "student"
+        }
+
+        return {
+            ...question,
+            createdBy: author || null,
+            authorType,
+            modul: moduleMap.get(question.modul ? question.modul.toString() : "") || null
+        }
+    })
+
+    if (Array.isArray(items)) {
+        return enriched
+    }
+
+    return enriched[0] || null
+}
 
 // Helper: safely extract an ID string from possible shapes (ObjectId, subdoc { user }, nested user object)
 const safeExtractId = (elem) => {
@@ -122,10 +230,41 @@ const getForumQuestions = async (req, res) => {
                 {
                     $lookup: {
                         from: 'users',
-                        localField: 'createdBy',
-                        foreignField: '_id',
-                        as: 'createdBy',
-                        pipeline: [{ $project: { username: 1, email: 1, avatar: 1 } }]
+                        let: { creatorId: '$createdBy', creatorModel: '$createdByModel' },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            { $eq: ['$_id', '$$creatorId'] },
+                                            { $eq: ['$$creatorModel', 'User'] }
+                                        ]
+                                    }
+                                }
+                            },
+                            { $project: { username: 1, email: 1, avatar: 1 } }
+                        ],
+                        as: 'createdByUser'
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'teachers',
+                        let: { creatorId: '$createdBy', creatorModel: '$createdByModel' },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            { $eq: ['$_id', '$$creatorId'] },
+                                            { $eq: ['$$creatorModel', 'Teacher'] }
+                                        ]
+                                    }
+                                }
+                            },
+                            { $project: { name: 1, surname: 1, fullName: 1 } }
+                        ],
+                        as: 'createdByTeacher'
                     }
                 },
                 {
@@ -139,8 +278,26 @@ const getForumQuestions = async (req, res) => {
                 },
                 {
                     $addFields: {
-                        createdBy: { $arrayElemAt: ['$createdBy', 0] },
+                        createdBy: {
+                            $cond: {
+                                if: { $gt: [{ $size: '$createdByUser' }, 0] },
+                                then: { $arrayElemAt: ['$createdByUser', 0] },
+                                else: {
+                                    $cond: {
+                                        if: { $gt: [{ $size: '$createdByTeacher' }, 0] },
+                                        then: { $arrayElemAt: ['$createdByTeacher', 0] },
+                                        else: null
+                                    }
+                                }
+                            }
+                        },
                         modul: { $arrayElemAt: ['$modul', 0] }
+                    }
+                },
+                {
+                    $project: {
+                        createdByUser: 0,
+                        createdByTeacher: 0
                     }
                 }
             ]
@@ -148,7 +305,7 @@ const getForumQuestions = async (req, res) => {
             questions = await ForumQuestion.aggregate(aggregationPipeline)
         } else {
             questions = await ForumQuestion.find(filter)
-                .populate('createdBy', 'username email avatar')
+                .populate({ path: 'createdBy', select: 'username email avatar name surname fullName' })
                 .populate('modul', 'name')
                 .sort(sortObj)
                 .limit(limit * 1)
@@ -213,7 +370,7 @@ const getForumQuestion = async (req, res) => {
         }
 
         const question = await ForumQuestion.findById(id)
-            .populate('createdBy', 'username email avatar')
+            .populate({ path: 'createdBy', select: 'username email avatar name surname fullName' })
             .populate('modul', 'name')
             .lean()
 
@@ -332,19 +489,25 @@ const createForumQuestion = async (req, res) => {
             })
         }
 
-        // Process tags
         const processedTags = tags ? tags.map(tag => tag.toLowerCase().trim()) : []
+
+        const isTeacher = await Teacher.exists({ _id: user_id })
+        const createdByModel = isTeacher ? 'Teacher' : 'User'
 
         const forumQuestion = await ForumQuestion.create({
             header: header.trim(),
             description: description.trim(),
             tags: processedTags,
             modul,
-            createdBy: user_id
+            createdBy: user_id,
+            createdByModel
         })
 
         const populatedQuestion = await ForumQuestion.findById(forumQuestion._id)
-            .populate('createdBy', 'username email avatar')
+            .populate({
+                path: 'createdBy',
+                select: 'username email avatar fullName name surname'
+            })
             .populate('modul', 'name')
             .lean()
 

@@ -26,8 +26,14 @@ const ForumQuestionSchema = new mongoose.Schema(
         },
         createdBy: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
             required: true,
+            refPath: 'createdByModel',
+        },
+        createdByModel: {
+            type: String,
+            enum: ['User', 'Teacher'],
+            required: true,
+            default: 'User',
         },
 
         // Track who liked/disliked as simple user ObjectId arrays (one entry per user)
@@ -62,6 +68,7 @@ const ForumQuestionSchema = new mongoose.Schema(
 // Indexes
 ForumQuestionSchema.index({ modul: 1, created_at: -1 })
 ForumQuestionSchema.index({ createdBy: 1 })
+ForumQuestionSchema.index({ createdByModel: 1 })
 ForumQuestionSchema.index({ tags: 1 })
 ForumQuestionSchema.index({ is_pinned: -1, created_at: -1 })
 
