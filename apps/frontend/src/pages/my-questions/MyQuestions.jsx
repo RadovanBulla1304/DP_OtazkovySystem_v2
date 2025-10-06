@@ -446,7 +446,7 @@ const MyQuestions = () => {
   if (!questions.length) return <Typography>Nemáte žiadne otázky.</Typography>;
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box sx={{ pt: 2 }}>
       <Typography variant="h4" sx={{ mb: 3 }}>
         Moje otázky
       </Typography>

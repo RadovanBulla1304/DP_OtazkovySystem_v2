@@ -11,7 +11,6 @@ import {
   Button,
   Chip,
   CircularProgress,
-  Container,
   FormControl,
   InputAdornment,
   InputLabel,
@@ -115,7 +114,7 @@ const Forum = () => {
   const pagination = questionsData?.pagination || {};
 
   return (
-    <Container maxWidth="lg" sx={{ py: 3 }}>
+    <Box sx={{ pt: 2 }}>
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
         <Typography variant="h4" component="h1">
@@ -133,9 +132,6 @@ const Forum = () => {
 
       {/* Filters */}
       <Paper sx={{ p: 3, mb: 3 }}>
-        <Typography variant="h6" gutterBottom>
-          Filtrovanie
-        </Typography>
         <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'end' }}>
           {/* Search */}
           <TextField
@@ -202,15 +198,6 @@ const Forum = () => {
                 </Typography>
               )}
             </Box>
-            {filters.tags.length > 0 && (
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                sx={{ mt: 0.5, display: 'block' }}
-              >
-                Vybrané: {filters.tags.join(', ')}
-              </Typography>
-            )}
           </Box>
 
           {/* Sort filter */}
@@ -307,7 +294,7 @@ const Forum = () => {
 
       {/* Add Question Dialog */}
       <AddQuestionDialog open={addDialogOpen} onClose={() => setAddDialogOpen(false)} />
-    </Container>
+    </Box>
   );
 };
 

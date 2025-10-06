@@ -37,6 +37,7 @@ import { useMemo, useState } from 'react';
 import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import AddModulModal from '../admin/components/AddModulModal';
+import AssignUsersFromCSVModal from '../admin/components/AssignUsersFromCSVModal';
 import EditModulModal from '../admin/components/EditModulModal';
 import EditSubjectModal from '../admin/components/EditSubjectModal';
 
@@ -67,6 +68,9 @@ const SubjectDetail = () => {
 
   // Assigned users selection state
   const [selectedAssignedUserIds, setSelectedAssignedUserIds] = useState([]);
+
+  // CSV upload modal state
+  const [isCSVModalOpen, setIsCSVModalOpen] = useState(false);
 
   // Fetch subject details
   const {
@@ -220,6 +224,14 @@ const SubjectDetail = () => {
     }
   };
 
+  // CSV modal handlers
+  const handleOpenCSVModal = () => setIsCSVModalOpen(true);
+  const handleCloseCSVModal = () => setIsCSVModalOpen(false);
+  const handleCSVAssignSuccess = async () => {
+    await refetchSubject();
+    setIsCSVModalOpen(false);
+  };
+
   // Define columns for the modules table
   const columns = [
     {
@@ -349,6 +361,9 @@ const SubjectDetail = () => {
             </Typography>
 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Button variant="outlined" color="primary" onClick={handleOpenCSVModal} size="small">
+                Priradiť používateľov z CSV
+              </Button>
               <Tooltip title="Pridať modul">
                 <IconButton
                   color="primary"
@@ -362,14 +377,12 @@ const SubjectDetail = () => {
                 >
                   <AddIcon />
                 </IconButton>
-              </Tooltip>
-
+              </Tooltip>{' '}
               <Tooltip title="Upraviť predmet">
                 <IconButton color="secondary" onClick={handleEditSubject}>
                   <EditIcon />
                 </IconButton>
               </Tooltip>
-
               <Tooltip title="Vymazať predmet">
                 <IconButton color="error" onClick={handleOpenDeleteDialog}>
                   <DeleteIcon />
@@ -480,6 +493,15 @@ const SubjectDetail = () => {
         subjectId={subjectId}
         onCreated={handleModulCreated}
       />
+
+      {/* CSV Upload Modal */}
+      <AssignUsersFromCSVModal
+        open={isCSVModalOpen}
+        onClose={handleCloseCSVModal}
+        subjectId={subjectId}
+        onSuccess={handleCSVAssignSuccess}
+      />
+
       {/* Edit Modul Modal */}
       <EditModulModal
         open={editModulModalOpen}

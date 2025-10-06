@@ -78,12 +78,7 @@ const AddUserModal = () => {
 
   return (
     <>
-      <Button
-        sx={{ m: 1, minWidth: '10rem' }}
-        variant="contained"
-        onClick={handleClickOpen}
-        fullWidth
-      >
+      <Button sx={{ minWidth: '10rem' }} variant="contained" onClick={handleClickOpen} fullWidth>
         Pridaj používateľa
       </Button>
       <Dialog

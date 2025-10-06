@@ -1,3 +1,5 @@
+Pozriet ako sa poriadne ukladaju validovane otazky ucitelom
+
 -------------------------------------------
 todo
 
@@ -7,7 +9,6 @@ otazky na receziu davat najprv len otazky ktore este neboli recenzovane. ak uz t
     -> ak ma otazka viac ako 2 recenzie vybrat nahodne jednu z nich. 
 vsade skontrolovat a dorobit pekne joi schemy
 
-ak projektu dam 10/10 kazdy user dostane 10 bodov k osobnemu hodnoteniu v tabulke s bodi pod stlpec projekty 
 pouzivatelia si vedia hodnotit projekty navzajomnu znamku. spravi sa avg . flag pri useroch ktory neohodnotili projekty
 import pouzivatelov z csv -> iba pre predmet nie vytvorenie novych uzivatelov
 
@@ -21,3 +22,4 @@ opravene
 //forum ukladat tagy aby ich netrebalo vzdy pisat. -> vsetky dat to loewrcase 
 //forum zoradit prispevky podla like/dislike -> defaultne nastavit takto 
 //kazdy user ma vlastne otazky na teste - treba poriadne testnut s vacsimi datami 
+//ak projektu dam 10/10 kazdy user dostane 10 bodov k osobnemu hodnoteniu v tabulke s bodi pod stlpec projekty 

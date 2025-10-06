@@ -212,7 +212,7 @@ const QuestionCard = ({ question, onQuestionClick }) => {
                 color: 'common.white'
               }}
             >
-              {authorInitial}
+              <Typography>{authorInitial}</Typography>
             </Avatar>
             <Box>
               <Typography variant="body2" color="text.secondary">

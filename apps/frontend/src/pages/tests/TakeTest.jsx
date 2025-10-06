@@ -42,7 +42,7 @@ const TakeTest = () => {
         setTimeRemaining(result.data.test.time_limit * 60);
       } catch (error) {
         console.error('Error starting test:', error);
-        alert(error.data?.message || 'Failed to start test');
+        alert(error.data?.message || 'Nepodarilo sa spustiť test');
         navigate('/tests');
       }
     };
@@ -130,7 +130,7 @@ const TakeTest = () => {
         </Box>
         <LinearProgress variant="determinate" value={progress} />
         <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
-          {Object.keys(answers).length} / {testAttempt.questions.length} questions answered
+          {Object.keys(answers).length} / {testAttempt.questions.length} zodpovedaných otázok
         </Typography>
       </Paper>
 
@@ -150,7 +150,7 @@ const TakeTest = () => {
             <Card key={question._id} sx={{ mb: 3 }}>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
-                  Question {index + 1} of {testAttempt.questions.length}
+                  Otázka {index + 1} z {testAttempt.questions.length}
                 </Typography>
                 <Typography variant="body1" sx={{ mb: 2, fontWeight: 500 }}>
                   {question.text || question.question_text}
@@ -194,14 +194,14 @@ const TakeTest = () => {
           onClick={handleSubmitTest}
           disabled={isSubmittingTest || Object.keys(answers).length === 0}
         >
-          {isSubmittingTest ? 'Submitting...' : 'Submit Test'}
+          {isSubmittingTest ? 'Odovzdávam...' : 'Odovzdať test'}
         </Button>
       </Box>
 
       {Object.keys(answers).length < testAttempt.questions.length && (
         <Alert severity="warning" sx={{ mb: 3 }}>
-          You have not answered all questions. You can still submit, but unanswered questions will
-          be marked as incorrect.
+          Neodpovedali ste na všetky otázky. Stále môžete test odovzdať, ale nezodpovedané otázky
+          budú označené ako nesprávne.
         </Alert>
       )}
     </Box>

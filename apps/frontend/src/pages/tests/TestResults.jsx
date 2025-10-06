@@ -35,9 +35,9 @@ const TestResults = () => {
   if (error || !data) {
     return (
       <Box p={3} textAlign="center">
-        <Typography color="error">Failed to load test results</Typography>
+        <Typography color="error">Chyba načítania výsledkov testu</Typography>
         <Button variant="contained" onClick={() => navigate('/tests')} sx={{ mt: 2 }}>
-          Back to Tests
+          Naspäť na Testy
         </Button>
       </Box>
     );
@@ -56,7 +56,7 @@ const TestResults = () => {
       {/* Header with Score */}
       <Paper elevation={3} sx={{ p: 3, mb: 3, textAlign: 'center' }}>
         <Typography variant="h4" gutterBottom>
-          {test.title} - Results
+          {test.title}
         </Typography>
         <Box display="flex" justifyContent="center" alignItems="center" gap={3} mt={2}>
           <Box>
@@ -64,7 +64,7 @@ const TestResults = () => {
               {testAttempt.score}%
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              Score
+              Výsledok
             </Typography>
           </Box>
           <Box>
@@ -81,21 +81,21 @@ const TestResults = () => {
               {testAttempt.questions.length}
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              Correct Answers
+              Správne odpovede
             </Typography>
           </Box>
         </Box>
         <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-          Passing score: {test.passing_score}%
+          Minimálny požadovaný počet bodov:: {test.passing_score}%
         </Typography>
         <Typography variant="caption" color="text.secondary">
-          Submitted: {new Date(testAttempt.submittedAt).toLocaleString()}
+          Odovzdané: {new Date(testAttempt.submittedAt).toLocaleString()}
         </Typography>
       </Paper>
 
       {/* Questions Review */}
       <Typography variant="h5" gutterBottom sx={{ mb: 2 }}>
-        Questions Review
+        Prehľad Otázok
       </Typography>
 
       {/* Card View (like test taking) */}
@@ -118,19 +118,19 @@ const TestResults = () => {
               <CardContent>
                 <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
                   <Typography variant="h6">
-                    Question {index + 1} of {testAttempt.questions.length}
+                    Otázka {index + 1} z {testAttempt.questions.length}
                   </Typography>
                   {isCorrect ? (
                     <Chip
                       icon={<CheckCircleIcon />}
-                      label="Correct"
+                      label="Správne"
                       color="success"
                       variant="outlined"
                     />
                   ) : (
                     <Chip
                       icon={<CancelIcon />}
-                      label="Incorrect"
+                      label="Nesprávne"
                       color="error"
                       variant="outlined"
                     />
@@ -177,8 +177,8 @@ const TestResults = () => {
                       >
                         <Typography sx={{ fontWeight }}>
                           {key.toUpperCase()}. {question.options[key]}
-                          {isUserAnswer && ' (Your answer)'}
-                          {isCorrectAnswer && ' ✓ (Correct answer)'}
+                          {isUserAnswer && ' (Vaša odpoveď)'}
+                          {isCorrectAnswer && ' ✓ (Správna odpoveď)'}
                         </Typography>
                       </Box>
                     );
@@ -190,10 +190,6 @@ const TestResults = () => {
         })}
       </Box>
 
-      {/* Table View */}
-      <Typography variant="h5" gutterBottom sx={{ mb: 2 }}>
-        Summary Table
-      </Typography>
       <TableContainer component={Paper} sx={{ mb: 4 }}>
         <Table>
           <TableHead>
@@ -202,16 +198,16 @@ const TestResults = () => {
                 <strong>#</strong>
               </TableCell>
               <TableCell>
-                <strong>Question</strong>
+                <strong>Otázka</strong>
               </TableCell>
               <TableCell>
-                <strong>Your Answer</strong>
+                <strong>Vaša odpoveď</strong>
               </TableCell>
               <TableCell>
-                <strong>Correct Answer</strong>
+                <strong>Správna odpoveď</strong>
               </TableCell>
               <TableCell align="center">
-                <strong>Result</strong>
+                <strong>Výsledok</strong>
               </TableCell>
             </TableRow>
           </TableHead>
@@ -255,11 +251,11 @@ const TestResults = () => {
       {/* Action Buttons */}
       <Box display="flex" justifyContent="center" gap={2} mb={4}>
         <Button variant="contained" onClick={() => navigate('/tests')}>
-          Back to Tests
+          Naspäť na Testy
         </Button>
         {testAttempt.test.max_attempts > 1 && (
           <Button variant="outlined" onClick={() => navigate(`/test/${test._id}/take`)}>
-            Try Again
+            Skúsiť znova
           </Button>
         )}
       </Box>

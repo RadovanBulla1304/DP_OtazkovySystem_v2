@@ -137,10 +137,26 @@ exports.unasignUserFromSubject = [
             // Support multiple userIds
             const userIds = Array.isArray(userId) ? userId : [userId];
 
-            // Remove users from assignedUsers
-            subject.assignedUsers = subject.assignedUsers.filter(
+            // Remove users from assigned_students (not assignedUsers)
+            if (!Array.isArray(subject.assigned_students)) {
+                subject.assigned_students = [];
+            }
+
+            subject.assigned_students = subject.assigned_students.filter(
                 (id) => !userIds.includes(id.toString())
             );
+
+            // Also remove subject from user's assignedSubjects
+            for (const id of userIds) {
+                const user = await User.findById(id);
+                if (user && Array.isArray(user.assignedSubjects)) {
+                    user.assignedSubjects = user.assignedSubjects.filter(
+                        (subjId) => subjId.toString() !== subjectId.toString()
+                    );
+                    await user.save();
+                }
+            }
+
             await subject.save();
 
             res.status(200).json({ message: "Používateľ bol odobraný z predmetu.", subject });

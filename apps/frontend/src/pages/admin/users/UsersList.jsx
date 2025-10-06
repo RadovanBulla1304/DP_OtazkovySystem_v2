@@ -100,8 +100,8 @@ const UsersList = () => {
 
   return (
     <Box py={2}>
-      <Grid2 py={1} px={1} container spacing={1}>
-        <Grid2 size={{ xs: 12, sm: 9 }} display={'flex'}>
+      <Grid2 container spacing={1} justifyContent={'flex-end'}>
+        <Grid2 display={'flex'} width={'100%'}>
           <Typography variant="h4" alignSelf={'center'}>
             Používatelia
           </Typography>
@@ -111,7 +111,6 @@ const UsersList = () => {
             variant="outlined"
             color="primary"
             disabled={selectedUserIds.length === 0}
-            sx={{ m: 1 }}
             onClick={handleOpenAssignModal}
           >
             Priraď k predmetu
@@ -120,7 +119,6 @@ const UsersList = () => {
             variant="outlined"
             color="secondary"
             disabled={selectedUserIds.length === 0}
-            sx={{ m: 1 }}
             onClick={handleOpenPointsModal}
           >
             Zobraziť body

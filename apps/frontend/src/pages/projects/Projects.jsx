@@ -72,7 +72,8 @@ const Projects = () => {
       await refetch();
       handleCloseProjectModal();
     } catch (error) {
-      console.error('Error handling project creation:', error);
+      console.error('Chyba pri vytváraní projektu:', error);
+      toast.error('Chyba pri vytváraní projektu');
     }
   };
 
@@ -115,6 +116,19 @@ const Projects = () => {
     }
   };
 
+  const getStatusText = (status) => {
+    switch (status) {
+      case 'active':
+        return 'Aktívny';
+      case 'completed':
+        return 'Ukončený';
+      case 'cancelled':
+        return 'Zrušený';
+      default:
+        return 'default';
+    }
+  };
+
   const handleOpenAssignUsers = (e, projectId) => {
     e.stopPropagation();
     setAssignUsersProjectId(projectId);
@@ -150,12 +164,12 @@ const Projects = () => {
   }
 
   return (
-    <div style={{ padding: '20px' }}>
+    <Box sx={{ pt: 2 }}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
-        <Typography variant="h4">Projects</Typography>
+        <Typography variant="h4">Projekty</Typography>
         {isTeacher && (
           <Button variant="contained" color="primary" onClick={handleOpenProjectModal}>
-            New Project
+            Nový Projekt
           </Button>
         )}
       </Box>
@@ -174,10 +188,10 @@ const Projects = () => {
             <Card>
               <CardContent>
                 <Typography variant="h6" color="textSecondary" align="center">
-                  No projects created yet.
+                  Žiadne vytvorené projekty
                 </Typography>
                 <Typography color="textSecondary" align="center" sx={{ mt: 1 }}>
-                  Click &quot;New Project&quot; to get started.
+                  Kliknite na &quot;Nový Projekt&quot; a začnite.
                 </Typography>
               </CardContent>
             </Card>
@@ -203,7 +217,7 @@ const Projects = () => {
                       {project.name}
                     </Typography>
                     <Chip
-                      label={project.status}
+                      label={getStatusText(project.status)}
                       color={getStatusColor(project.status)}
                       size="small"
                     />
@@ -224,16 +238,16 @@ const Projects = () => {
                   )}
 
                   <Typography variant="body2" color="text.secondary">
-                    Members: {project.assigned_users?.length || 0} / {project.max_members}
+                    Študenti: {project.assigned_users?.length || 0} / {project.max_members}
                   </Typography>
 
                   <Typography variant="body2" color="text.secondary">
-                    Created: {new Date(project.createdAt).toLocaleDateString()}
+                    Vytvorené: {new Date(project.createdAt).toLocaleDateString()}
                   </Typography>
 
                   {project.due_date && (
                     <Typography variant="body2" color="text.secondary">
-                      Due: {new Date(project.due_date).toLocaleDateString()}
+                      Deadline odovzdania: {new Date(project.due_date).toLocaleDateString()}
                     </Typography>
                   )}
                 </CardContent>
@@ -253,7 +267,7 @@ const Projects = () => {
                         onClick={(e) => handleOpenAssignUsers(e, project._id)}
                         fullWidth
                       >
-                        Assign Users
+                        Priraď Použivateľov
                       </Button>
                       <Button
                         variant="outlined"
@@ -262,11 +276,11 @@ const Projects = () => {
                         onClick={(e) => handleOpenAssignPoints(e, project)}
                         fullWidth
                       >
-                        Assign Points
+                        Priraď Body
                       </Button>
                     </Box>
                     <Button
-                      variant="outlined"
+                      variant="contained"
                       color="error"
                       size="small"
                       onClick={(e) => {
@@ -276,7 +290,7 @@ const Projects = () => {
                       }}
                       fullWidth
                     >
-                      Delete
+                      Odstrániť
                     </Button>
                   </Box>
                 )}
@@ -294,16 +308,16 @@ const Projects = () => {
           aria-labelledby="delete-project-dialog-title"
           aria-describedby="delete-project-dialog-description"
         >
-          <DialogTitle id="delete-project-dialog-title">Delete Project?</DialogTitle>
+          <DialogTitle id="delete-project-dialog-title">Odstrániť projekt?</DialogTitle>
           <DialogContent>
             <Typography id="delete-project-dialog-description">
-              Are you sure you want to delete project <strong>{projectToDelete.name}</strong>? This
-              action cannot be undone.
+              Ste si istý, že chcete odstrániť projekt <strong>{projectToDelete.name}</strong>? Táto
+              akcia sa nedá vrátiť späť.
             </Typography>
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setProjectToDelete(null)} disabled={isDeleting}>
-              Cancel
+              Zrušiť
             </Button>
             <Button
               onClick={() => {
@@ -343,7 +357,7 @@ const Projects = () => {
           }}
         />
       )}
-    </div>
+    </Box>
   );
 };
 
