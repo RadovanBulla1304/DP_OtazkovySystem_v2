@@ -24,6 +24,7 @@ import { toast } from 'react-toastify';
 import AddProjectModal from './components/AddProjectModal';
 import AssignPointsToProject from './components/AssignPointsToProject';
 import AssignUsersToProject from './components/AssignUsersToProject';
+import PeerEvaluationModal from './components/PeerEvaluationModal';
 
 const Projects = () => {
   // Check if user is a teacher
@@ -56,6 +57,7 @@ const Projects = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [assignUsersProjectId, setAssignUsersProjectId] = useState(null);
   const [assignPointsProject, setAssignPointsProject] = useState(null);
+  const [isPeerEvaluationOpen, setIsPeerEvaluationOpen] = useState(false);
 
   const projects = isTeacher ? allProjectsData?.data || [] : userProjectsData?.data || [];
   const isLoading = isTeacher ? isLoadingAll : isLoadingUser;
@@ -147,6 +149,14 @@ const Projects = () => {
     setAssignPointsProject(null);
   };
 
+  const handleOpenPeerEvaluation = () => {
+    setIsPeerEvaluationOpen(true);
+  };
+
+  const handleClosePeerEvaluation = () => {
+    setIsPeerEvaluationOpen(false);
+  };
+
   if (isLoading || isDeleting) {
     return (
       <Box display="flex" justifyContent="center" mt={4}>
@@ -167,11 +177,16 @@ const Projects = () => {
     <Box sx={{ pt: 2 }}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
         <Typography variant="h4">Projekty</Typography>
-        {isTeacher && (
-          <Button variant="contained" color="primary" onClick={handleOpenProjectModal}>
-            Nový Projekt
+        <Box display="flex" gap={2}>
+          <Button variant="outlined" color="secondary" onClick={handleOpenPeerEvaluation}>
+            Vzájomné hodnotenie
           </Button>
-        )}
+          {isTeacher && (
+            <Button variant="contained" color="primary" onClick={handleOpenProjectModal}>
+              Nový Projekt
+            </Button>
+          )}
+        </Box>
       </Box>
 
       {isTeacher && (
@@ -357,6 +372,9 @@ const Projects = () => {
           }}
         />
       )}
+
+      {/* Peer Evaluation Modal */}
+      <PeerEvaluationModal open={isPeerEvaluationOpen} onClose={handleClosePeerEvaluation} />
     </Box>
   );
 };

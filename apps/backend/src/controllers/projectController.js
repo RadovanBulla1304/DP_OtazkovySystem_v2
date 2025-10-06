@@ -1,5 +1,6 @@
 const Project = require("../models/project");
 const User = require("../models/user");
+const ProjectRating = require("../models/projectRating");
 
 // Create a new project
 const createProject = async (req, res) => {
@@ -319,6 +320,212 @@ const getUserProjects = async (req, res) => {
     }
 };
 
+// Save or update a project rating
+const saveProjectRating = async (req, res) => {
+    try {
+        const { ratedProjectId, rating, comment } = req.body;
+        const userId = req.user.user_id;
+
+        if (!ratedProjectId || rating === undefined || rating === null) {
+            return res.status(400).json({
+                success: false,
+                message: "Rated project ID and rating are required"
+            });
+        }
+
+        // Find the user's project
+        const userProject = await Project.findOne({
+            assigned_users: userId
+        });
+
+        if (!userProject) {
+            return res.status(404).json({
+                success: false,
+                message: "You are not assigned to any project"
+            });
+        }
+
+        // Check if trying to rate own project
+        if (userProject._id.toString() === ratedProjectId) {
+            return res.status(400).json({
+                success: false,
+                message: "Cannot rate your own project"
+            });
+        }
+
+        // Verify rated project exists
+        const ratedProject = await Project.findById(ratedProjectId);
+        if (!ratedProject) {
+            return res.status(404).json({
+                success: false,
+                message: "Rated project not found"
+            });
+        }
+
+        // Find existing rating or create new one
+        let projectRating = await ProjectRating.findOne({
+            user: userId,
+            ratedProject: ratedProjectId
+        });
+
+        if (projectRating) {
+            // Update existing rating
+            projectRating.rating = rating;
+            projectRating.comment = comment || "";
+            projectRating.userProject = userProject._id;
+        } else {
+            // Create new rating
+            projectRating = new ProjectRating({
+                user: userId,
+                userProject: userProject._id,
+                ratedProject: ratedProjectId,
+                rating,
+                comment: comment || ""
+            });
+        }
+
+        await projectRating.save();
+
+        res.status(200).json({
+            success: true,
+            data: projectRating,
+            message: "Rating saved successfully"
+        });
+    } catch (error) {
+        console.error("Error saving project rating:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error saving project rating",
+            error: error.message
+        });
+    }
+};
+
+// Get all ratings for the peer evaluation grid
+const getAllProjectRatings = async (req, res) => {
+    try {
+        const { subjectId } = req.query;
+
+        // Build query to get projects (optionally filtered by subject)
+        const projectQuery = {};
+        if (subjectId) {
+            projectQuery.subject = subjectId;
+        }
+
+        // Get all projects
+        const projects = await Project.find(projectQuery)
+            .populate("assigned_users", "name email username studentNumber")
+            .sort({ name: 1 });
+
+        // Get all ratings for these projects
+        const projectIds = projects.map(p => p._id);
+        const ratings = await ProjectRating.find({
+            ratedProject: { $in: projectIds }
+        })
+            .populate("user", "name email username studentNumber")
+            .populate("userProject", "name")
+            .populate("ratedProject", "name");
+
+        // Get all unique students from all projects
+        const allStudents = new Map();
+        projects.forEach(project => {
+            project.assigned_users.forEach(user => {
+                if (!allStudents.has(user._id.toString())) {
+                    allStudents.set(user._id.toString(), {
+                        ...user.toObject(),
+                        projectId: project._id,
+                        projectName: project.name
+                    });
+                }
+            });
+        });
+
+        res.status(200).json({
+            success: true,
+            data: {
+                projects,
+                ratings,
+                students: Array.from(allStudents.values())
+            }
+        });
+    } catch (error) {
+        console.error("Error fetching project ratings:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error fetching project ratings",
+            error: error.message
+        });
+    }
+};
+
+// Get rating summary (sum of ratings per project)
+const getProjectRatingsSummary = async (req, res) => {
+    try {
+        const { subjectId } = req.query;
+
+        // Build query to get projects (optionally filtered by subject)
+        const projectQuery = {};
+        if (subjectId) {
+            projectQuery.subject = subjectId;
+        }
+
+        const projects = await Project.find(projectQuery);
+        const projectIds = projects.map(p => p._id);
+
+        // Aggregate ratings by project
+        const summary = await ProjectRating.aggregate([
+            {
+                $match: {
+                    ratedProject: { $in: projectIds }
+                }
+            },
+            {
+                $group: {
+                    _id: "$ratedProject",
+                    totalRating: { $sum: "$rating" },
+                    averageRating: { $avg: "$rating" },
+                    ratingCount: { $sum: 1 }
+                }
+            },
+            {
+                $lookup: {
+                    from: "projects",
+                    localField: "_id",
+                    foreignField: "_id",
+                    as: "project"
+                }
+            },
+            {
+                $unwind: "$project"
+            },
+            {
+                $project: {
+                    projectId: "$_id",
+                    projectName: "$project.name",
+                    totalRating: 1,
+                    averageRating: 1,
+                    ratingCount: 1
+                }
+            },
+            {
+                $sort: { totalRating: -1 }
+            }
+        ]);
+
+        res.status(200).json({
+            success: true,
+            data: summary
+        });
+    } catch (error) {
+        console.error("Error fetching project ratings summary:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error fetching project ratings summary",
+            error: error.message
+        });
+    }
+};
+
 module.exports = {
     createProject,
     getAllProjects,
@@ -327,5 +534,8 @@ module.exports = {
     deleteProject,
     assignUsersToProject,
     removeUserFromProject,
-    getUserProjects
+    getUserProjects,
+    saveProjectRating,
+    getAllProjectRatings,
+    getProjectRatingsSummary
 };

@@ -8,7 +8,10 @@ const {
     deleteProject,
     assignUsersToProject,
     removeUserFromProject,
-    getUserProjects
+    getUserProjects,
+    saveProjectRating,
+    getAllProjectRatings,
+    getProjectRatingsSummary
 } = require("../controllers/projectController");
 
 
@@ -23,5 +26,10 @@ router.delete("/:id", deleteProject);               // Delete project
 // User assignment routes
 router.post("/:id/assign-users", assignUsersToProject);     // Assign users to project
 router.delete("/:id/users/:userId", removeUserFromProject); // Remove user from project
+
+// Peer evaluation routes
+router.post("/ratings", saveProjectRating);                 // Save/update a rating
+router.get("/ratings/all", getAllProjectRatings);           // Get all ratings for grid display
+router.get("/ratings/summary", getProjectRatingsSummary);   // Get rating summary
 
 module.exports = router;

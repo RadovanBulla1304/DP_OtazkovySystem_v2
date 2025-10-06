@@ -16,7 +16,7 @@ const baseQuery = fetchBaseQuery({
 export const api = createApi({
   reducerPath: 'api',
   baseQuery,
-  tagTypes: ['Users', 'Subjects', 'Moduls', 'Questions', 'QuestionRatings', 'ForumQuestions', 'Comments', 'Tests', 'Points'],
+  tagTypes: ['Users', 'Subjects', 'Moduls', 'Questions', 'QuestionRatings', 'ForumQuestions', 'Comments', 'Tests', 'Points', 'Projects', 'ProjectRatings'],
   endpoints: (builder) => ({
     // USERS
     getUserMe: builder.query({
@@ -965,6 +965,38 @@ export const api = createApi({
       }),
       invalidatesTags: (result, error, { projectId }) => ['Projects', { type: 'Projects', id: projectId }]
     }),
+
+    // PROJECT RATINGS (Peer Evaluation)
+    saveProjectRating: builder.mutation({
+      query: (ratingData) => ({
+        url: '/project/ratings',
+        method: 'POST',
+        body: ratingData
+      }),
+      invalidatesTags: ['ProjectRatings']
+    }),
+    getAllProjectRatings: builder.query({
+      query: ({ subjectId } = {}) => {
+        const params = new URLSearchParams();
+        if (subjectId) params.append('subjectId', subjectId);
+        return {
+          url: `/project/ratings/all?${params.toString()}`,
+          method: 'GET'
+        };
+      },
+      providesTags: ['ProjectRatings']
+    }),
+    getProjectRatingsSummary: builder.query({
+      query: ({ subjectId } = {}) => {
+        const params = new URLSearchParams();
+        if (subjectId) params.append('subjectId', subjectId);
+        return {
+          url: `/project/ratings/summary?${params.toString()}`,
+          method: 'GET'
+        };
+      },
+      providesTags: ['ProjectRatings']
+    }),
   })
 });
 
@@ -1089,4 +1121,10 @@ export const {
   useDeleteProjectMutation,
   useAssignUsersToProjectMutation,
   useRemoveUserFromProjectMutation,
+  // PROJECT RATINGS
+  useSaveProjectRatingMutation,
+  useGetAllProjectRatingsQuery,
+  useLazyGetAllProjectRatingsQuery,
+  useGetProjectRatingsSummaryQuery,
+  useLazyGetProjectRatingsSummaryQuery,
 } = api;
