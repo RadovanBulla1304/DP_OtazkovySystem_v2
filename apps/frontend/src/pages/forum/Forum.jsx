@@ -55,8 +55,6 @@ const Forum = () => {
     })
   );
 
-  console.log('Forum query params:', queryParams);
-
   const {
     data: questionsData,
     isLoading: questionsLoading,
@@ -116,7 +114,7 @@ const Forum = () => {
   const pagination = questionsData?.pagination || {};
 
   return (
-    <Box sx={{ pt: 2 }}>
+    <Box sx={{ pt: 3, pb: 3 }}>
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
         <Typography variant="h4" component="h1">
@@ -126,9 +124,9 @@ const Forum = () => {
           variant="contained"
           startIcon={<Add />}
           onClick={() => setAddDialogOpen(true)}
-          size="large"
+          size="medium"
         >
-          Pridať otázku
+          Nová otázka
         </Button>
       </Box>
 

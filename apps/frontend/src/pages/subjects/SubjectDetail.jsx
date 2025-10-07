@@ -7,10 +7,10 @@ import {
   useGetUsersListQuery,
   useUnasignUserFromSubjectMutation
 } from '@app/redux/api';
-import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
+import UploadFileIcon from '@mui/icons-material/UploadFile';
 import {
   Box,
   Breadcrumbs,
@@ -361,25 +361,13 @@ const SubjectDetail = () => {
             </Typography>
 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Button variant="outlined" color="primary" onClick={handleOpenCSVModal} size="small">
-                Priradiť používateľov z CSV
-              </Button>
-              <Tooltip title="Pridať modul">
-                <IconButton
-                  color="primary"
-                  onClick={handleOpenModulModal}
-                  sx={{
-                    border: '1px solid',
-                    borderRadius: '50%',
-                    padding: 0.5,
-                    borderColor: 'primary.main'
-                  }}
-                >
-                  <AddIcon />
+              <Tooltip title="Priradiť používateľov z CSV">
+                <IconButton onClick={handleOpenCSVModal}>
+                  <UploadFileIcon />
                 </IconButton>
-              </Tooltip>{' '}
+              </Tooltip>
               <Tooltip title="Upraviť predmet">
-                <IconButton color="secondary" onClick={handleEditSubject}>
+                <IconButton color="primary" onClick={handleEditSubject}>
                   <EditIcon />
                 </IconButton>
               </Tooltip>
@@ -416,9 +404,12 @@ const SubjectDetail = () => {
 
       {/* Modules table */}
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h5" sx={{ mb: 2 }}>
-          Moduly predmetu
-        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Typography variant="h5">Moduly predmetu</Typography>
+          <Button variant="contained" color="primary" onClick={handleOpenModulModal}>
+            + Nový Modul
+          </Button>
+        </Box>
 
         <Paper sx={{ height: 400, width: '100%' }}>
           <DataGrid

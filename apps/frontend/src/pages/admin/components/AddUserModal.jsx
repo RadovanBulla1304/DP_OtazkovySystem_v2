@@ -3,6 +3,7 @@ import React from 'react';
 import ErrorNotifier from '@app/components/ErrorNotifier';
 import { useCreateTeacherMutation, useCreateUserMutation } from '@app/redux/api';
 import { joiResolver } from '@hookform/resolvers/joi';
+import { Add } from '@mui/icons-material';
 import {
   Button,
   Checkbox,
@@ -78,7 +79,7 @@ const AddUserModal = () => {
 
   return (
     <>
-      <Button sx={{ minWidth: '10rem' }} variant="contained" onClick={handleClickOpen} fullWidth>
+      <Button startIcon={<Add />} size="medium" variant="contained" onClick={handleClickOpen}>
         Pridaj používateľa
       </Button>
       <Dialog
@@ -197,10 +198,10 @@ const AddUserModal = () => {
           <ErrorNotifier />
 
           <DialogActions>
-            <Button onClick={handleClose} color="error" variant="outlined">
-              Zruš
+            <Button onClick={handleClose} variant="outlined">
+              Zrušiť
             </Button>
-            <Button type="submit" variant="outlined" disabled={isUserLoading || isTeacherLoading}>
+            <Button type="submit" variant="contained" disabled={isUserLoading || isTeacherLoading}>
               Pridaj
             </Button>
           </DialogActions>

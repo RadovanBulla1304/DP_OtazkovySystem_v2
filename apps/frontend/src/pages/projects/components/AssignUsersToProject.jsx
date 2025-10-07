@@ -2,29 +2,19 @@ import { useAssignUsersToProjectMutation, useGetUsersListQuery } from '@app/redu
 import {
   Box,
   Button,
-  Checkbox,
   CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TablePagination,
-  TableRow,
   Typography
 } from '@mui/material';
+import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 import PropTypes from 'prop-types';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
 
 const AssignUsersToProject = ({ open, onClose, projectId, onSuccess }) => {
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [selectedUsers, setSelectedUsers] = useState([]);
 
   const { data: usersData, isLoading: isUsersLoading } = useGetUsersListQuery();
@@ -32,42 +22,19 @@ const AssignUsersToProject = ({ open, onClose, projectId, onSuccess }) => {
 
   const users = usersData || [];
 
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
-
-  const handleSelectUser = (userId) => {
-    setSelectedUsers((prev) => {
-      if (prev.includes(userId)) {
-        return prev.filter((id) => id !== userId);
-      } else {
-        return [...prev, userId];
-      }
-    });
-  };
-
-  const handleSelectAllOnPage = (event) => {
-    if (event.target.checked) {
-      const pageUsers = users
-        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-        .map((user) => user._id);
-      setSelectedUsers((prev) => [...new Set([...prev, ...pageUsers])]);
-    } else {
-      const pageUserIds = users
-        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-        .map((user) => user._id);
-      setSelectedUsers((prev) => prev.filter((id) => !pageUserIds.includes(id)));
-    }
-  };
+  // Define columns for the DataGrid
+  const columns = [
+    { field: 'name', headerName: 'Meno', flex: 1, minWidth: 150 },
+    { field: 'surname', headerName: 'Priezvisko', flex: 1, minWidth: 150 },
+    { field: 'email', headerName: 'Email', flex: 1, minWidth: 200 },
+    { field: 'username', headerName: 'Používateľské meno', flex: 1, minWidth: 150 },
+    { field: 'studentNumber', headerName: 'Študentské číslo', flex: 1, minWidth: 120 },
+    { field: 'groupNumber', headerName: 'Skupina', flex: 1, minWidth: 100 }
+  ];
 
   const handleSubmit = async () => {
     if (selectedUsers.length === 0) {
-      toast.error('Please select at least one user');
+      toast.error('Vyberte aspoň jedného používateľa');
       return;
     }
 
@@ -76,99 +43,60 @@ const AssignUsersToProject = ({ open, onClose, projectId, onSuccess }) => {
         id: projectId,
         userIds: selectedUsers
       }).unwrap();
-      toast.success(`${selectedUsers.length} user(s) assigned to project successfully`);
+      toast.success(`${selectedUsers.length} používateľ(ov) úspešne priradených k projektu`);
       setSelectedUsers([]);
       if (onSuccess) onSuccess();
       onClose();
     } catch (err) {
-      toast.error(err?.data?.message || 'Error assigning users to project');
+      toast.error(err?.data?.message || 'Chyba pri priraďovaní používateľov k projektu');
     }
   };
 
   const handleCancel = () => {
     setSelectedUsers([]);
-    setPage(0);
     onClose();
   };
 
-  const paginatedUsers = users.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
-  const isPageFullySelected =
-    paginatedUsers.length > 0 && paginatedUsers.every((user) => selectedUsers.includes(user._id));
-
   return (
-    <Dialog open={open} onClose={handleCancel} maxWidth="md" fullWidth>
+    <Dialog open={open} onClose={handleCancel} maxWidth="lg" fullWidth>
       <DialogTitle>
         <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Typography variant="h6">Assign Users to Project</Typography>
+          <Typography variant="h6">Priradiť používateľov k projektu</Typography>
           {selectedUsers.length > 0 && (
             <Typography variant="body2" color="primary">
-              {selectedUsers.length} user(s) selected
+              {selectedUsers.length} používateľ(ov) vybratých
             </Typography>
           )}
         </Box>
       </DialogTitle>
-      <DialogContent dividers>
-        {isUsersLoading ? (
-          <Box display="flex" justifyContent="center" p={4}>
-            <CircularProgress />
-          </Box>
-        ) : users.length === 0 ? (
-          <Typography>No users available</Typography>
-        ) : (
-          <>
-            <TableContainer component={Paper} variant="outlined">
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell padding="checkbox">
-                      <Checkbox
-                        checked={isPageFullySelected}
-                        indeterminate={
-                          paginatedUsers.some((user) => selectedUsers.includes(user._id)) &&
-                          !isPageFullySelected
-                        }
-                        onChange={handleSelectAllOnPage}
-                      />
-                    </TableCell>
-                    <TableCell>Name</TableCell>
-                    <TableCell>Username</TableCell>
-                    <TableCell>Email</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {paginatedUsers.map((user) => (
-                    <TableRow
-                      key={user._id}
-                      hover
-                      onClick={() => handleSelectUser(user._id)}
-                      sx={{ cursor: 'pointer' }}
-                    >
-                      <TableCell padding="checkbox">
-                        <Checkbox checked={selectedUsers.includes(user._id)} />
-                      </TableCell>
-                      <TableCell>{user.name}</TableCell>
-                      <TableCell>{user.username}</TableCell>
-                      <TableCell>{user.email}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-            <TablePagination
-              component="div"
-              count={users.length}
-              page={page}
-              onPageChange={handleChangePage}
-              rowsPerPage={rowsPerPage}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-              rowsPerPageOptions={[5, 10, 25, 50]}
-            />
-          </>
-        )}
+      <DialogContent dividers sx={{ height: 500, p: 2 }}>
+        <DataGrid
+          loading={isUsersLoading}
+          rows={users}
+          columns={columns}
+          getRowId={(row) => row._id}
+          pageSizeOptions={[10, 20, 50]}
+          initialState={{
+            density: 'compact',
+            pagination: {
+              paginationModel: {
+                pageSize: 10
+              }
+            }
+          }}
+          checkboxSelection
+          isRowSelectable={() => true}
+          onRowSelectionModelChange={(ids) => setSelectedUsers(ids)}
+          rowSelectionModel={selectedUsers}
+          slots={{ toolbar: GridToolbar }}
+          slotProps={{ toolbar: { showQuickFilter: true } }}
+          ignoreDiacritics
+          disableRowSelectionOnClick
+        />
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleCancel} disabled={isAssigning}>
-          Cancel
+        <Button onClick={handleCancel} disabled={isAssigning} variant="outlined">
+          Zrušiť
         </Button>
         <Button
           onClick={handleSubmit}
@@ -176,7 +104,11 @@ const AssignUsersToProject = ({ open, onClose, projectId, onSuccess }) => {
           color="primary"
           disabled={isAssigning || selectedUsers.length === 0}
         >
-          {isAssigning ? <CircularProgress size={24} /> : `Assign ${selectedUsers.length} User(s)`}
+          {isAssigning ? (
+            <CircularProgress size={24} />
+          ) : (
+            `Priradiť ${selectedUsers.length} používateľ(ov)`
+          )}
         </Button>
       </DialogActions>
     </Dialog>

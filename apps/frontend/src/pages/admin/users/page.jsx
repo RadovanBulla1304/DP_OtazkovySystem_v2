@@ -4,7 +4,7 @@ import UsersList from './UsersList';
 
 const UsersAndTeachersPage = () => {
   return (
-    <Box sx={{ p: { xs: 1, md: 3 } }}>
+    <Box sx={{ pt: 3, pb: 3 }}>
       <Box sx={{ mb: 6 }}>
         <UsersList />
       </Box>

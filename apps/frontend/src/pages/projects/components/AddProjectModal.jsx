@@ -12,8 +12,7 @@ import {
   MenuItem,
   Select,
   Stack,
-  TextField,
-  Typography
+  TextField
 } from '@mui/material';
 import PropTypes from 'prop-types';
 import { useState } from 'react';
@@ -44,7 +43,7 @@ const AddProjectModal = ({ open, onClose, onSuccess }) => {
     e.preventDefault();
 
     if (!formData.name.trim()) {
-      toast.error('Project name is required');
+      toast.error('Názov projektu je povinný');
       return;
     }
 
@@ -57,13 +56,13 @@ const AddProjectModal = ({ open, onClose, onSuccess }) => {
       };
 
       const result = await createProject(projectData).unwrap();
-      toast.success('Project created successfully');
+      toast.success('Projekt bol úspešne vytvorený');
       setCreatedProjectId(result.data._id);
       setFormData({ name: '', description: '', max_members: 5, subject: '' });
       if (onSuccess) onSuccess();
       onClose();
     } catch (err) {
-      toast.error(err?.data?.message || 'Error creating project');
+      toast.error(err?.data?.message || 'Chyba pri vytváraní projektu');
     }
   };
 
@@ -73,10 +72,6 @@ const AddProjectModal = ({ open, onClose, onSuccess }) => {
     onClose();
   };
 
-  const handleOpenAssignUsers = () => {
-    setShowAssignUsers(true);
-  };
-
   const handleCloseAssignUsers = () => {
     setShowAssignUsers(false);
   };
@@ -84,12 +79,12 @@ const AddProjectModal = ({ open, onClose, onSuccess }) => {
   return (
     <>
       <Dialog open={open} onClose={handleCancel} maxWidth="sm" fullWidth>
-        <DialogTitle>Create New Project</DialogTitle>
+        <DialogTitle>Vytvoriť nový projekt</DialogTitle>
         <DialogContent>
           <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
             <Stack spacing={3}>
               <TextField
-                label="Project Name"
+                label="Názov projektu"
                 fullWidth
                 required
                 value={formData.name}
@@ -98,7 +93,7 @@ const AddProjectModal = ({ open, onClose, onSuccess }) => {
               />
 
               <TextField
-                label="Description"
+                label="Popis"
                 fullWidth
                 multiline
                 rows={3}
@@ -108,7 +103,7 @@ const AddProjectModal = ({ open, onClose, onSuccess }) => {
               />
 
               <TextField
-                label="Maximum Members"
+                label="Maximálny počet členov"
                 type="number"
                 fullWidth
                 value={formData.max_members}
@@ -118,16 +113,16 @@ const AddProjectModal = ({ open, onClose, onSuccess }) => {
               />
 
               <FormControl fullWidth>
-                <InputLabel id="select-subject-label">Subject (Optional)</InputLabel>
+                <InputLabel id="select-subject-label">Predmet (voliteľné)</InputLabel>
                 <Select
                   labelId="select-subject-label"
-                  label="Subject (Optional)"
+                  label="Predmet (voliteľné)"
                   value={formData.subject}
                   onChange={(e) => handleChange('subject', e.target.value)}
                   disabled={isSubjectsLoading || isLoading}
                 >
                   <MenuItem value="">
-                    <em>None</em>
+                    <em>Žiadny</em>
                   </MenuItem>
                   {subjects.map((subject) => (
                     <MenuItem key={subject._id} value={subject._id}>
@@ -136,30 +131,15 @@ const AddProjectModal = ({ open, onClose, onSuccess }) => {
                   ))}
                 </Select>
               </FormControl>
-
-              <Box>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  You can assign users to this project after creation
-                </Typography>
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  onClick={handleOpenAssignUsers}
-                  disabled={!createdProjectId}
-                  sx={{ mt: 1 }}
-                >
-                  Assign Users (Create project first)
-                </Button>
-              </Box>
             </Stack>
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCancel} disabled={isLoading}>
-            Cancel
+          <Button onClick={handleCancel} disabled={isLoading} variant="outlined">
+            Zrušiť
           </Button>
           <Button onClick={handleSubmit} variant="contained" color="primary" disabled={isLoading}>
-            {isLoading ? <CircularProgress size={24} /> : 'Create Project'}
+            {isLoading ? <CircularProgress size={24} /> : 'Vytvoriť projekt'}
           </Button>
         </DialogActions>
       </Dialog>

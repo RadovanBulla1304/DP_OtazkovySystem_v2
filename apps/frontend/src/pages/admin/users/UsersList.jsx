@@ -99,31 +99,31 @@ const UsersList = () => {
   };
 
   return (
-    <Box py={2}>
+    <Box>
       <Grid2 container spacing={1} justifyContent={'flex-end'}>
-        <Grid2 display={'flex'} width={'100%'}>
+        <Grid2 display={'flex'} width={'100%'} justifyContent={'space-between'}>
           <Typography variant="h4" alignSelf={'center'}>
             Používatelia
           </Typography>
-        </Grid2>
-        <Grid2 size={{ xs: 12, sm: 6 }} justifyContent={'flex-end'} display={'flex'} gap={1}>
-          <Button
-            variant="outlined"
-            color="primary"
-            disabled={selectedUserIds.length === 0}
-            onClick={handleOpenAssignModal}
-          >
-            Priraď k predmetu
-          </Button>
-          <Button
-            variant="outlined"
-            color="secondary"
-            disabled={selectedUserIds.length === 0}
-            onClick={handleOpenPointsModal}
-          >
-            Zobraziť body
-          </Button>
-          <AddUserModal />
+          <Grid2 size={{ xs: 12, sm: 6 }} justifyContent={'flex-end'} display={'flex'} gap={1}>
+            <Button
+              variant="outlined"
+              color="primary"
+              disabled={selectedUserIds.length === 0}
+              onClick={handleOpenAssignModal}
+            >
+              Priraď k predmetu
+            </Button>
+            <Button
+              variant="outlined"
+              color="secondary"
+              disabled={selectedUserIds.length === 0}
+              onClick={handleOpenPointsModal}
+            >
+              Zobraziť body
+            </Button>
+            <AddUserModal />
+          </Grid2>
         </Grid2>
       </Grid2>
       <Paper sx={{ mt: 2 }}>

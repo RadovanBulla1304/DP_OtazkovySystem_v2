@@ -226,7 +226,9 @@ const CreateQuestionModal = ({ open, onClose, modules, onQuestionCreated }) => {
         </Alert>
       )}
       <DialogActions>
-        <Button onClick={handleClose}>Zrušiť</Button>
+        <Button onClick={handleClose} variant="outlined">
+          Zrušiť
+        </Button>
         <Button
           onClick={handleSubmit}
           variant="contained"

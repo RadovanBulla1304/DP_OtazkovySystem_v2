@@ -5,6 +5,13 @@ import {
   useGetUserProjectsQuery
 } from '@app/redux/api';
 import {
+  Add,
+  Stars as AssignPointsIcon,
+  Group as AssignUsersIcon,
+  Delete as DeleteIcon
+} from '@mui/icons-material';
+
+import {
   Box,
   Button,
   Card,
@@ -16,6 +23,8 @@ import {
   DialogContent,
   DialogTitle,
   Grid,
+  IconButton,
+  Tooltip,
   Typography
 } from '@mui/material';
 import { useEffect, useState } from 'react';
@@ -176,7 +185,7 @@ const Projects = () => {
   }
 
   return (
-    <Box sx={{ pt: 2 }}>
+    <Box sx={{ pt: 3, pb: 3 }}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
         <Typography variant="h4">Projekty</Typography>
         <Box display="flex" gap={2}>
@@ -184,7 +193,13 @@ const Projects = () => {
             Vzájomné hodnotenie
           </Button>
           {isTeacher && (
-            <Button variant="contained" color="primary" onClick={handleOpenProjectModal}>
+            <Button
+              startIcon={<Add />}
+              size="medium"
+              variant="contained"
+              color="primary"
+              onClick={handleOpenProjectModal}
+            >
               Nový Projekt
             </Button>
           )}
@@ -283,46 +298,44 @@ const Projects = () => {
                   )}
                 </CardContent>
                 {isTeacher && (
-                  <Box
-                    sx={{
-                      p: 2,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: 1
-                    }}
-                  >
-                    <Box display="flex" gap={1}>
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        onClick={(e) => handleOpenAssignUsers(e, project._id)}
-                        fullWidth
-                      >
-                        Priraď Použivateľov
-                      </Button>
-                      <Button
-                        variant="outlined"
-                        color="secondary"
-                        size="small"
-                        onClick={(e) => handleOpenAssignPoints(e, project)}
-                        fullWidth
-                      >
-                        Priraď Body
-                      </Button>
+                  <Box p={2} pt={0}>
+                    <Box display="flex" justifyContent="flex-end" alignItems="center">
+                      <Box>
+                        <Tooltip title="Priradiť používateľov">
+                          <IconButton
+                            size="small"
+                            onClick={(e) => handleOpenAssignUsers(e, project._id)}
+                            disabled={isDeleting}
+                          >
+                            <AssignUsersIcon />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Priradiť body">
+                          <IconButton
+                            size="small"
+                            color="primary"
+                            onClick={(e) => handleOpenAssignPoints(e, project)}
+                            disabled={isDeleting}
+                          >
+                            <AssignPointsIcon />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Odstrániť projekt">
+                          <IconButton
+                            size="small"
+                            color="error"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              console.log('Delete button clicked for project:', project.name);
+                              setProjectToDelete(project);
+                            }}
+                            disabled={isDeleting}
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        </Tooltip>
+                      </Box>
                     </Box>
-                    <Button
-                      variant="contained"
-                      color="error"
-                      size="small"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        console.log('Delete button clicked for project:', project.name);
-                        setProjectToDelete(project);
-                      }}
-                      fullWidth
-                    >
-                      Odstrániť
-                    </Button>
                   </Box>
                 )}
               </Card>

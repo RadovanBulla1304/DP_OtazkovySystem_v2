@@ -3,6 +3,7 @@ import {
   useDeleteSubjectMutation,
   useGetAllSubjectsQuery
 } from '@app/redux/api';
+import { Add, Delete as DeleteIcon } from '@mui/icons-material';
 import {
   Box,
   Button,
@@ -14,6 +15,8 @@ import {
   DialogContent,
   DialogTitle,
   Grid,
+  IconButton,
+  Tooltip,
   Typography
 } from '@mui/material';
 import { useEffect, useState } from 'react';
@@ -140,11 +143,17 @@ const Subjects = () => {
   }
 
   return (
-    <div style={{ padding: '20px' }}>
+    <Box sx={{ pt: 3, pb: 3 }}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
         <Typography variant="h4">Predmety</Typography>
-        <Button variant="contained" color="primary" onClick={handleOpenSubjectModal}>
-          Pridať predmet
+        <Button
+          startIcon={<Add />}
+          size="medium"
+          variant="contained"
+          color="primary"
+          onClick={handleOpenSubjectModal}
+        >
+          Nový predmet
         </Button>
       </Box>
 
@@ -187,26 +196,25 @@ const Subjects = () => {
                   Vytvorené: {new Date(subject.createdAt).toLocaleDateString()}
                 </Typography>
               </CardContent>
-              <Box
-                sx={{
-                  p: 2,
-                  display: 'flex',
-                  justifyContent: 'flex-end',
-                  gap: 1
-                }}
-              >
-                <Button
-                  variant="outlined"
-                  color="error"
-                  size="small"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    console.log('Delete button clicked for subject:', subject.name);
-                    setSubjectToDelete(subject);
-                  }}
-                >
-                  Odstrániť
-                </Button>
+              <Box p={2} pt={0}>
+                <Box display="flex" justifyContent="end" alignItems="center">
+                  <Box>
+                    <Tooltip title="Odstrániť predmet">
+                      <IconButton
+                        size="small"
+                        color="error"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          console.log('Delete button clicked for subject:', subject.name);
+                          setSubjectToDelete(subject);
+                        }}
+                        disabled={isDeleting}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                </Box>
               </Box>
             </Card>
           </Grid>
@@ -246,7 +254,7 @@ const Subjects = () => {
           </DialogActions>
         </Dialog>
       )}
-    </div>
+    </Box>
   );
 };
 

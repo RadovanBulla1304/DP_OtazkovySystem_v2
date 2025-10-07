@@ -212,7 +212,7 @@ const Tests = () => {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <Box sx={{ pt: 3 }}>
+      <Box sx={{ pt: 3, pb: 3 }}>
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
           <Typography variant="h4" component="h1">
             Testy

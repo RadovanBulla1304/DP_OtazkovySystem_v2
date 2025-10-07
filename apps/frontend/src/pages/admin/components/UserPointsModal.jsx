@@ -536,7 +536,12 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
                                       (detail) => {
                                         // Special categories don't belong to modules
                                         if (
-                                          ['test_performance', 'forum_participation', 'project_work', 'other'].includes(detail.category)
+                                          [
+                                            'test_performance',
+                                            'forum_participation',
+                                            'project_work',
+                                            'other'
+                                          ].includes(detail.category)
                                         ) {
                                           return false;
                                         }
@@ -623,7 +628,12 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
                                   })}
 
                                   {/* Special categories section */}
-                                  {['test_performance', 'forum_participation', 'project_work', 'other'].map((category) => {
+                                  {[
+                                    'test_performance',
+                                    'forum_participation',
+                                    'project_work',
+                                    'other'
+                                  ].map((category) => {
                                     const categoryPoints = userData.points.details.filter(
                                       (detail) => detail.category === category
                                     );
@@ -714,15 +724,8 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
           </Box>
         )}
 
-        <Button
-          onClick={onClose}
-          variant="contained"
-          sx={{
-            fontWeight: 'bold',
-            minWidth: '120px'
-          }}
-        >
-          Zavrieť
+        <Button onClick={onClose} variant="outlined">
+          Zrušiť
         </Button>
       </DialogActions>
     </Dialog>

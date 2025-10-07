@@ -294,7 +294,7 @@ const AddQuestionDialog = ({ open, onClose }) => {
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={handleClose} disabled={isLoading}>
+        <Button onClick={handleClose} disabled={isLoading} variant="outlined">
           Zrušiť
         </Button>
         <Button

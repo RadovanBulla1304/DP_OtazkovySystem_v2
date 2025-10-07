@@ -294,8 +294,8 @@ const PeerEvaluationModal = ({ open, onClose, subjectId }) => {
         )}
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} disabled={isSaving}>
-          Zavrieť
+        <Button onClick={onClose} disabled={isSaving} variant="outlined">
+          Zrušiť
         </Button>
       </DialogActions>
     </Dialog>

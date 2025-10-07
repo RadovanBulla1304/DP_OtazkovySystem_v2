@@ -140,7 +140,7 @@ const AddSubjectModal = ({ open, onClose, onSuccess }) => {
         </Grid>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose} disabled={isLoading}>
+        <Button onClick={handleClose} disabled={isLoading} variant="outlined">
           Zrušiť
         </Button>
         <Button onClick={handleSubmit(handleFormSubmit)} variant="contained" disabled={isLoading}>

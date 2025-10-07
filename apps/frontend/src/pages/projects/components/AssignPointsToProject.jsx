@@ -24,12 +24,12 @@ const AssignPointsToProject = ({ open, onClose, project, onSuccess }) => {
     const pointsValue = parseInt(points);
 
     if (!pointsValue || pointsValue <= 0) {
-      toast.error('Please enter a valid positive number of points');
+      toast.error('Zadajte platné kladné číslo bodov');
       return;
     }
 
     if (!project?.assigned_users || project.assigned_users.length === 0) {
-      toast.error('No users assigned to this project');
+      toast.error('K tomuto projektu nie sú priradení žiadni používatelia');
       return;
     }
 
@@ -43,7 +43,7 @@ const AssignPointsToProject = ({ open, onClose, project, onSuccess }) => {
           await awardPoints({
             studentId: user._id,
             points: pointsValue,
-            reason: `Project work: ${project.name}`,
+            reason: `Projektová práca: ${project.name}`,
             category: 'project_work'
           }).unwrap();
           successCount++;
@@ -55,7 +55,7 @@ const AssignPointsToProject = ({ open, onClose, project, onSuccess }) => {
 
       if (successCount > 0) {
         toast.success(
-          `Successfully awarded ${pointsValue} points to ${successCount} user(s) for project "${project.name}"`
+          `Úspešne pridelených ${pointsValue} bodov pre ${successCount} používateľ(ov) za projekt "${project.name}"`
         );
         setPoints('');
         if (onSuccess) onSuccess();
@@ -63,10 +63,10 @@ const AssignPointsToProject = ({ open, onClose, project, onSuccess }) => {
       }
 
       if (errorCount > 0) {
-        toast.warn(`Failed to award points to ${errorCount} user(s)`);
+        toast.warn(`Nepodarilo sa prideliť body pre ${errorCount} používateľ(ov)`);
       }
     } catch (err) {
-      toast.error('Error awarding points');
+      toast.error('Chyba pri prideľovaní bodov');
       console.error('Error awarding points:', err);
     }
   };
@@ -78,7 +78,7 @@ const AssignPointsToProject = ({ open, onClose, project, onSuccess }) => {
 
   return (
     <Dialog open={open} onClose={handleCancel} maxWidth="sm" fullWidth>
-      <DialogTitle>Assign Points for Project</DialogTitle>
+      <DialogTitle>Priradiť body za projekt</DialogTitle>
       <DialogContent>
         <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
           {project && (
@@ -87,17 +87,17 @@ const AssignPointsToProject = ({ open, onClose, project, onSuccess }) => {
                 {project.name}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Assigned users: {project.assigned_users?.length || 0}
+                Priradení používatelia: {project.assigned_users?.length || 0}
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                All {project.assigned_users?.length || 0} user(s) will receive the same number of
-                points for this project.
+                Všetci {project.assigned_users?.length || 0} používateľ(ia) dostanú rovnaký počet
+                bodov za tento projekt.
               </Typography>
             </Box>
           )}
 
           <TextField
-            label="Points"
+            label="Body"
             type="number"
             fullWidth
             required
@@ -105,16 +105,16 @@ const AssignPointsToProject = ({ open, onClose, project, onSuccess }) => {
             onChange={(e) => setPoints(e.target.value)}
             inputProps={{ min: 1, step: 1 }}
             disabled={isLoading}
-            helperText="Enter the number of points to award each user"
+            helperText="Zadajte počet bodov, ktoré chcete prideliť každému používateľovi"
           />
         </Box>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleCancel} disabled={isLoading}>
-          Cancel
+        <Button onClick={handleCancel} disabled={isLoading} variant="outlined">
+          Zrušiť
         </Button>
         <Button onClick={handleSubmit} variant="contained" color="primary" disabled={isLoading}>
-          {isLoading ? <CircularProgress size={24} /> : 'Assign Points'}
+          {isLoading ? <CircularProgress size={24} /> : 'Priradiť body'}
         </Button>
       </DialogActions>
     </Dialog>
