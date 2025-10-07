@@ -112,16 +112,18 @@ const PeerEvaluationModal = ({ open, onClose, subjectId }) => {
     return ratings[key] !== undefined ? ratings[key] : '';
   };
 
-  const getColumnSum = (projectId) => {
+  const getColumnAverage = (projectId) => {
     let sum = 0;
+    let count = 0;
     students.forEach((student) => {
       const key = `${student._id}-${projectId}`;
       const value = ratings[key];
       if (value !== undefined && value !== '') {
         sum += Number(value);
+        count++;
       }
     });
-    return sum;
+    return count > 0 ? (sum / count).toFixed(1) : '0.0';
   };
 
   const isOwnProject = (studentProjectId, projectId) => {
@@ -256,7 +258,7 @@ const PeerEvaluationModal = ({ open, onClose, subjectId }) => {
                   })}
                 </TableRow>
               ))}
-              {/* Sum row */}
+              {/* Average row */}
               <TableRow sx={{ backgroundColor: '#f0f0f0' }}>
                 <TableCell
                   sx={{
@@ -268,13 +270,13 @@ const PeerEvaluationModal = ({ open, onClose, subjectId }) => {
                   }}
                 >
                   <Typography variant="body2" fontWeight="bold">
-                    Súčet
+                    Priemer
                   </Typography>
                 </TableCell>
                 {projects.map((project) => (
                   <TableCell key={project._id} align="center">
                     <Typography variant="body2" fontWeight="bold">
-                      {getColumnSum(project._id)}
+                      {getColumnAverage(project._id)}
                     </Typography>
                   </TableCell>
                 ))}

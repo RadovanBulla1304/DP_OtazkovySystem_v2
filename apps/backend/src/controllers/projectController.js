@@ -62,7 +62,7 @@ const getAllProjects = async (req, res) => {
         const projects = await Project.find(query)
             .populate("createdBy", "name email")
             .populate("subject", "name")
-            .populate("assigned_users", "name email username")
+            .populate("assigned_users", "name surname email username studentNumber")
             .sort({ createdAt: -1 });
 
         res.status(200).json({
@@ -87,7 +87,7 @@ const getProjectById = async (req, res) => {
         const project = await Project.findById(id)
             .populate("createdBy", "name email")
             .populate("subject", "name")
-            .populate("assigned_users", "name email username");
+            .populate("assigned_users", "name surname email username studentNumber");
 
         if (!project) {
             return res.status(404).json({
@@ -138,7 +138,7 @@ const updateProject = async (req, res) => {
         // Populate the project before sending response
         await project.populate("createdBy", "name email");
         await project.populate("subject", "name");
-        await project.populate("assigned_users", "name email username");
+        await project.populate("assigned_users", "name surname email username studentNumber");
 
         res.status(200).json({
             success: true,
@@ -235,7 +235,7 @@ const assignUsersToProject = async (req, res) => {
         // Populate the project before sending response
         await project.populate("createdBy", "name email");
         await project.populate("subject", "name");
-        await project.populate("assigned_users", "name email username");
+        await project.populate("assigned_users", "name surname email username studentNumber");
 
         res.status(200).json({
             success: true,
@@ -275,7 +275,7 @@ const removeUserFromProject = async (req, res) => {
         // Populate the project before sending response
         await project.populate("createdBy", "name email");
         await project.populate("subject", "name");
-        await project.populate("assigned_users", "name email username");
+        await project.populate("assigned_users", "name surname email username studentNumber");
 
         res.status(200).json({
             success: true,
@@ -303,7 +303,7 @@ const getUserProjects = async (req, res) => {
         })
             .populate("createdBy", "name email")
             .populate("subject", "name")
-            .populate("assigned_users", "name email username")
+            .populate("assigned_users", "name surname email username studentNumber")
             .sort({ createdAt: -1 });
 
         res.status(200).json({

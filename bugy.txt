@@ -1,7 +1,7 @@
 -------------------------------------------
 bugy
 
-
+refresh projektov
 filtoravnie podla like dislike atd nefunguje na forum. nefunguje taktiez filtrovanie podla modulov
 week1 - 0/2 bodov nerefreshuje
 pri pridavani pouzivatela moze mat viac userov rovnaku group number

@@ -18,8 +18,7 @@ import {
   Grid,
   Typography
 } from '@mui/material';
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import AddProjectModal from './components/AddProjectModal';
 import AssignPointsToProject from './components/AssignPointsToProject';
@@ -50,8 +49,6 @@ const Projects = () => {
     skip: isTeacher
   });
 
-  const navigate = useNavigate();
-
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -77,10 +74,6 @@ const Projects = () => {
       console.error('Chyba pri vytváraní projektu:', error);
       toast.error('Chyba pri vytváraní projektu');
     }
-  };
-
-  const handleCardClick = (projectId) => {
-    navigate(`/projects/${projectId}`);
   };
 
   const confirmDelete = async (project) => {
@@ -157,6 +150,15 @@ const Projects = () => {
     setIsPeerEvaluationOpen(false);
   };
 
+  // Refetch projects when component mounts or when user changes
+  useEffect(() => {
+    if (isTeacher) {
+      refetchAll();
+    } else {
+      refetchUser();
+    }
+  }, [isTeacher, refetchAll, refetchUser]);
+
   if (isLoading || isDeleting) {
     return (
       <Box display="flex" justifyContent="center" mt={4}>
@@ -218,13 +220,8 @@ const Projects = () => {
                 sx={{
                   height: '100%',
                   display: 'flex',
-                  flexDirection: 'column',
-                  cursor: 'pointer',
-                  '&:hover': {
-                    boxShadow: 3
-                  }
+                  flexDirection: 'column'
                 }}
-                onClick={() => handleCardClick(project._id)}
               >
                 <CardContent sx={{ flexGrow: 1 }}>
                   <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
@@ -255,6 +252,25 @@ const Projects = () => {
                   <Typography variant="body2" color="text.secondary">
                     Študenti: {project.assigned_users?.length || 0} / {project.max_members}
                   </Typography>
+
+                  {project.assigned_users && project.assigned_users.length > 0 && (
+                    <Box sx={{ mt: 1, mb: 1 }}>
+                      {project.assigned_users.map((user, index) => (
+                        <Typography
+                          key={user._id || index}
+                          variant="caption"
+                          color="text.secondary"
+                          display="block"
+                          sx={{ ml: 1 }}
+                        >
+                          •{' '}
+                          {user.name && user.surname
+                            ? `${user.name} ${user.surname}`
+                            : user.name || user.username || user.email}
+                        </Typography>
+                      ))}
+                    </Box>
+                  )}
 
                   <Typography variant="body2" color="text.secondary">
                     Vytvorené: {new Date(project.createdAt).toLocaleDateString()}
