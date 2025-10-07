@@ -162,11 +162,13 @@ const getForumQuestions = async (req, res) => {
 
         if (modul) {
             filter.modul = modul
+            console.log('Filtering by modul:', modul)
         }
 
         if (tags) {
             const tagArray = tags.split(',').map(tag => tag.trim())
             filter.tags = { $in: tagArray }
+            console.log('Filtering by tags:', tagArray)
         }
 
         if (search) {
@@ -175,12 +177,17 @@ const getForumQuestions = async (req, res) => {
                 { description: { $regex: search, $options: 'i' } },
                 { tags: { $regex: search, $options: 'i' } }
             ]
+            console.log('Filtering by search:', search)
         }
 
         // Filter by author type (User/Teacher)
         if (createdByModel && (createdByModel === 'User' || createdByModel === 'Teacher')) {
             filter.createdByModel = createdByModel
+            console.log('Filtering by createdByModel:', createdByModel)
         }
+        
+        console.log('Final filter:', JSON.stringify(filter))
+        console.log('Sort by:', sortBy)
 
         // Build sort object
         let sortObj = { is_pinned: -1 } // Always prioritize pinned posts
@@ -310,12 +317,13 @@ const getForumQuestions = async (req, res) => {
             questions = await ForumQuestion.aggregate(aggregationPipeline)
         } else {
             questions = await ForumQuestion.find(filter)
-                .populate({ path: 'createdBy', select: 'username email avatar name surname fullName' })
-                .populate('modul', 'name')
                 .sort(sortObj)
                 .limit(limit * 1)
                 .skip((page - 1) * limit)
                 .lean()
+            
+            // Enrich questions with author and module info
+            questions = await enrichForumQuestions(questions)
         }
 
         // Add user interaction status

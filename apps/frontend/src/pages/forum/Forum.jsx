@@ -55,6 +55,8 @@ const Forum = () => {
     })
   );
 
+  console.log('Forum query params:', queryParams);
+
   const {
     data: questionsData,
     isLoading: questionsLoading,
