@@ -6,6 +6,7 @@ const Question = require("../models/question");
 const Module = require("../models/modul");
 const User = require("../models/user");
 const Teacher = require("../models/teacher");
+const Point = require("../models/point");
 /**
  * GET all questions
  */
@@ -80,6 +81,34 @@ exports.createQuestion = [
             // Create and save the question
             const question = new Question(data);
             await question.save();
+
+            // Award point immediately for question creation
+            try {
+                const point = new Point({
+                    student: question.createdBy,
+                    reason: `Question created: ${question.text.substring(0, 50)}...`,
+                    points: 1,
+                    category: 'question_creation',
+                    related_entity: {
+                        entity_type: 'Question',
+                        entity_id: question._id
+                    }
+                });
+                await point.save();
+
+                // Mark question as awarded
+                question.pointsAwarded.creation = true;
+                await question.save();
+
+                // Add point to user's points array
+                await User.findByIdAndUpdate(
+                    question.createdBy,
+                    { $push: { points: point._id } }
+                );
+            } catch (pointError) {
+                console.error('Error awarding point for question creation:', pointError);
+                // Don't fail the question creation if point awarding fails
+            }
 
             res.status(201).json(question);
         } catch (err) {
@@ -161,9 +190,40 @@ exports.validateQuestion = async (req, res) => {
         question.validated = valid;
         question.validation_comment = comment || '';
         question.validated_at = new Date();
-        question.validated_by = req.user?.user_id || req.user?.id || req.user?._id || null; // Fixed to use user_id from auth middleware
+        const validatorId = req.user?.user_id || req.user?.id || req.user?._id || null;
+        question.validated_by = validatorId;
 
         await question.save();
+
+        // Award point immediately for question validation
+        if (validatorId && !question.pointsAwarded.validation) {
+            try {
+                const point = new Point({
+                    student: validatorId,
+                    reason: `Question validated: ${question.text.substring(0, 50)}...`,
+                    points: 1,
+                    category: 'question_validation',
+                    related_entity: {
+                        entity_type: 'Question',
+                        entity_id: question._id
+                    }
+                });
+                await point.save();
+
+                // Mark question as awarded
+                question.pointsAwarded.validation = true;
+                await question.save();
+
+                // Add point to user's points array
+                await User.findByIdAndUpdate(
+                    validatorId,
+                    { $push: { points: point._id } }
+                );
+            } catch (pointError) {
+                console.error('Error awarding point for question validation:', pointError);
+                // Don't fail the validation if point awarding fails
+            }
+        }
 
         console.log('Question after update:', question.toObject()); // Debug log
 
@@ -203,6 +263,36 @@ exports.respondToValidation = async (req, res) => {
         };
 
         await question.save();
+
+        // Award point immediately for question reparation (responding to validation)
+        if (!question.pointsAwarded.reparation) {
+            try {
+                const point = new Point({
+                    student: question.createdBy,
+                    reason: `Responded to validation: ${question.text.substring(0, 50)}...`,
+                    points: 1,
+                    category: 'question_reparation',
+                    related_entity: {
+                        entity_type: 'Question',
+                        entity_id: question._id
+                    }
+                });
+                await point.save();
+
+                // Mark question as awarded
+                question.pointsAwarded.reparation = true;
+                await question.save();
+
+                // Add point to user's points array
+                await User.findByIdAndUpdate(
+                    question.createdBy,
+                    { $push: { points: point._id } }
+                );
+            } catch (pointError) {
+                console.error('Error awarding point for question reparation:', pointError);
+                // Don't fail the response if point awarding fails
+            }
+        }
 
         res.status(200).json({
             message: "Response to validation saved successfully.",

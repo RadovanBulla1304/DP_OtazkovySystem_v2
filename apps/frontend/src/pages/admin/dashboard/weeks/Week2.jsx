@@ -1,4 +1,4 @@
-import { useGetUserPointsQuery } from '@app/redux/api';
+import { useGetQuestionAssignmentsQuery, useGetUserPointsQuery } from '@app/redux/api';
 import { Box, Chip, Stack, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
 
@@ -7,21 +7,24 @@ const Week2 = ({
   isCurrent,
   status,
   formatDate,
-  modulQuestions,
   userId,
   setQuestionToValidate,
-  setValidateOpen
+  setValidateOpen,
+  selectedModul
 }) => {
   // Get points data for the current user
   const { data: pointsData } = useGetUserPointsQuery(userId, {
     skip: !userId
   });
 
-  // Check validation completion by counting questions validated by current user
-  const questionsValidatedByUser = (modulQuestions || []).filter(
-    (q) => q.validated_by && String(q.validated_by) === String(userId)
-  ).length;
-  const isCompleted = questionsValidatedByUser >= 2;
+  // Get question assignments for this user in this module
+  const { data: assignmentsData, isLoading: assignmentsLoading } = useGetQuestionAssignmentsQuery(
+    { userId, modulId: selectedModul?._id },
+    { skip: !userId || !selectedModul?._id }
+  );
+
+  const assignments = assignmentsData?.data || [];
+  const automaticPoints = assignmentsData?.automaticPoints || 0;
 
   // Calculate points for Week 2 - validation (1 point per validation, max 2)
   const validationPoints =
@@ -30,22 +33,14 @@ const Week2 = ({
   const earnedPoints = validationPoints.length;
   const maxPoints = 2;
 
-  // Get questions for validation - show questions from other users
-  // Include both validated and unvalidated questions so users can see their progress
-  const availableQuestions = (modulQuestions || []).filter(
-    (q) => String(q.createdBy ?? q.created_by) !== String(userId)
-  );
+  // Get the assigned questions
+  const assignedQuestions = assignments.map((assignment) => assignment.question);
 
-  // Show up to 2 questions for validation (prioritize unvalidated ones)
-  const unvalidatedQuestions = availableQuestions.filter(
-    (q) => !q.validated_by || String(q.validated_by) !== String(userId)
-  );
-  const validatedQuestions = availableQuestions.filter(
+  // Check which questions have been validated by the current user
+  const questionsValidatedByUser = assignedQuestions.filter(
     (q) => q.validated_by && String(q.validated_by) === String(userId)
-  );
-
-  // Combine: show unvalidated first, then validated ones, up to 2 total
-  const questions = [...unvalidatedQuestions, ...validatedQuestions].slice(0, 2);
+  ).length;
+  const isCompleted = questionsValidatedByUser >= 2;
 
   return (
     <Box
@@ -80,7 +75,7 @@ const Week2 = ({
       </Stack>
       <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
         {[0, 1].map((i) => {
-          const q = questions[i];
+          const q = assignedQuestions[i];
           if (q) {
             // Check if current user has validated this question
             const validated = q.validated_by && String(q.validated_by) === String(userId);
@@ -150,7 +145,13 @@ const Week2 = ({
                   color: 'text.disabled'
                 }}
               >
-                <Typography>Žiadna otázka na validáciu</Typography>
+                <Typography>
+                  {assignmentsLoading
+                    ? 'Načítavanie...'
+                    : automaticPoints > 0
+                      ? `Automatický bod udelený (nedostatok otázok)`
+                      : 'Žiadna otázka na validáciu'}
+                </Typography>
               </Box>
             );
           }
@@ -169,10 +170,12 @@ Week2.propTypes = {
   isCurrent: PropTypes.bool.isRequired,
   status: PropTypes.string.isRequired,
   formatDate: PropTypes.func.isRequired,
-  modulQuestions: PropTypes.array,
   userId: PropTypes.string.isRequired,
   setQuestionToValidate: PropTypes.func.isRequired,
-  setValidateOpen: PropTypes.func.isRequired
+  setValidateOpen: PropTypes.func.isRequired,
+  selectedModul: PropTypes.shape({
+    _id: PropTypes.string.isRequired
+  })
 };
 
 export default Week2;

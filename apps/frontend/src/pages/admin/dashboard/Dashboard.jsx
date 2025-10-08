@@ -143,16 +143,17 @@ const Dashboard = () => {
   const buildWeeks = (modul) => {
     if (!modul) return [];
 
-    // Prefer date range if available
+    // Always prioritize modul.week_number if it exists
+    const count = modul.week_number || 3;
     const weeks = [];
+
     try {
       const start = modul.date_start ? new Date(modul.date_start) : null;
       const end = modul.date_end ? new Date(modul.date_end) : null;
 
       if (start && end && end > start) {
-        // compute number of weeks by ceil of days/7
-        const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
-        const count = Math.max(1, Math.ceil(days / 7));
+        // Use the week_number field to determine how many weeks, not the date calculation
+        // This ensures we respect the module configuration
         for (let i = 0; i < count; i++) {
           const s = new Date(start);
           s.setDate(start.getDate() + i * 7);
@@ -163,11 +164,10 @@ const Dashboard = () => {
         return weeks;
       }
     } catch {
-      // fall back to week_number field below
+      // fall back to creating weeks from today
     }
 
-    // Fallback: use modul.week_number (number of weeks) or 3 weeks default
-    const count = modul.week_number || 3;
+    // Fallback: create weeks from today using week_number
     const now = new Date();
     for (let i = 0; i < count; i++) {
       // Rough ranges: consecutive 7-day buckets from today
@@ -306,8 +306,8 @@ const Dashboard = () => {
                 return (
                   <Week2
                     {...commonProps}
-                    modulQuestions={modulQuestions}
                     userId={userId}
+                    selectedModul={selectedModul}
                     setQuestionToValidate={setQuestionToValidate}
                     setValidateOpen={setValidateOpen}
                   />

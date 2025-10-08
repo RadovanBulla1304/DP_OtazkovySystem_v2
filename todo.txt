@@ -3,13 +3,9 @@
 todo
 
 poslat email pri registracii ! 
-otazky na receziu davat najprv len otazky ktore este neboli recenzovane. ak uz tieto otazky dosli vybrat random 
-    -> ak ma otazka viac ako 2 recenzie vybrat nahodne jednu z nich. 
-
 
 Do 6.10 spravit funkcnu verrziu na testovanie ! 
 -------------------------------------------
-
 
 opravene
 -------------------------------------------
@@ -23,3 +19,5 @@ opravene
 //import pouzivatelov z csv -> iba pre predmet nie vytvorenie novych uzivatelov
 //opravit ako sa ukladaju validovane otazky(pri vytvoreni novej otazky pri vytvarani testu)
 //Pozriet ako sa poriadne ukladaju validovane otazky ucitelom
+//otazky na receziu davat najprv len otazky ktore este neboli recenzovane. ak uz tieto otazky dosli vybrat random 
+    -> ak ma otazka viac ako 2 recenzie vybrat nahodne jednu z nich. -> toto treba testnut este 

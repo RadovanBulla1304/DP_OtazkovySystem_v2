@@ -264,7 +264,8 @@ export const api = createApi({
       }),
       invalidatesTags: (result, error, { questionId }) => [
         { type: 'Questions', id: questionId },
-        'Questions'
+        'Questions',
+        'Points'
       ]
     }),
     respondToValidation: builder.mutation({
@@ -275,7 +276,8 @@ export const api = createApi({
       }),
       invalidatesTags: (result, error, { questionId }) => [
         { type: 'Questions', id: questionId },
-        'Questions'
+        'Questions',
+        'Points'
       ]
     }),
     teacherValidateQuestion: builder.mutation({
@@ -346,6 +348,18 @@ export const api = createApi({
       }),
       providesTags: (result, error, arg) => [
         { type: 'Questions', id: `USER-${arg}` },
+        'Questions'
+      ]
+    }),
+
+    // QUESTION ASSIGNMENTS (Week 2)
+    getQuestionAssignments: builder.query({
+      query: ({ userId, modulId }) => ({
+        url: `/question/assignments/${userId}/${modulId}`,
+        method: 'GET'
+      }),
+      providesTags: (result, error, arg) => [
+        { type: 'Questions', id: `ASSIGNMENTS-${arg.userId}-${arg.modulId}` },
         'Questions'
       ]
     }),
@@ -1052,6 +1066,7 @@ export const {
   useGetQuestionByIdQuery,
   useLazyGetQuestionByIdQuery,
   useGetQuestionByUserIdQuery,
+  useGetQuestionAssignmentsQuery,
   // QUESTION RATINGS
   useCreateQuestionRatingMutation,
   useEditQuestionRatingMutation,
