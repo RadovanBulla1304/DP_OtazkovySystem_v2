@@ -23,6 +23,11 @@ import {
   Card,
   CardContent,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Grid,
   Typography
 } from '@mui/material';
@@ -44,6 +49,7 @@ const Tests = () => {
   const [editingTest, setEditingTest] = useState(null);
   const [showStatsTestId, setShowStatsTestId] = useState(null);
   const [confirmTestModal, setConfirmTestModal] = useState(null);
+  const [deleteConfirmModal, setDeleteConfirmModal] = useState(null);
 
   // Check if user is a teacher
   const { data: teacher } = useGetTeacherMeQuery();
@@ -182,13 +188,19 @@ const Tests = () => {
   };
 
   const handleDelete = async (testId) => {
-    if (window.confirm('Are you sure you want to delete this test?')) {
-      try {
-        await deleteTest(testId).unwrap();
-        refetch();
-      } catch (error) {
-        console.error('Error deleting test:', error);
-      }
+    setDeleteConfirmModal(testId);
+  };
+
+  const handleConfirmDelete = async () => {
+    try {
+      await deleteTest(deleteConfirmModal).unwrap();
+      toast.success('Test bol úspešne odstránený');
+      setDeleteConfirmModal(null);
+      refetch();
+    } catch (error) {
+      console.error('Error deleting test:', error);
+      toast.error(error?.data?.message || 'Chyba pri odstraňovaní testu');
+      setDeleteConfirmModal(null);
     }
   };
 
@@ -335,6 +347,38 @@ const Tests = () => {
           open={!!showStatsTestId}
           onClose={() => setShowStatsTestId(null)}
         />
+
+        {/* Delete Confirmation Dialog */}
+        <Dialog
+          open={!!deleteConfirmModal}
+          onClose={() => setDeleteConfirmModal(null)}
+          aria-labelledby="delete-test-dialog-title"
+          aria-describedby="delete-test-dialog-description"
+        >
+          <DialogTitle id="delete-test-dialog-title">Vymazať test?</DialogTitle>
+          <DialogContent>
+            <DialogContentText id="delete-test-dialog-description">
+              Naozaj chcete odstrániť tento test a všetky jeho pokusy? Táto akcia je nevratná.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={() => setDeleteConfirmModal(null)}
+              disabled={deleting}
+              variant="outlined"
+            >
+              Zrušiť
+            </Button>
+            <Button
+              onClick={handleConfirmDelete}
+              color="error"
+              variant="contained"
+              disabled={deleting}
+            >
+              {deleting ? 'Mazanie...' : 'Vymazať'}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Box>
     </LocalizationProvider>
   );

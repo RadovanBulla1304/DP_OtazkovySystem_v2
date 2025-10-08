@@ -246,14 +246,10 @@ const deleteTest = async (req, res) => {
     try {
         const { id } = req.params;
 
-        // Check if test has any attempts
-        const attemptCount = await TestAttempt.countDocuments({ test: id });
-        if (attemptCount > 0) {
-            return res.status(400).json({
-                message: 'Cannot delete test that has attempts. Please unpublish instead.'
-            });
-        }
+        // First, delete all test attempts associated with this test
+        await TestAttempt.deleteMany({ test: id });
 
+        // Then delete the test itself
         const test = await Test.findByIdAndDelete(id);
 
         if (!test) {
@@ -263,7 +259,7 @@ const deleteTest = async (req, res) => {
         }
 
         res.json({
-            message: 'Test deleted successfully'
+            message: 'Test and all associated attempts deleted successfully'
         });
     } catch (error) {
         console.error('Error deleting test:', error);
@@ -320,7 +316,7 @@ const getTestStatistics = async (req, res) => {
 
         // Get all completed attempts with user and question details
         const attempts = await TestAttempt.find({ test: id, isCompleted: true })
-            .populate('user', 'name email username')
+            .populate('user', 'name surname email')
             .populate('questions.question')
             .sort({ submittedAt: -1 });
 
@@ -374,7 +370,9 @@ const getTestStatistics = async (req, res) => {
             _id: attempt._id,
             user: {
                 _id: attempt.user?._id,
-                name: attempt.user?.name || attempt.user?.username || 'Unknown User',
+                name: attempt.user?.name && attempt.user?.surname
+                    ? `${attempt.user.name} ${attempt.user.surname}`
+                    : attempt.user?.name || attempt.user?.surname || 'Unknown User',
                 email: attempt.user?.email
             },
             score: attempt.score,

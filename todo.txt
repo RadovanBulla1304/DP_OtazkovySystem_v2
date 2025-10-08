@@ -4,7 +4,6 @@ todo
 
 poslat email pri registracii ! 
 statistika testu - pridat moznost resetovat pokus uzivatelovi
-forum - ked odstranim post musim odstranit aj komenty
 Do 6.10 spravit funkcnu verrziu na testovanie ! 
 -------------------------------------------
 
