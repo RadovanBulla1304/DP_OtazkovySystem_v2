@@ -1,50 +1,44 @@
 import React from 'react';
 
-import { useUpdateTeacherMutation, useUpdateUserMutation } from '@app/redux/api';
-import EditIcon from '@mui/icons-material/Edit';
-
 import ErrorNotifier from '@app/components/ErrorNotifier';
+import { useCreateTeacherMutation, useCreateUserMutation } from '@app/redux/api';
 import { joiResolver } from '@hookform/resolvers/joi';
+import { Add } from '@mui/icons-material';
 import {
+  Box,
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   Grid,
-  IconButton,
   TextField,
-  Tooltip,
+  ToggleButton,
+  ToggleButtonGroup,
   Typography
 } from '@mui/material';
-import PropTypes from 'prop-types';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
-import { updateTeacherSchema } from '../schemas/teacher.schema';
-import { updateUserSchema } from '../schemas/user.schema';
+import { createTeacherSchema } from '../../schemas/teacher.schema';
+import { createUserSchema } from '../../schemas/user.schema';
 
-const EditUserModal = ({ userData, isTeacher }) => {
+const AddUserModal = () => {
   const [open, setOpen] = React.useState(false);
-  const [updateUser, { isLoading: isUserLoading }] = useUpdateUserMutation();
-  const [updateTeacher, { isLoading: isTeacherLoading }] = useUpdateTeacherMutation();
+  const [addUser, { isLoading: isUserLoading }] = useCreateUserMutation();
+  const [addTeacher, { isLoading: isTeacherLoading }] = useCreateTeacherMutation();
+  const [userType, setUserType] = React.useState('user');
 
-  const schema = isTeacher ? updateTeacherSchema : updateUserSchema;
   const {
     register,
     handleSubmit,
-    reset,
     formState: { errors, isValid },
+    reset,
     watch
   } = useForm({
     mode: 'onChange',
-    resolver: joiResolver(schema),
+    resolver: joiResolver(userType === 'user' ? createUserSchema : createTeacherSchema),
     defaultValues: {
-      name: userData.name || '',
-      surname: userData.surname || '',
-      email: userData.email || '',
-      groupNumber: userData.groupNumber || '',
-      studentNumber: userData.studentNumber || '',
-      isAdmin: userData.isAdmin || userData.is_admin || false,
-      isActive: userData.isActive || userData.is_active || false
+      isActive: true,
+      isAdmin: false
     }
   });
 
@@ -52,72 +46,96 @@ const EditUserModal = ({ userData, isTeacher }) => {
   const name = watch('name');
   const surname = watch('surname');
   const email = watch('email');
+  const password = watch('password');
+  const passwordConfirmation = watch('passwordConfirmation');
   const groupNumber = watch('groupNumber');
   const studentNumber = watch('studentNumber');
 
   // Check if form is valid
   const isFormValid = () => {
-    if (isTeacher) {
-      return name?.trim() && surname?.trim() && email?.trim() && isValid;
-    } else {
+    if (userType === 'user') {
       return (
         name?.trim() &&
         surname?.trim() &&
         email?.trim() &&
         groupNumber?.trim() &&
         studentNumber &&
+        password?.trim() &&
+        passwordConfirmation?.trim() &&
+        isValid
+      );
+    } else {
+      return (
+        name?.trim() &&
+        surname?.trim() &&
+        email?.trim() &&
+        password?.trim() &&
+        passwordConfirmation?.trim() &&
         isValid
       );
     }
   };
 
+  const handleUserTypeChange = (event, newType) => {
+    if (newType) {
+      setUserType(newType);
+      reset({
+        isActive: true,
+        isAdmin: false
+      });
+    }
+  };
+
   const handleClickOpen = () => {
     reset({
-      name: userData.name || '',
-      surname: userData.surname || '',
-      email: userData.email || '',
-      groupNumber: userData.groupNumber || '',
-      studentNumber: userData.studentNumber || '',
-      isAdmin: userData.isAdmin || userData.is_admin || false,
-      isActive: userData.isActive || userData.is_active || false
+      isActive: true,
+      isAdmin: false
     });
     setOpen(true);
   };
 
   const handleClose = () => {
-    reset();
+    reset({
+      isActive: true,
+      isAdmin: false
+    });
     setOpen(false);
   };
 
   const onSubmit = async (data) => {
     try {
+      // Ensure isActive is true and isAdmin is false
+      const submissionData = {
+        ...data,
+        isActive: true,
+        isAdmin: false
+      };
+
       let response;
-      if (isTeacher) {
-        response = await updateTeacher({ data, teacherId: userData._id });
+      if (userType === 'user') {
+        response = await addUser(submissionData);
       } else {
-        response = await updateUser({ data, userId: userData._id });
+        response = await addTeacher(submissionData);
       }
       if (!response.error) {
         toast.success(
-          isTeacher ? 'Učiteľ bol úspešne aktualizovaný' : 'Používateľ bol úspešne aktualizovaný'
+          userType === 'user' ? 'Používateľ bol úspešne pridaný' : 'Učiteľ bol úspešne pridaný'
         );
+        reset();
         handleClose();
       } else {
-        toast.error('Chyba pri aktualizácii: ' + response.error?.data?.message);
+        toast.error(`Chyba: ${response.error.data.message}`);
       }
     } catch (error) {
-      console.error('Error during update:', error);
-      toast.error('Chyba pri aktualizácii');
+      toast.error('Vyskytla sa neočakávaná chyba', error);
     }
   };
 
   return (
     <>
-      <Tooltip title={isTeacher ? 'Upraviť učiteľa' : 'Upraviť používateľa'} key={'edit'}>
-        <IconButton color="primary" onClick={handleClickOpen}>
-          <EditIcon />
-        </IconButton>
-      </Tooltip>
+      <Button startIcon={<Add />} size="medium" variant="contained" onClick={handleClickOpen}>
+        Pridaj používateľa
+      </Button>
       <Dialog
         open={open}
         onClose={handleClose}
@@ -140,9 +158,28 @@ const EditUserModal = ({ userData, isTeacher }) => {
             maxWidth: '100%'
           }}
         >
-          <Typography variant="h6" component="h2">
-            {isTeacher ? 'Upraviť učiteľa' : 'Upraviť používateľa'}
-          </Typography>
+          <Box
+            sx={{
+              display: 'flex',
+              width: '100%',
+              flexDirection: 'row',
+              justifyContent: 'space-between'
+            }}
+          >
+            <Typography variant="h6" component="h2">
+              Pridaj používateľa alebo učiteľa
+            </Typography>
+            <ToggleButtonGroup
+              color="primary"
+              value={userType}
+              exclusive
+              onChange={handleUserTypeChange}
+              sx={{ mb: 2, alignSelf: 'center' }}
+            >
+              <ToggleButton value="user">Používateľ</ToggleButton>
+              <ToggleButton value="teacher">Učiteľ</ToggleButton>
+            </ToggleButtonGroup>
+          </Box>
 
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
@@ -179,7 +216,7 @@ const EditUserModal = ({ userData, isTeacher }) => {
             required
           />
 
-          {!isTeacher && (
+          {userType === 'user' && (
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6}>
                 <TextField
@@ -207,6 +244,28 @@ const EditUserModal = ({ userData, isTeacher }) => {
             </Grid>
           )}
 
+          <TextField
+            label="Heslo"
+            type="password"
+            variant="outlined"
+            {...register('password')}
+            error={!!errors.password}
+            helperText={errors.password?.message}
+            fullWidth
+            required
+          />
+
+          <TextField
+            label="Potvrďte heslo"
+            type="password"
+            variant="outlined"
+            {...register('passwordConfirmation')}
+            error={!!errors.passwordConfirmation}
+            helperText={errors.passwordConfirmation?.message}
+            fullWidth
+            required
+          />
+
           <ErrorNotifier />
 
           <DialogActions>
@@ -222,7 +281,7 @@ const EditUserModal = ({ userData, isTeacher }) => {
               variant="contained"
               disabled={isUserLoading || isTeacherLoading || !isFormValid()}
             >
-              Uložiť
+              Pridaj
             </Button>
           </DialogActions>
         </DialogContent>
@@ -231,9 +290,4 @@ const EditUserModal = ({ userData, isTeacher }) => {
   );
 };
 
-EditUserModal.propTypes = {
-  userData: PropTypes.object.isRequired,
-  isTeacher: PropTypes.bool
-};
-
-export default EditUserModal;
+export default AddUserModal;

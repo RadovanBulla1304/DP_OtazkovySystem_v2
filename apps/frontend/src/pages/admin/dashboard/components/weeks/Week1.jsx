@@ -1,7 +1,7 @@
 import { useGetUserPointsQuery } from '@app/redux/api';
 import { Box, Chip, Stack, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
-import AddQuestionModal from '../../components/AddQuestionModal';
+import AddQuestionModal from '../../../subjects/components/AddQuestionModal';
 
 const Week1 = ({
   week,

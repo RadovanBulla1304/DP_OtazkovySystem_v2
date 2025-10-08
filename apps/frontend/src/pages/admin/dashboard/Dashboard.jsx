@@ -18,13 +18,13 @@ import {
   Typography
 } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
-import RespondToValidationModal from '../components/RespondToValidationModal';
-import ValidateQuestionModal from '../components/ValidateQuestionModal';
-import DefaultWeek from './weeks/DefaultWeek';
-import Week1 from './weeks/Week1';
-import Week2 from './weeks/Week2';
-import Week3 from './weeks/Week3';
-import WeekSelector from './weeks/WeekSelector';
+import RespondToValidationModal from '../subjects/components/RespondToValidationModal';
+import ValidateQuestionModal from '../subjects/components/ValidateQuestionModal';
+import DefaultWeek from './components/weeks/DefaultWeek';
+import Week1 from './components/weeks/Week1';
+import Week2 from './components/weeks/Week2';
+import Week3 from './components/weeks/Week3';
+import WeekSelector from './components/weeks/WeekSelector';
 
 const Dashboard = () => {
   const [currentSubjectId, setCurrentSubjectId] = useState(null);

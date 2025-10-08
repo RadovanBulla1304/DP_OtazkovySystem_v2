@@ -21,10 +21,10 @@ import {
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
-import AddUserModal from '../components/AddUserModal';
-import AssignToSubject from '../components/AssignToSubject';
-import EditUserModal from '../components/EditUserModal';
-import UserPointsModal from '../components/UserPointsModal';
+import AddUserModal from '../../dashboard/components/AddUserModal';
+import AssignToSubject from '../../dashboard/components/AssignToSubject';
+import EditUserModal from '../../dashboard/components/EditUserModal';
+import UserPointsModal from '../../dashboard/components/UserPointsModal';
 
 const UsersList = () => {
   const { data, isLoading } = useGetUsersListQuery();
@@ -280,5 +280,3 @@ const UsersList = () => {
 };
 
 export default UsersList;
-
-// TODO: stud number must be always unique !

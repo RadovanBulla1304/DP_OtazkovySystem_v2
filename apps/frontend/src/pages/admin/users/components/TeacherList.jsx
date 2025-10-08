@@ -5,7 +5,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { IconButton, Paper, Tooltip, Typography } from '@mui/material';
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 import { toast } from 'react-toastify';
-import EditUserModal from '../components/EditUserModal';
+import EditUserModal from '../../dashboard/components/EditUserModal';
 
 const TeacherList = () => {
   const { data = [], isLoading } = useGetAllTeachersQuery();

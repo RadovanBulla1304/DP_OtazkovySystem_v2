@@ -3,27 +3,15 @@ import {
   useDeleteSubjectMutation,
   useGetAllSubjectsQuery
 } from '@app/redux/api';
-import { Add, Delete as DeleteIcon } from '@mui/icons-material';
-import {
-  Box,
-  Button,
-  Card,
-  CardContent,
-  CircularProgress,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Grid,
-  IconButton,
-  Tooltip,
-  Typography
-} from '@mui/material';
+import { Add } from '@mui/icons-material';
+import { Box, Button, CircularProgress, Grid, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import AddModulModal from '../admin/components/AddModulModal';
-import AddSubjectModal from '../admin/components/AddSubjectModal';
+import AddModulModal from './components/AddModulModal';
+import AddSubjectModal from './components/AddSubjectModal';
+import DeleteSubjectDialog from './components/DeleteSubjectDialog';
+import SubjectCard from './components/SubjectCard';
 
 const Subjects = () => {
   const { data: subjects, isLoading, isError, refetch } = useGetAllSubjectsQuery();
@@ -173,91 +161,30 @@ const Subjects = () => {
       <Grid container spacing={3}>
         {subjects?.map((subject) => (
           <Grid item xs={12} sm={6} md={4} lg={3} key={subject._id}>
-            <Card
-              sx={{
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                cursor: 'pointer',
-                '&:hover': {
-                  boxShadow: 3
-                }
+            <SubjectCard
+              subject={subject}
+              onCardClick={handleCardClick}
+              onDeleteClick={(subject) => {
+                console.log('Delete button clicked for subject:', subject.name);
+                setSubjectToDelete(subject);
               }}
-              onClick={() => handleCardClick(subject._id)}
-            >
-              <CardContent sx={{ flexGrow: 1 }}>
-                <Typography gutterBottom variant="h5" component="div">
-                  {subject.name}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  ID: {subject._id}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Vytvorené: {new Date(subject.createdAt).toLocaleDateString()}
-                </Typography>
-              </CardContent>
-              <Box p={2} pt={0}>
-                <Box display="flex" justifyContent="end" alignItems="center">
-                  <Box>
-                    <Tooltip title="Odstrániť predmet">
-                      <IconButton
-                        size="small"
-                        color="error"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          console.log('Delete button clicked for subject:', subject.name);
-                          setSubjectToDelete(subject);
-                        }}
-                        disabled={isDeleting}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </Tooltip>
-                  </Box>
-                </Box>
-              </Box>
-            </Card>
+              isDeleting={isDeleting}
+            />
           </Grid>
         ))}
       </Grid>
 
       {/* Confirmation Dialog for Delete Subject */}
-      {subjectToDelete && (
-        <Dialog
-          open={!!subjectToDelete}
-          onClose={() => setSubjectToDelete(null)}
-          aria-labelledby="delete-subject-dialog-title"
-          aria-describedby="delete-subject-dialog-description"
-        >
-          <DialogTitle id="delete-subject-dialog-title">Vymazať predmet?</DialogTitle>
-          <DialogContent>
-            <Typography id="delete-subject-dialog-description">
-              Naozaj chcete odstrániť predmet <strong>{subjectToDelete.name}</strong> a všetky jeho
-              moduly? Táto akcia je nevratná.
-            </Typography>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={() => setSubjectToDelete(null)}
-              variant="outlined"
-              disabled={isDeleting}
-            >
-              Zrušiť
-            </Button>
-            <Button
-              onClick={() => {
-                console.log('Delete confirmed for subject:', subjectToDelete._id);
-                confirmDelete(subjectToDelete);
-              }}
-              color="error"
-              variant="contained"
-              disabled={isDeleting}
-            >
-              {isDeleting ? 'Mazanie...' : 'Vymazať'}
-            </Button>
-          </DialogActions>
-        </Dialog>
-      )}
+      <DeleteSubjectDialog
+        open={!!subjectToDelete}
+        onClose={() => setSubjectToDelete(null)}
+        onConfirm={() => {
+          console.log('Delete confirmed for subject:', subjectToDelete._id);
+          confirmDelete(subjectToDelete);
+        }}
+        subject={subjectToDelete}
+        isDeleting={isDeleting}
+      />
     </Box>
   );
 };

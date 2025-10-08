@@ -347,9 +347,9 @@ exports.getValidatedQuestionsWithAgreementBySubject = async (req, res) => {
 
         // Find questions that match the filter
         const questions = await Question.find(query)
-            .populate('modul', 'name')
+            .populate('modul', 'title ')
             .populate('createdBy', 'name surname email')
-            .populate('validated_by', 'firstName lastName email')
+            .populate('validated_by', 'name surname email')
             .sort({ createdAt: -1 });
 
         console.log('Found questions:', questions.length);

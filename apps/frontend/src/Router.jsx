@@ -6,13 +6,12 @@ import Dashboard from './pages/admin/dashboard/Dashboard';
 import authRoutes from './pages/auth';
 
 import adminRoutes from '@app/pages/admin';
+import SubjectDetail from './pages/admin/subjects/SubjectDetail';
+import Subjects from './pages/admin/subjects/Subjects';
 import AllUsersQuestions from './pages/all-users-questions/AllUsersQuestions';
 import Forum from './pages/forum/Forum';
-import Moduls from './pages/moduls/ModulsList';
 import MyQuestions from './pages/my-questions/MyQuestions';
 import Projects from './pages/projects/Projects';
-import SubjectDetail from './pages/subjects/SubjectDetail';
-import Subjects from './pages/subjects/Subjects';
 import TakeTest from './pages/tests/TakeTest';
 import TestResults from './pages/tests/TestResults';
 import Tests from './pages/tests/Tests';
@@ -30,7 +29,6 @@ export const router = createBrowserRouter([
     element: <Protected />, // <MainLayout> is already inside Protected!
     children: [
       { path: '/', element: <Dashboard /> },
-      { path: '/moduls', element: <Moduls /> },
       { path: '/tests', element: <Tests /> },
       { path: '/test/:testId/take', element: <TakeTest /> },
       { path: '/test-results/:attemptId', element: <TestResults /> },

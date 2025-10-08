@@ -1,6 +1,6 @@
 import { Box, Divider } from '@mui/material';
-import TeacherList from './TeacherList';
-import UsersList from './UsersList';
+import TeacherList from './components/TeacherList';
+import UsersList from './components/UsersList';
 
 const UsersAndTeachersPage = () => {
   return (

@@ -18,7 +18,7 @@ import React from 'react';
 import * as authService from '@app/pages/auth/authService';
 import { useGetAllSubjectsQuery } from '@app/redux/api'; // adjust path
 import { styled } from '@mui/material/styles';
-import AddSubjectModal from '../../pages/admin/components/AddSubjectModal';
+import AddSubjectModal from '../../pages/admin/subjects/components/AddSubjectModal';
 
 const TeamSwitcherButton = styled(Button)(({ theme }) => ({
   width: '100%',

@@ -6,22 +6,11 @@ import {
   useGetQuestionsByModulQuery,
   useGetQuestionsBySubjectIdQuery
 } from '@app/redux/api';
-import {
-  Box,
-  Button,
-  ButtonGroup,
-  Card,
-  CardContent,
-  Chip,
-  Divider,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-  TextField,
-  Typography
-} from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import React from 'react';
+import DebugWeekControls from './components/DebugWeekControls';
+import FilterControls from './components/FilterControls';
+import ModuleQuestionsSection from './components/ModuleQuestionsSection';
 
 const MyQuestions = () => {
   const auth = authService.getUserFromStorage();
@@ -265,174 +254,9 @@ const MyQuestions = () => {
     ]
   );
 
-  // Render question based on module's current week
-  const renderQuestion = (question, currentWeek, isValidatedByUser = false) => {
-    const isInWeek3OrLater = currentWeek >= 3;
-
-    // For Week 2 validation questions, use different styling and behavior
-    if (isValidatedByUser) {
-      const validated = question.validated_by && String(question.validated_by) === String(userId);
-
-      return (
-        <Card
-          key={question._id}
-          sx={{
-            borderRadius: 2,
-            height: 'fit-content',
-            border: '1px solid',
-            borderColor: validated ? 'success.main' : 'grey.300',
-            bgcolor: validated ? 'success.50' : 'transparent',
-            cursor: validated ? 'default' : 'pointer',
-            '&:hover': validated ? {} : { backgroundColor: 'grey.50' }
-          }}
-        >
-          <CardContent>
-            <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
-              {question.text}
-            </Typography>
-
-            {/* Answer options */}
-            <Box sx={{ mb: 2 }}>
-              {question.options &&
-                Object.entries(question.options).map(([key, value]) => (
-                  <Typography
-                    key={key}
-                    variant="body2"
-                    sx={{
-                      color: 'text.secondary',
-                      ml: 1,
-                      mb: 0.5
-                    }}
-                  >
-                    {key.toUpperCase()}) {value}
-                  </Typography>
-                ))}
-            </Box>
-
-            {/* Show validation status if already validated */}
-            {validated && (
-              <Box sx={{ mt: 2 }}>
-                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 1 }}>
-                  <Chip
-                    label={question.validated ? 'Validná' : 'Nevalidná'}
-                    color={question.validated ? 'success' : 'error'}
-                    size="small"
-                  />
-                </Box>
-                {question.validation_comment && (
-                  <Typography
-                    variant="body2"
-                    sx={{ mt: 1, fontStyle: 'italic', color: 'text.secondary' }}
-                  >
-                    Komentár: {question.validation_comment}
-                  </Typography>
-                )}
-              </Box>
-            )}
-
-            {/* Creation date */}
-            <Typography variant="caption" color="text.secondary" sx={{ mt: 2, display: 'block' }}>
-              Vytvorené: {new Date(question.createdAt).toLocaleDateString()}
-              {!validated && <span> • Kliknite pre validáciu</span>}
-            </Typography>
-          </CardContent>
-        </Card>
-      );
-    }
-
-    // Original rendering for user's own questions
-    return (
-      <Card key={question._id} sx={{ borderRadius: 2, height: 'fit-content' }}>
-        <CardContent>
-          <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
-            {question.text}
-          </Typography>
-
-          {/* Answer options */}
-          <Box sx={{ mb: 2 }}>
-            {question.options &&
-              Object.entries(question.options).map(([key, value]) => (
-                <Typography
-                  key={key}
-                  variant="body2"
-                  sx={{
-                    color: key === question.correct ? 'success.dark' : 'text.secondary',
-                    fontWeight: key === question.correct ? 600 : 400,
-                    ml: 1,
-                    mb: 0.5
-                  }}
-                >
-                  {key.toUpperCase()}) {value} {key === question.correct && '✓'}
-                </Typography>
-              ))}
-          </Box>
-
-          {/* Week 3+ content - show validation status and feedback for own questions */}
-          {!isValidatedByUser && isInWeek3OrLater && (
-            <Box sx={{ mt: 2 }}>
-              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 1 }}>
-                {/* Validation status */}
-                {question.validated_by ? (
-                  <Chip
-                    label={question.validated ? 'Validná' : 'Nevalidná'}
-                    color={question.validated ? 'success' : 'error'}
-                    size="small"
-                  />
-                ) : (
-                  <Chip
-                    label="Nevalidovaná"
-                    size="small"
-                    sx={{
-                      backgroundColor: '#000000',
-                      color: 'white'
-                    }}
-                  />
-                )}
-
-                {/* User agreement status */}
-                {question.user_agreement && (
-                  <Chip
-                    label={question.user_agreement.agreed ? 'Súhlasím' : 'Nesúhlasím'}
-                    color={question.user_agreement.agreed ? 'success' : 'warning'}
-                    size="small"
-                  />
-                )}
-              </Box>
-
-              {/* Validation comment */}
-              {question.validation_comment && (
-                <Typography
-                  variant="body2"
-                  sx={{ mt: 1, fontStyle: 'italic', color: 'text.secondary' }}
-                >
-                  Validačný komentár: {question.validation_comment}
-                </Typography>
-              )}
-
-              {/* User's response */}
-              {question.user_agreement && question.user_agreement.comment && (
-                <Typography
-                  variant="body2"
-                  sx={{ mt: 1, fontStyle: 'italic', color: 'text.primary' }}
-                >
-                  Tvoja odpoveď: {question.user_agreement.comment}
-                </Typography>
-              )}
-            </Box>
-          )}
-
-          {/* Creation date */}
-          <Typography variant="caption" color="text.secondary" sx={{ mt: 2, display: 'block' }}>
-            Vytvorené: {new Date(question.createdAt).toLocaleDateString()}
-          </Typography>
-        </CardContent>
-      </Card>
-    );
-  };
-
   if (!subjectId) {
     return (
-      <Box sx={{ p: 3 }}>
+      <Box sx={{ pb: 3, pt: 3 }}>
         <Typography variant="h4" sx={{ mb: 3 }}>
           Moje otázky
         </Typography>
@@ -446,95 +270,24 @@ const MyQuestions = () => {
   if (!questions.length) return <Typography>Nemáte žiadne otázky.</Typography>;
 
   return (
-    <Box sx={{ pt: 2 }}>
+    <Box sx={{ pb: 3, pt: 3 }}>
       <Typography variant="h4" sx={{ mb: 3 }}>
         Moje otázky
       </Typography>
 
       {/* Filters */}
-      <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
-        <TextField
-          label="Predmet"
-          value={currentSubject?.name || ''}
-          size="small"
-          InputProps={{ readOnly: true }}
-          sx={{ minWidth: 160 }}
-        />
-        <FormControl size="small" sx={{ minWidth: 160 }}>
-          <InputLabel id="modul-filter-label">Modul</InputLabel>
-          <Select
-            labelId="modul-filter-label"
-            label="Modul"
-            value={filter.modulId}
-            onChange={(e) => setFilter((f) => ({ ...f, modulId: e.target.value }))}
-          >
-            <MenuItem value="">Všetky</MenuItem>
-            {subjectModuls.map((m) => (
-              <MenuItem key={m._id} value={m._id}>
-                {m.title || m.name}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <TextField
-          label="Dátum"
-          type="date"
-          size="small"
-          InputLabelProps={{ shrink: true }}
-          value={filter.date}
-          onChange={(e) => setFilter((f) => ({ ...f, date: e.target.value }))}
-        />
-      </Box>
+      <FilterControls
+        currentSubject={currentSubject}
+        filter={filter}
+        onFilterChange={setFilter}
+        subjectModuls={subjectModuls}
+      />
 
       {/* Debug controls */}
-      <Box
-        sx={{
-          mb: 3,
-          p: 2,
-          bgcolor: 'warning.50',
-          borderRadius: 1,
-          border: '1px solid',
-          borderColor: 'warning.200'
-        }}
-      >
-        <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-          Debug: Manuálne prepnutie týždňa
-        </Typography>
-        <ButtonGroup variant="outlined" size="small">
-          <Button
-            onClick={() => setDebugWeekOverride(1)}
-            color={debugWeekOverride === 1 ? 'primary' : 'inherit'}
-          >
-            Týždeň 1
-          </Button>
-          <Button
-            onClick={() => setDebugWeekOverride(2)}
-            color={debugWeekOverride === 2 ? 'primary' : 'inherit'}
-          >
-            Týždeň 2
-          </Button>
-          <Button
-            onClick={() => setDebugWeekOverride(3)}
-            color={debugWeekOverride === 3 ? 'primary' : 'inherit'}
-          >
-            Týždeň 3
-          </Button>
-          <Button
-            onClick={() => setDebugWeekOverride(4)}
-            color={debugWeekOverride === 4 ? 'primary' : 'inherit'}
-          >
-            Dokončené
-          </Button>
-          <Button onClick={() => setDebugWeekOverride(null)}>Reset</Button>
-        </ButtonGroup>
-        {debugWeekOverride && (
-          <Chip
-            label={`Aktívny: ${debugWeekOverride === 4 ? 'Dokončené' : `Týždeň ${debugWeekOverride}`}`}
-            size="small"
-            sx={{ ml: 1 }}
-          />
-        )}
-      </Box>
+      <DebugWeekControls
+        debugWeekOverride={debugWeekOverride}
+        onWeekChange={setDebugWeekOverride}
+      />
 
       {/* Questions grouped by module */}
       {Object.entries(questionsByModule).map(([modulId, moduleQuestions], index) => {
@@ -546,88 +299,16 @@ const MyQuestions = () => {
         const validatedQuestions = getValidatedQuestionsForModule(modulId);
 
         return (
-          <Box key={modulId}>
-            {index > 0 && <Divider sx={{ my: 4 }} />}
-
-            {/* Module header */}
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="h5" sx={{ fontWeight: 600, mb: 1 }}>
-                {getModulName(modulId)}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Status: {weekStatus} • {moduleQuestions.length} otázok
-                {currentWeek >= 2 &&
-                  validatedQuestions.length > 0 &&
-                  ` • ${validatedQuestions.length} validovaných`}
-              </Typography>
-            </Box>
-
-            {/* Week 1: User's own questions */}
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'primary.main' }}>
-                Moje otázky
-              </Typography>
-
-              {/* Questions in 2-column grid */}
-              <Box
-                sx={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
-                  gap: 2,
-                  mb: 2
-                }}
-              >
-                {moduleQuestions.map((question) => renderQuestion(question, currentWeek, false))}
-              </Box>
-
-              {moduleQuestions.length === 0 && (
-                <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
-                  Žiadne otázky v tomto module
-                </Typography>
-              )}
-            </Box>
-
-            {/* Week 2: Questions validated by user (only show if week >= 2) */}
-            {currentWeek >= 2 && (
-              <Box>
-                <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'secondary.main' }}>
-                  Otázky, ktoré som validoval/a
-                </Typography>
-
-                {/* Always show 2 question slots (same as Week2.jsx) */}
-                <Box
-                  sx={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
-                    gap: 2
-                  }}
-                >
-                  {[0, 1].map((i) => {
-                    const q = validatedQuestions[i];
-                    if (q) {
-                      return renderQuestion(q, currentWeek, true);
-                    } else {
-                      return (
-                        <Box
-                          key={`empty-${i}`}
-                          sx={{
-                            p: 2,
-                            border: '1px dashed',
-                            borderColor: 'grey.200',
-                            borderRadius: 1,
-                            color: 'text.disabled',
-                            height: 'fit-content'
-                          }}
-                        >
-                          <Typography>Žiadna otázka na validáciu</Typography>
-                        </Box>
-                      );
-                    }
-                  })}
-                </Box>
-              </Box>
-            )}
-          </Box>
+          <ModuleQuestionsSection
+            key={modulId}
+            modulName={getModulName(modulId)}
+            weekStatus={weekStatus}
+            moduleQuestions={moduleQuestions}
+            validatedQuestions={validatedQuestions}
+            currentWeek={currentWeek}
+            userId={userId}
+            showDivider={index > 0}
+          />
         );
       })}
     </Box>

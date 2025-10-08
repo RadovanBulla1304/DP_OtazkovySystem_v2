@@ -5,38 +5,24 @@ import {
   useLazyGetModulsBySubjectQuery,
   useTeacherValidateQuestionMutation
 } from '@app/redux/api';
-import { CheckCircle } from '@mui/icons-material';
 import {
   Alert,
   Box,
-  Button,
   Card,
   CardContent,
   Chip,
   CircularProgress,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Divider,
-  Fab,
   FormControl,
-  FormControlLabel,
   Grid,
   InputLabel,
-  List,
-  ListItem,
-  ListItemText,
   MenuItem,
-  Paper,
   Select,
-  Switch,
-  TextField,
   Typography
 } from '@mui/material';
-import { format } from 'date-fns';
 import { useEffect, useState } from 'react';
-import TeacherValidationModal from './components/TeacherValidationModal';
+import { toast } from 'react-toastify';
+import QuestionCard from './components/QuestionCard';
+import ValidateByTeacherModal from './components/ValidateByTeacherModal';
 
 const AllUsersQuestions = () => {
   const subjectId = useCurrentSubjectId();
@@ -47,14 +33,7 @@ const AllUsersQuestions = () => {
   // Teacher validation modal state
   const [validationModalOpen, setValidationModalOpen] = useState(false);
   const [selectedQuestion, setSelectedQuestion] = useState(null);
-  const [isValidated, setIsValidated] = useState(false);
-  const [validationComment, setValidationComment] = useState('');
   const [validationSubmitting, setValidationSubmitting] = useState(false);
-
-  // Floating validation modal state
-  const [floatingModalOpen, setFloatingModalOpen] = useState(false);
-  const [currentValidationIndex, setCurrentValidationIndex] = useState(0);
-
   const [trigger, { data: modules = [], isFetching: modulesLoading, error: modulesError }] =
     useLazyGetModulsBySubjectQuery();
 
@@ -85,53 +64,35 @@ const AllUsersQuestions = () => {
   // Handle teacher validation modal
   const handleOpenValidationModal = (question) => {
     setSelectedQuestion(question);
-    setIsValidated(question.validated_by_teacher || false);
-    setValidationComment(question.validated_by_teacher_comment || '');
     setValidationModalOpen(true);
   };
 
   const handleCloseValidationModal = () => {
     setValidationModalOpen(false);
     setSelectedQuestion(null);
-    setIsValidated(false);
-    setValidationComment('');
   };
 
-  const handleSubmitValidation = async () => {
-    if (!selectedQuestion || !validationComment.trim()) {
-      return;
-    }
-
+  const handleSubmitValidation = async (data) => {
     setValidationSubmitting(true);
     try {
-      await teacherValidateQuestion({
-        questionId: selectedQuestion._id,
-        validated_by_teacher: isValidated,
-        validated_by_teacher_comment: validationComment.trim()
-      }).unwrap();
+      await teacherValidateQuestion(data).unwrap();
+
+      // Show success message based on whether it's new validation or edit
+      if (selectedQuestion?.validated_by_teacher) {
+        toast.success('Validácia otázky bola úspešne upravená');
+      } else {
+        toast.success('Otázka bola úspešne validovaná');
+      }
 
       handleCloseValidationModal();
       // The query will automatically refetch and update the UI
     } catch (error) {
       console.error('Error submitting teacher validation:', error);
-      // You might want to show a toast notification here
+      toast.error('Chyba pri validácii otázky. Skúste to prosím znova.');
     } finally {
       setValidationSubmitting(false);
     }
   };
-
-  // Debug logging - remove this after debugging
-  console.log('Debug Info:', {
-    subjectId,
-    modules,
-    modulesCount: modules?.length,
-    modulesLoading,
-    modulesError,
-    firstModule: modules?.[0],
-    questions,
-    questionsLoading,
-    questionsError
-  });
 
   if (!subjectId) {
     return (
@@ -159,49 +120,6 @@ const AllUsersQuestions = () => {
   }
 
   // Get questions that need teacher validation for the floating button
-  const questionsNeedingValidation = questions.filter((q) => !q.validated_by_teacher);
-
-  // Handlers for floating validation modal
-  const handleOpenFloatingModal = () => {
-    if (questionsNeedingValidation.length > 0) {
-      setCurrentValidationIndex(0);
-      setFloatingModalOpen(true);
-    } else {
-      // If no questions need validation, show the regular validation modal with the first question
-      if (questions.length > 0) {
-        handleOpenValidationModal(questions[0]);
-      } else {
-        // Handle case when there are no questions at all
-        alert('Nie sú dostupné žiadne otázky na validáciu.');
-      }
-    }
-  };
-
-  const handleCloseFloatingModal = () => {
-    setFloatingModalOpen(false);
-    setCurrentValidationIndex(0);
-  };
-
-  const handleFloatingValidationSubmit = async (data) => {
-    setValidationSubmitting(true);
-    try {
-      await teacherValidateQuestion(data).unwrap();
-
-      // Move to next question or close modal if this was the last one
-      const nextIndex = currentValidationIndex + 1;
-      const remainingQuestions = questionsNeedingValidation.filter((q) => !q.validated_by_teacher);
-
-      if (nextIndex < remainingQuestions.length) {
-        setCurrentValidationIndex(nextIndex);
-      } else {
-        handleCloseFloatingModal();
-      }
-    } catch (error) {
-      console.error('Error submitting teacher validation:', error);
-    } finally {
-      setValidationSubmitting(false);
-    }
-  };
 
   if (questionsError) {
     return (
@@ -291,9 +209,7 @@ const AllUsersQuestions = () => {
       {!questionsLoading && !modulesLoading && (
         <>
           <Box display="flex" alignItems="center" gap={1} sx={{ mb: 2 }}>
-            <Typography variant="h6">
-              Nájdených {filteredQuestions.length} validovaných otázok
-            </Typography>
+            <Typography variant="h6">Nájdených {filteredQuestions.length} otázok</Typography>
             {selectedModuleId !== 'all' && (
               <Chip
                 label={modules.find((m) => m._id === selectedModuleId)?.name || 'Neznámy modul'}
@@ -337,152 +253,11 @@ const AllUsersQuestions = () => {
             <Grid container spacing={2}>
               {filteredQuestions.map((question) => (
                 <Grid item xs={12} sm={6} md={4} key={question._id}>
-                  <Paper
-                    elevation={2}
-                    sx={{
-                      p: 2,
-                      height: '100%',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      position: 'relative'
-                    }}
-                  >
-                    {/* Question Text */}
-                    <Typography variant="h6" gutterBottom sx={{ fontSize: '1rem', mb: 2 }}>
-                      {question.text}
-                    </Typography>
-
-                    {/* Answer Options */}
-                    <Box sx={{ mb: 2, flexGrow: 1 }}>
-                      <Typography variant="subtitle2" gutterBottom sx={{ fontSize: '0.875rem' }}>
-                        Možnosti odpovedí:
-                      </Typography>
-                      <List dense sx={{ py: 0 }}>
-                        {Object.entries(question.options).map(([key, value]) => (
-                          <ListItem key={key} sx={{ py: 0.25, px: 0 }}>
-                            <ListItemText
-                              primary={
-                                <Box display="flex" alignItems="center">
-                                  <Chip
-                                    label={key.toUpperCase()}
-                                    size="small"
-                                    color={question.correct === key ? 'success' : 'default'}
-                                    sx={{ mr: 1, minWidth: 28, height: 20, fontSize: '0.7rem' }}
-                                  />
-                                  <Typography
-                                    variant="body2"
-                                    sx={{
-                                      fontWeight: question.correct === key ? 'bold' : 'normal',
-                                      fontSize: '0.875rem'
-                                    }}
-                                  >
-                                    {value}
-                                  </Typography>
-                                </Box>
-                              }
-                            />
-                          </ListItem>
-                        ))}
-                      </List>
-                    </Box>
-
-                    <Divider sx={{ my: 1 }} />
-
-                    {/* Details Section */}
-                    <Box
-                      sx={{
-                        p: 1.5,
-                        bgcolor: 'grey.50',
-                        borderRadius: 1,
-                        mb: 1
-                      }}
-                    >
-                      <Typography
-                        variant="caption"
-                        display="block"
-                        color="textSecondary"
-                        gutterBottom
-                      >
-                        <strong>Modul:</strong> {question.modul.name}
-                      </Typography>
-
-                      <Typography
-                        variant="caption"
-                        display="block"
-                        color="textSecondary"
-                        gutterBottom
-                      >
-                        <strong>Vytvoril:</strong>{' '}
-                        {question.createdBy
-                          ? `${question.createdBy.name} ${question.createdBy.surname}`
-                          : 'N/A'}
-                      </Typography>
-
-                      <Typography
-                        variant="caption"
-                        display="block"
-                        color="textSecondary"
-                        gutterBottom
-                      >
-                        <strong>Vytvorené:</strong> {format(new Date(question.createdAt), 'PP')}
-                      </Typography>
-
-                      <Typography
-                        variant="caption"
-                        display="block"
-                        color="textSecondary"
-                        gutterBottom
-                      >
-                        <strong>Hodnotenie:</strong>{' '}
-                        {question.rating_stats.total_ratings > 0
-                          ? `${question.rating_stats.average_rating.toFixed(1)} (${
-                              question.rating_stats.total_ratings
-                            })`
-                          : 'Zatiaľ žiadne'}
-                      </Typography>
-
-                      <Box sx={{ mt: 1, display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                        <Chip
-                          label="Validované"
-                          color="success"
-                          size="small"
-                          sx={{ height: 20, fontSize: '0.7rem' }}
-                        />
-                        {question.validated_by_teacher && (
-                          <Chip
-                            label="Validované učiteľom"
-                            color="primary"
-                            size="small"
-                            sx={{ height: 20, fontSize: '0.7rem' }}
-                          />
-                        )}
-                        {question.is_active && (
-                          <Chip
-                            label="Aktívne"
-                            color="info"
-                            size="small"
-                            sx={{ height: 20, fontSize: '0.7rem' }}
-                          />
-                        )}
-                      </Box>
-                    </Box>
-
-                    {/* Teacher validation button */}
-                    {isTeacher && (
-                      <Box sx={{ mt: 'auto' }}>
-                        <Button
-                          variant={question.validated_by_teacher ? 'outlined' : 'contained'}
-                          color={question.validated_by_teacher ? 'info' : 'primary'}
-                          size="small"
-                          onClick={() => handleOpenValidationModal(question)}
-                          fullWidth
-                          sx={{ fontSize: '0.75rem' }}
-                        >
-                          {question.validated_by_teacher ? 'Upraviť validáciu' : 'Validovať otázku'}
-                        </Button>
-                      </Box>
-                    )}
-                  </Paper>
+                  <QuestionCard
+                    question={question}
+                    isTeacher={isTeacher}
+                    onValidateClick={handleOpenValidationModal}
+                  />
                 </Grid>
               ))}
             </Grid>
@@ -491,183 +266,11 @@ const AllUsersQuestions = () => {
       )}
 
       {/* Teacher Validation Modal */}
-      <Dialog
+      <ValidateByTeacherModal
         open={validationModalOpen}
         onClose={handleCloseValidationModal}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle>
-          <Box display="flex" alignItems="center" gap={1}>
-            <Typography variant="h6">Validácia otázky učiteľom</Typography>
-            {selectedQuestion?.validated_by_teacher && (
-              <Chip label="Už validované" color="success" size="small" />
-            )}
-          </Box>
-        </DialogTitle>
-        <DialogContent>
-          {selectedQuestion && (
-            <Box sx={{ mt: 2 }}>
-              <Typography variant="subtitle1" gutterBottom>
-                Otázka:
-              </Typography>
-              <Paper elevation={1} sx={{ p: 2, mb: 3, bgcolor: 'grey.50' }}>
-                <Typography variant="body1">{selectedQuestion.text}</Typography>
-
-                <Typography variant="subtitle2" sx={{ mt: 2, mb: 1 }}>
-                  Možnosti odpovedí:
-                </Typography>
-                <List dense>
-                  {Object.entries(selectedQuestion.options).map(([key, value]) => (
-                    <ListItem key={key} sx={{ py: 0.5 }}>
-                      <ListItemText
-                        primary={
-                          <Box display="flex" alignItems="center">
-                            <Chip
-                              label={key.toUpperCase()}
-                              size="small"
-                              color={selectedQuestion.correct === key ? 'success' : 'default'}
-                              sx={{ mr: 1, minWidth: 32 }}
-                            />
-                            <Typography
-                              sx={{
-                                fontWeight: selectedQuestion.correct === key ? 'bold' : 'normal'
-                              }}
-                            >
-                              {value}
-                            </Typography>
-                          </Box>
-                        }
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-
-                <Typography variant="body2" color="primary" sx={{ mt: 1 }}>
-                  <strong>Správna odpoveď:</strong> {selectedQuestion.correct.toUpperCase()}
-                </Typography>
-              </Paper>
-
-              {/* Current validation status */}
-              {selectedQuestion.validated_by_teacher && (
-                <Alert severity="info" sx={{ mb: 3 }}>
-                  <Typography variant="body2">
-                    <strong>Aktuálny stav:</strong> Otázka je už validovaná učiteľom
-                    {selectedQuestion.validated_by_teacher_at && (
-                      <> dňa {format(new Date(selectedQuestion.validated_by_teacher_at), 'PPp')}</>
-                    )}
-                  </Typography>
-                  {selectedQuestion.validated_by_teacher_comment && (
-                    <Typography variant="body2" sx={{ mt: 1 }}>
-                      <strong>Aktuálny komentár:</strong>{' '}
-                      {selectedQuestion.validated_by_teacher_comment}
-                    </Typography>
-                  )}
-                </Alert>
-              )}
-
-              <Box sx={{ mb: 3 }}>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={isValidated}
-                      onChange={(e) => setIsValidated(e.target.checked)}
-                      color="primary"
-                    />
-                  }
-                  label={
-                    <Box>
-                      <Typography variant="body1">
-                        {isValidated ? 'Otázka je validná' : 'Otázka nie je validná'}
-                      </Typography>
-                      <Typography variant="body2" color="textSecondary">
-                        {isValidated
-                          ? 'Otázka spĺňa kvalitatívne štandardy a môže byť použitá v testoch'
-                          : 'Otázka má nedostatky a potrebuje úpravu pred použitím'}
-                      </Typography>
-                    </Box>
-                  }
-                />
-              </Box>
-
-              <TextField
-                fullWidth
-                multiline
-                rows={4}
-                label="Komentár k validácii (povinný)"
-                value={validationComment}
-                onChange={(e) => setValidationComment(e.target.value)}
-                required
-                error={!validationComment.trim()}
-                helperText={
-                  !validationComment.trim()
-                    ? 'Prosím, zadajte komentár vysvetľujúci vašu validáciu'
-                    : 'Vysvetlite, prečo je otázka validná/nevalidná, alebo navrhnite úpravy'
-                }
-                placeholder={
-                  isValidated
-                    ? 'Napríklad: Otázka je jasne formulovaná, správna odpoveď je jednoznačná...'
-                    : 'Napríklad: Otázka je nejasná, možnosti odpovedí sú mätúce, správna odpoveď je sporná...'
-                }
-              />
-            </Box>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={handleCloseValidationModal}
-            color="inherit"
-            disabled={validationSubmitting}
-          >
-            Zrušiť
-          </Button>
-          <Button
-            onClick={handleSubmitValidation}
-            variant="contained"
-            disabled={!validationComment.trim() || validationSubmitting}
-            color={isValidated ? 'success' : 'warning'}
-          >
-            {validationSubmitting ? (
-              <>
-                <CircularProgress size={16} sx={{ mr: 1 }} />
-                Ukladám...
-              </>
-            ) : (
-              `${isValidated ? 'Validovať' : 'Označiť ako nevalidnú'} otázku`
-            )}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Floating Action Button for Teacher Validation */}
-      {isTeacher && (
-        <Fab
-          color="warning"
-          aria-label="validate questions"
-          onClick={handleOpenFloatingModal}
-          sx={{
-            position: 'fixed',
-            bottom: 16,
-            right: 16,
-            zIndex: 1000,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '4px'
-          }}
-        >
-          <CheckCircle />
-          <Typography variant="caption" sx={{ fontSize: '0.6rem', textAlign: 'center', mt: 0.5 }}>
-            Validate by teacher
-          </Typography>
-        </Fab>
-      )}
-
-      {/* Floating Teacher Validation Modal */}
-      <TeacherValidationModal
-        open={floatingModalOpen}
-        onClose={handleCloseFloatingModal}
-        question={questionsNeedingValidation[currentValidationIndex]}
-        onSubmit={handleFloatingValidationSubmit}
+        question={selectedQuestion}
+        onSubmit={handleSubmitValidation}
         isSubmitting={validationSubmitting}
       />
     </Box>

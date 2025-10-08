@@ -14,7 +14,7 @@ import {
 import PropTypes from 'prop-types';
 import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { createSubjectSchema } from '../schemas/subject.schema';
+import { createSubjectSchema } from '../../schemas/subject.schema';
 
 const AddSubjectModal = ({ open, onClose, onSuccess }) => {
   const [createSubject, { isLoading, error }] = useCreateSubjectMutation();

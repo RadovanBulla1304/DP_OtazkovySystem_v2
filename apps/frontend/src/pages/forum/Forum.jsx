@@ -22,8 +22,8 @@ import {
   Typography
 } from '@mui/material';
 import { useState } from 'react';
-import AddQuestionDialog from './AddQuestionDialog';
-import QuestionCard from './QuestionCard';
+import AddQuestionDialog from './components/AddQuestionDialog';
+import QuestionCard from './components/QuestionCard';
 
 const Forum = () => {
   const [addDialogOpen, setAddDialogOpen] = useState(false);

@@ -13,7 +13,7 @@ import {
 import PropTypes from 'prop-types';
 import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { createSubjectSchema } from '../schemas/subject.schema';
+import { createSubjectSchema } from '../../schemas/subject.schema';
 
 const EditSubjectModal = ({ open, onClose, onSuccess, subject }) => {
   const [editSubject, { isLoading, error }] = useEditSubjectMutation();
@@ -61,9 +61,15 @@ const EditSubjectModal = ({ open, onClose, onSuccess, subject }) => {
   };
 
   return (
-    <Dialog open={open} onClose={handleClose}>
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      PaperProps={{
+        sx: { minWidth: 500 }
+      }}
+    >
       <DialogTitle>Upraviť názov predmetu</DialogTitle>
-      <DialogContent sx={{ pt: 2 }}>
+      <DialogContent sx={{ pt: '16px !important', pb: 2, px: 3 }}>
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
             Chyba pri úprave predmetu
@@ -86,7 +92,7 @@ const EditSubjectModal = ({ open, onClose, onSuccess, subject }) => {
         />
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose} disabled={isLoading}>
+        <Button onClick={handleClose} disabled={isLoading} variant="outlined">
           Zrušiť
         </Button>
         <Button onClick={handleSubmit(handleFormSubmit)} variant="contained" disabled={isLoading}>

@@ -8,7 +8,7 @@ import PropTypes from 'prop-types';
 import { useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
-import { editModulSchema } from '../schemas/modul.schema';
+import { editModulSchema } from '../../schemas/modul.schema';
 
 const style = {
   position: 'absolute',

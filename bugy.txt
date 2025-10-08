@@ -1,9 +1,7 @@
 -------------------------------------------
 bugy
 
-week1 - 0/2 bodov nerefreshuje
 -------------------------------------------
-upravit priradenych userov k projektom - ked odstranim usera neodstrani sa z projektov
 
 
 
@@ -15,3 +13,5 @@ upravit priradenych userov k projektom - ked odstranim usera neodstrani sa z pro
 //refresh projektov
 //filtoravnie podla like dislike atd nefunguje na forum. nefunguje taktiez filtrovanie podla modulov
 //pri pridavani pouzivatela moze mat viac userov rovnaku group number
+//week1 - 0/2 bodov nerefreshuje
+//upravit priradenych userov k projektom - ked odstranim usera neodstrani sa z projektov

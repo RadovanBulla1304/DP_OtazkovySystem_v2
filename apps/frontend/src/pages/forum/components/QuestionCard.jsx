@@ -23,7 +23,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { sk } from 'date-fns/locale';
 import PropTypes from 'prop-types';
 import { useState } from 'react';
-import { useDislikeForumQuestionMutation, useLikeForumQuestionMutation } from '../../redux/api';
+import { useDislikeForumQuestionMutation, useLikeForumQuestionMutation } from '../../../redux/api';
 import CommentSection from './CommentSection';
 
 const QuestionCard = ({ question, onQuestionClick }) => {

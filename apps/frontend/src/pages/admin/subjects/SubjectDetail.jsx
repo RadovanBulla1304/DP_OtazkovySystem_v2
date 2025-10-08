@@ -18,11 +18,6 @@ import {
   Card,
   CardContent,
   CircularProgress,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
   Divider,
   Grid,
   IconButton,
@@ -36,10 +31,12 @@ import dayjs from 'dayjs';
 import { useMemo, useState } from 'react';
 import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import AddModulModal from '../admin/components/AddModulModal';
-import AssignUsersFromCSVModal from '../admin/components/AssignUsersFromCSVModal';
-import EditModulModal from '../admin/components/EditModulModal';
-import EditSubjectModal from '../admin/components/EditSubjectModal';
+import AddModulModal from './components/AddModulModal';
+import AssignUsersFromCSVModal from './components/AssignUsersFromCSVModal';
+import DeleteModulDialog from './components/DeleteModulDialog';
+import DeleteSubjectDialog from './components/DeleteSubjectDialog';
+import EditModulModal from './components/EditModulModal';
+import EditSubjectModal from './components/EditSubjectModal';
 
 const SubjectDetail = () => {
   const { subjectId } = useParams();
@@ -510,62 +507,22 @@ const SubjectDetail = () => {
       />
 
       {/* Confirmation Dialog for Delete Subject */}
-      <Dialog
+      <DeleteSubjectDialog
         open={isDeleteDialogOpen}
         onClose={handleCloseDeleteDialog}
-        aria-labelledby="delete-subject-dialog-title"
-        aria-describedby="delete-subject-dialog-description"
-      >
-        <DialogTitle id="delete-subject-dialog-title">Vymazať predmet?</DialogTitle>
-        <DialogContent>
-          <DialogContentText id="delete-subject-dialog-description">
-            Naozaj chcete odstrániť predmet <strong>{subject.name}</strong> a všetky jeho moduly?
-            Táto akcia je nevratná.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDeleteDialog} disabled={isDeleting}>
-            Zrušiť
-          </Button>
-          <Button
-            onClick={handleConfirmDelete}
-            color="error"
-            variant="contained"
-            disabled={isDeleting}
-          >
-            {isDeleting ? 'Mazanie...' : 'Vymazať'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        onConfirm={handleConfirmDelete}
+        subject={subject}
+        isDeleting={isDeleting}
+      />
 
       {/* Confirmation Dialog for Delete Modul */}
-      <Dialog
+      <DeleteModulDialog
         open={isDeleteModulDialogOpen}
         onClose={handleCloseDeleteModulDialog}
-        aria-labelledby="delete-modul-dialog-title"
-        aria-describedby="delete-modul-dialog-description"
-      >
-        <DialogTitle id="delete-modul-dialog-title">Vymazať modul?</DialogTitle>
-        <DialogContent>
-          <DialogContentText id="delete-modul-dialog-description">
-            Naozaj chcete odstrániť modul <strong>{modulToDelete?.title}</strong>? Táto akcia je
-            nevratná.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDeleteModulDialog} disabled={isDeletingModul}>
-            Zrušiť
-          </Button>
-          <Button
-            onClick={handleConfirmDeleteModul}
-            color="error"
-            variant="contained"
-            disabled={isDeletingModul}
-          >
-            {isDeletingModul ? 'Mazanie...' : 'Vymazať'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        onConfirm={handleConfirmDeleteModul}
+        modul={modulToDelete}
+        isDeleting={isDeletingModul}
+      />
     </Box>
   );
 };
