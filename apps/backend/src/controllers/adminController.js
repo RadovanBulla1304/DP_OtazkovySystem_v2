@@ -6,6 +6,7 @@ const crypto = require("crypto");
 const Subject = require("../models/subject");
 const User = require("../models/user");
 const Teacher = require("../models/teacher");
+const Project = require("../models/project");
 
 const { validate, validated } = require("../util/validation");
 const { createUserSchema, updateUserSchema } = require("../schemas/user.schema");
@@ -235,7 +236,28 @@ exports.removeUser = async (req, res) => {
   const record = await User.findOne({ _id: req.params.id });
   if (record) {
     try {
+      const userId = record._id;
+
+      // Remove user from all projects where they are assigned
+      await Project.updateMany(
+        { assigned_users: userId },
+        { $pull: { assigned_users: userId } }
+      );
+
+      // Remove user from all subjects where they are assigned
+      await Subject.updateMany(
+        { assigned_students: userId },
+        { $pull: { assigned_students: userId } }
+      );
+
+      // Also update the user's assignedSubjects and assignedProjects arrays to empty (optional cleanup)
+      record.assignedSubjects = [];
+      record.assignedProjects = [];
+      await record.save();
+
+      // Finally delete the user
       await record.deleteOne();
+
       res.status(200).send({});
     } catch (error) {
       throwError(`${req.t("messages.database_error")}: ${error.message}`, 500);

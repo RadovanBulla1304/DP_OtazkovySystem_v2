@@ -1,5 +1,9 @@
-import CenteredCheckIcon from '@app/components/table/CenteredCheckIcon';
-import { useGetUsersListQuery, useRemoveUserMutation } from '@app/redux/api';
+import {
+  useGetAllSubjectsQuery,
+  useGetUsersListQuery,
+  useGetUsersPointsSummaryMutation,
+  useRemoveUserMutation
+} from '@app/redux/api';
 import DeleteIcon from '@mui/icons-material/Delete';
 import {
   Box,
@@ -15,7 +19,7 @@ import {
   Typography
 } from '@mui/material';
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 import AddUserModal from '../components/AddUserModal';
 import AssignToSubject from '../components/AssignToSubject';
@@ -25,6 +29,8 @@ import UserPointsModal from '../components/UserPointsModal';
 const UsersList = () => {
   const { data, isLoading } = useGetUsersListQuery();
   const [removeUser] = useRemoveUserMutation();
+  const [getUsersPointsSummary, { data: pointsSummaryData }] = useGetUsersPointsSummaryMutation();
+  const { data: subjects = [] } = useGetAllSubjectsQuery();
 
   // State for selected users
   const [selectedUserIds, setSelectedUserIds] = useState([]);
@@ -35,6 +41,49 @@ const UsersList = () => {
   // State for delete confirmation
   const [userToDelete, setUserToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Fetch points summary when users are loaded
+  useEffect(() => {
+    if (data && data.length > 0) {
+      const userIds = data.map((user) => user._id);
+      getUsersPointsSummary(userIds);
+    }
+  }, [data, getUsersPointsSummary]);
+
+  // Merge users with their points data
+  const usersWithPoints = useMemo(() => {
+    if (!data) return [];
+    if (!pointsSummaryData?.data) return data;
+
+    // Create a map of userId -> totalPoints
+    const pointsMap = {};
+    pointsSummaryData.data.forEach((userPointData) => {
+      // The API returns: { user: { _id, name, ... }, points: { totalPoints, details } }
+      const userId = userPointData.user._id;
+      pointsMap[userId] = userPointData.points.totalPoints || 0;
+      console.log(userPointData);
+    });
+
+    // Create a map of subjectId -> subject name
+    const subjectMap = {};
+    subjects.forEach((subject) => {
+      subjectMap[subject._id] = subject.name || subject.title || 'Bez názvu';
+    });
+
+    // Merge points and subject names into user data
+    return data.map((user) => {
+      const assignedSubjectNames = (user.assignedSubjects || [])
+        .map((subjectId) => subjectMap[subjectId] || null)
+        .filter(Boolean)
+        .join(', ');
+
+      return {
+        ...user,
+        totalPoints: pointsMap[user._id] || 0,
+        subjectNames: assignedSubjectNames || '-'
+      };
+    });
+  }, [data, pointsSummaryData, subjects]);
 
   const onRemoveHandler = async (user) => {
     try {
@@ -61,13 +110,19 @@ const UsersList = () => {
     { field: 'email', headerName: 'Email', flex: 1 },
     { field: 'groupNumber', headerName: 'Skupina', flex: 1, minWidth: 100 },
     { field: 'studentNumber', headerName: 'Študentské číslo', flex: 1, minWidth: 120 },
-    // Points column is calculated client-side, so we'll see it in the UI but not use it for any calculations yet
-    { field: 'points', headerName: 'Body', flex: 1, minWidth: 80, valueGetter: () => '...' },
     {
-      field: 'is_active',
-      headerName: 'Účet aktívny',
+      field: 'subjectNames',
+      headerName: 'Predmety',
+      flex: 1.5,
+      minWidth: 150,
+      valueGetter: (value, row) => row.subjectNames || '-'
+    },
+    {
+      field: 'totalPoints',
+      headerName: 'Body',
       flex: 1,
-      renderCell: (value) => (value.row.isActive ? <CenteredCheckIcon /> : null)
+      minWidth: 80,
+      valueGetter: (value, row) => row.totalPoints ?? 0
     },
     {
       field: 'actions',
@@ -153,7 +208,7 @@ const UsersList = () => {
       <Paper sx={{ mt: 2 }}>
         <DataGrid
           loading={isLoading}
-          rows={data}
+          rows={usersWithPoints}
           columns={columns}
           getRowId={(row) => row._id}
           pageSizeOptions={[10, 20, 50]}

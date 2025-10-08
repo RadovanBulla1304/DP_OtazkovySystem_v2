@@ -104,7 +104,7 @@ export const api = createApi({
         url: `/admin/user/${userId}`,
         method: 'DELETE'
       }),
-      invalidatesTags: ['Users']
+      invalidatesTags: ['Users', 'Subjects']
     }),
     getUsersList: builder.query({
       query: () => ({
@@ -153,14 +153,16 @@ export const api = createApi({
         url: '/subject/assign-user',
         method: 'POST',
         body: data
-      })
+      }),
+      invalidatesTags: ['Users', 'Subjects']
     }),
     unasignUserFromSubject: builder.mutation({
       query: (data) => ({
         url: '/subject/unassign-user',
         method: 'POST',
         body: data
-      })
+      }),
+      invalidatesTags: ['Users', 'Subjects']
     }),
     // MODULES
     createModul: builder.mutation({
