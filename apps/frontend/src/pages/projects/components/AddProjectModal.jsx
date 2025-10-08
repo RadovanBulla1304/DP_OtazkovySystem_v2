@@ -1,4 +1,6 @@
-import { useCreateProjectMutation, useGetAllSubjectsQuery } from '@app/redux/api';
+import { useCurrentSubjectId } from '@app/hooks/useCurrentSubjectId';
+import { createProjectSchema } from '@app/pages/admin/schemas/project.schema';
+import { useCreateProjectMutation } from '@app/redux/api';
 import {
   Box,
   Button,
@@ -7,10 +9,6 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
   Stack,
   TextField
 } from '@mui/material';
@@ -20,16 +18,16 @@ import { toast } from 'react-toastify';
 import AssignUsersToProject from './AssignUsersToProject';
 
 const AddProjectModal = ({ open, onClose, onSuccess }) => {
+  const currentSubjectId = useCurrentSubjectId();
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    max_members: 5,
-    subject: ''
+    max_members: 5
   });
+  const [errors, setErrors] = useState({});
   const [createdProjectId, setCreatedProjectId] = useState(null);
   const [showAssignUsers, setShowAssignUsers] = useState(false);
 
-  const { data: subjects = [], isLoading: isSubjectsLoading } = useGetAllSubjectsQuery();
   const [createProject, { isLoading }] = useCreateProjectMutation();
 
   const handleChange = (field, value) => {
@@ -37,28 +35,64 @@ const AddProjectModal = ({ open, onClose, onSuccess }) => {
       ...prev,
       [field]: value
     }));
+
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors((prev) => ({
+        ...prev,
+        [field]: ''
+      }));
+    }
+  };
+
+  const validateForm = () => {
+    // Add subject to validation data
+    const validationData = {
+      ...formData,
+      subject: currentSubjectId
+    };
+
+    const { error } = createProjectSchema.validate(validationData, { abortEarly: false });
+
+    if (error) {
+      const newErrors = {};
+      error.details.forEach((detail) => {
+        newErrors[detail.path[0]] = detail.message;
+      });
+      setErrors(newErrors);
+      return false;
+    }
+
+    setErrors({});
+    return true;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.name.trim()) {
-      toast.error('Názov projektu je povinný');
+    if (!currentSubjectId) {
+      toast.error('Vyberte predmet v prepínači predmetov');
+      return;
+    }
+
+    if (!validateForm()) {
+      toast.error('Vyplňte všetky povinné polia správne');
       return;
     }
 
     try {
       const projectData = {
-        name: formData.name,
-        description: formData.description,
+        name: formData.name.trim(),
+        description: formData.description.trim(),
         max_members: formData.max_members || 5,
-        subject: formData.subject || null
+        subject: currentSubjectId
       };
 
       const result = await createProject(projectData).unwrap();
       toast.success('Projekt bol úspešne vytvorený');
       setCreatedProjectId(result.data._id);
-      setFormData({ name: '', description: '', max_members: 5, subject: '' });
+      setFormData({ name: '', description: '', max_members: 5 });
+      setErrors({});
       if (onSuccess) onSuccess();
       onClose();
     } catch (err) {
@@ -67,7 +101,8 @@ const AddProjectModal = ({ open, onClose, onSuccess }) => {
   };
 
   const handleCancel = () => {
-    setFormData({ name: '', description: '', max_members: 5, subject: '' });
+    setFormData({ name: '', description: '', max_members: 5 });
+    setErrors({});
     setCreatedProjectId(null);
     onClose();
   };
@@ -89,6 +124,8 @@ const AddProjectModal = ({ open, onClose, onSuccess }) => {
                 required
                 value={formData.name}
                 onChange={(e) => handleChange('name', e.target.value)}
+                error={!!errors.name}
+                helperText={errors.name}
                 disabled={isLoading}
               />
 
@@ -99,6 +136,8 @@ const AddProjectModal = ({ open, onClose, onSuccess }) => {
                 rows={3}
                 value={formData.description}
                 onChange={(e) => handleChange('description', e.target.value)}
+                error={!!errors.description}
+                helperText={errors.description}
                 disabled={isLoading}
               />
 
@@ -108,29 +147,11 @@ const AddProjectModal = ({ open, onClose, onSuccess }) => {
                 fullWidth
                 value={formData.max_members}
                 onChange={(e) => handleChange('max_members', parseInt(e.target.value) || 5)}
+                error={!!errors.max_members}
+                helperText={errors.max_members}
                 inputProps={{ min: 1 }}
                 disabled={isLoading}
               />
-
-              <FormControl fullWidth>
-                <InputLabel id="select-subject-label">Predmet (voliteľné)</InputLabel>
-                <Select
-                  labelId="select-subject-label"
-                  label="Predmet (voliteľné)"
-                  value={formData.subject}
-                  onChange={(e) => handleChange('subject', e.target.value)}
-                  disabled={isSubjectsLoading || isLoading}
-                >
-                  <MenuItem value="">
-                    <em>Žiadny</em>
-                  </MenuItem>
-                  {subjects.map((subject) => (
-                    <MenuItem key={subject._id} value={subject._id}>
-                      {subject.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
             </Stack>
           </Box>
         </DialogContent>

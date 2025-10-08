@@ -1,49 +1,93 @@
 const Project = require("../models/project");
 const User = require("../models/user");
 const ProjectRating = require("../models/projectRating");
+const { validate, validated } = require("../util/validation");
+const { createProjectSchema, updateProjectSchema } = require("../schemas/project.schema");
 
 // Create a new project
-const createProject = async (req, res) => {
-    try {
-        const { name, description, max_members, subject } = req.body;
-        const teacherId = req.user.user_id;
+const createProject = [
+    validate(createProjectSchema), // Validate the request body using the schema
+    async (req, res) => {
+        try {
+            const data = validated(req); // Extract validated data
+            const teacherId = req.user.user_id;
 
-        if (!name) {
-            return res.status(400).json({
+            const project = new Project({
+                name: data.name,
+                description: data.description || "",
+                max_members: data.max_members || 5,
+                subject: data.subject || null,
+                createdBy: teacherId,
+                assigned_users: []
+            });
+
+            await project.save();
+
+            // Populate the project before sending response
+            await project.populate("createdBy", "name email");
+            await project.populate("subject", "name");
+            await project.populate("assigned_users", "name surname email username studentNumber");
+
+            res.status(201).json({
+                success: true,
+                data: project
+            });
+        } catch (error) {
+            console.error("Error creating project:", error);
+            res.status(500).json({
                 success: false,
-                message: "Project name is required"
+                message: "Error creating project",
+                error: error.message
             });
         }
-
-        const project = new Project({
-            name,
-            description: description || "",
-            max_members: max_members || 5,
-            subject: subject || null,
-            createdBy: teacherId,
-            assigned_users: []
-        });
-
-        await project.save();
-
-        // Populate the project before sending response
-        await project.populate("createdBy", "name email");
-        await project.populate("subject", "name");
-        await project.populate("assigned_users", "name email username");
-
-        res.status(201).json({
-            success: true,
-            data: project
-        });
-    } catch (error) {
-        console.error("Error creating project:", error);
-        res.status(500).json({
-            success: false,
-            message: "Error creating project",
-            error: error.message
-        });
     }
-};
+];
+// Update project
+const updateProject = [
+    validate(updateProjectSchema), // Validate the request body using the schema
+    async (req, res) => {
+        try {
+            const { id } = req.params;
+            const data = validated(req); // Extract validated data
+
+            const project = await Project.findById(id);
+
+            if (!project) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Project not found"
+                });
+            }
+
+            // Update fields
+            if (data.name !== undefined) project.name = data.name;
+            if (data.description !== undefined) project.description = data.description;
+            if (data.max_members !== undefined) project.max_members = data.max_members;
+            if (data.subject !== undefined) project.subject = data.subject;
+            if (data.status !== undefined) project.status = data.status;
+            if (data.due_date !== undefined) project.due_date = data.due_date;
+
+            await project.save();
+
+            // Populate the project before sending response
+            await project.populate("createdBy", "name email");
+            await project.populate("subject", "name");
+            await project.populate("assigned_users", "name surname email username studentNumber");
+
+            res.status(200).json({
+                success: true,
+                data: project
+            });
+        } catch (error) {
+            console.error("Error updating project:", error);
+            res.status(500).json({
+                success: false,
+                message: "Error updating project",
+                error: error.message
+            });
+        }
+    }
+];
 
 // Get all projects (with optional subject filter)
 const getAllProjects = async (req, res) => {
@@ -105,50 +149,6 @@ const getProjectById = async (req, res) => {
         res.status(500).json({
             success: false,
             message: "Error fetching project",
-            error: error.message
-        });
-    }
-};
-
-// Update project
-const updateProject = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { name, description, max_members, subject, status, due_date } = req.body;
-
-        const project = await Project.findById(id);
-
-        if (!project) {
-            return res.status(404).json({
-                success: false,
-                message: "Project not found"
-            });
-        }
-
-        // Update fields
-        if (name !== undefined) project.name = name;
-        if (description !== undefined) project.description = description;
-        if (max_members !== undefined) project.max_members = max_members;
-        if (subject !== undefined) project.subject = subject;
-        if (status !== undefined) project.status = status;
-        if (due_date !== undefined) project.due_date = due_date;
-
-        await project.save();
-
-        // Populate the project before sending response
-        await project.populate("createdBy", "name email");
-        await project.populate("subject", "name");
-        await project.populate("assigned_users", "name surname email username studentNumber");
-
-        res.status(200).json({
-            success: true,
-            data: project
-        });
-    } catch (error) {
-        console.error("Error updating project:", error);
-        res.status(500).json({
-            success: false,
-            message: "Error updating project",
             error: error.message
         });
     }

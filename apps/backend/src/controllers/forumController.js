@@ -4,6 +4,8 @@ const Module = require("../models/modul")
 const Teacher = require("../models/teacher")
 const mongoose = require("mongoose")
 const User = require("../models/user")
+const { validate, validated } = require("../util/validation")
+const { createForumQuestionSchema, updateForumQuestionSchema } = require("../schemas/forumQuestion.schema")
 
 const buildDisplayName = (entity) => {
     if (!entity) {
@@ -185,7 +187,7 @@ const getForumQuestions = async (req, res) => {
             filter.createdByModel = createdByModel
             console.log('Filtering by createdByModel:', createdByModel)
         }
-        
+
         console.log('Final filter:', JSON.stringify(filter))
         console.log('Sort by:', sortBy)
 
@@ -321,7 +323,7 @@ const getForumQuestions = async (req, res) => {
                 .limit(limit * 1)
                 .skip((page - 1) * limit)
                 .lean()
-            
+
             // Enrich questions with author and module info
             questions = await enrichForumQuestions(questions)
         }
@@ -473,71 +475,63 @@ const getForumQuestion = async (req, res) => {
 // @desc Create new forum question
 // @route POST /api/forum/questions
 // @access Private
-const createForumQuestion = async (req, res) => {
-    try {
-        const { header, description, tags, modul } = req.body
-        const user_id = req.user?.user_id
+// @desc Create a new forum question
+// @route POST /api/forum/questions
+// @access Private
+const createForumQuestion = [
+    validate(createForumQuestionSchema), // Validate the request body using the schema
+    async (req, res) => {
+        try {
+            const data = validated(req) // Extract validated data
+            const user_id = req.user?.user_id
 
-        if (!user_id) {
-            return res.status(401).json({
+            if (!user_id) {
+                return res.status(401).json({
+                    success: false,
+                    message: "User not authenticated"
+                })
+            }
+
+            // Verify module exists
+            const moduleExists = await Module.findById(data.modul)
+            if (!moduleExists) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Module not found"
+                })
+            }
+
+            const processedTags = data.tags ? data.tags.map(tag => tag.toLowerCase().trim()) : []
+
+            const isTeacher = await Teacher.exists({ _id: user_id })
+            const createdByModel = isTeacher ? 'Teacher' : 'User'
+
+            const forumQuestion = await ForumQuestion.create({
+                header: data.header.trim(),
+                description: data.description.trim(),
+                tags: processedTags,
+                modul: data.modul,
+                createdBy: user_id,
+                createdByModel
+            })
+
+            const enrichedQuestion = await enrichForumQuestions(forumQuestion.toObject())
+
+            res.status(201).json({
+                success: true,
+                message: "Forum question created successfully",
+                data: enrichedQuestion
+            })
+        } catch (error) {
+            console.error('Create forum question error:', error)
+            res.status(500).json({
                 success: false,
-                message: "User not authenticated"
+                message: "Server error while creating forum question",
+                error: error.message
             })
         }
-
-        // Validate required fields
-        if (!header || !description || !modul) {
-            return res.status(400).json({
-                success: false,
-                message: "Header, description, and module are required"
-            })
-        }
-
-        // Verify module exists
-        const moduleExists = await Module.findById(modul)
-        if (!moduleExists) {
-            return res.status(400).json({
-                success: false,
-                message: "Module not found"
-            })
-        }
-
-        const processedTags = tags ? tags.map(tag => tag.toLowerCase().trim()) : []
-
-        const isTeacher = await Teacher.exists({ _id: user_id })
-        const createdByModel = isTeacher ? 'Teacher' : 'User'
-
-        const forumQuestion = await ForumQuestion.create({
-            header: header.trim(),
-            description: description.trim(),
-            tags: processedTags,
-            modul,
-            createdBy: user_id,
-            createdByModel
-        })
-
-        const populatedQuestion = await ForumQuestion.findById(forumQuestion._id)
-            .populate({
-                path: 'createdBy',
-                select: 'username email avatar fullName name surname'
-            })
-            .populate('modul', 'name')
-            .lean()
-
-        res.status(201).json({
-            success: true,
-            message: "Forum question created successfully",
-            data: populatedQuestion
-        })
-    } catch (error) {
-        console.error('Create forum question error:', error)
-        res.status(500).json({
-            success: false,
-            message: "Server error while creating forum question",
-            error: error.message
-        })
     }
-}
+]
 
 // @desc Add comment to forum question
 // @route POST /api/forum/questions/:id/comments

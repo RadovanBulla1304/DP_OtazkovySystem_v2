@@ -1,3 +1,4 @@
+import { useCurrentSubjectId } from '@app/hooks/useCurrentSubjectId';
 import {
   useDeleteProjectMutation,
   useGetAllProjectsQuery,
@@ -38,14 +39,15 @@ const Projects = () => {
   // Check if user is a teacher
   const { data: teacher } = useGetTeacherMeQuery();
   const isTeacher = !!teacher;
+  const currentSubjectId = useCurrentSubjectId();
 
-  // Teachers see all projects, users see only their assigned projects
+  // Teachers see all projects filtered by subject, users see only their assigned projects
   const {
     data: allProjectsData,
     isLoading: isLoadingAll,
     isError: isErrorAll,
     refetch: refetchAll
-  } = useGetAllProjectsQuery(undefined, {
+  } = useGetAllProjectsQuery(currentSubjectId ? { subject: currentSubjectId } : undefined, {
     skip: !isTeacher
   });
 
@@ -159,14 +161,14 @@ const Projects = () => {
     setIsPeerEvaluationOpen(false);
   };
 
-  // Refetch projects when component mounts or when user changes
+  // Refetch projects when component mounts or when user/subject changes
   useEffect(() => {
     if (isTeacher) {
       refetchAll();
     } else {
       refetchUser();
     }
-  }, [isTeacher, refetchAll, refetchUser]);
+  }, [isTeacher, currentSubjectId, refetchAll, refetchUser]);
 
   if (isLoading || isDeleting) {
     return (
