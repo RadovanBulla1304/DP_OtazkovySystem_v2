@@ -79,7 +79,7 @@ const AllQuestions = () => {
   if (!questions.length) return <Typography>Žiadne otázky pre tento predmet/modul.</Typography>;
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box sx={{ pb: 3, pt: 3 }}>
       <Typography variant="h4" sx={{ mb: 3 }}>
         Všetky otázky
       </Typography>

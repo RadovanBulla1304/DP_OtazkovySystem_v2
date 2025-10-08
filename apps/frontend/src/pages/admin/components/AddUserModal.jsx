@@ -5,16 +5,15 @@ import { useCreateTeacherMutation, useCreateUserMutation } from '@app/redux/api'
 import { joiResolver } from '@hookform/resolvers/joi';
 import { Add } from '@mui/icons-material';
 import {
+  Box,
   Button,
-  Checkbox,
   Dialog,
   DialogActions,
   DialogContent,
-  DialogTitle,
-  FormControlLabel,
   TextField,
   ToggleButton,
-  ToggleButtonGroup
+  ToggleButtonGroup,
+  Typography
 } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
@@ -30,16 +29,51 @@ const AddUserModal = () => {
   const {
     register,
     handleSubmit,
-    formState: { errors },
-    reset
+    formState: { errors, isValid },
+    reset,
+    watch
   } = useForm({
-    mode: 'onBlur',
+    mode: 'onChange',
     resolver: joiResolver(userType === 'user' ? createUserSchema : createTeacherSchema),
     defaultValues: {
       isActive: true,
       isAdmin: false
     }
   });
+
+  // Watch required fields
+  const name = watch('name');
+  const surname = watch('surname');
+  const email = watch('email');
+  const password = watch('password');
+  const passwordConfirmation = watch('passwordConfirmation');
+  const groupNumber = watch('groupNumber');
+  const studentNumber = watch('studentNumber');
+
+  // Check if form is valid
+  const isFormValid = () => {
+    if (userType === 'user') {
+      return (
+        name?.trim() &&
+        surname?.trim() &&
+        email?.trim() &&
+        groupNumber?.trim() &&
+        studentNumber?.trim() &&
+        password?.trim() &&
+        passwordConfirmation?.trim() &&
+        isValid
+      );
+    } else {
+      return (
+        name?.trim() &&
+        surname?.trim() &&
+        email?.trim() &&
+        password?.trim() &&
+        passwordConfirmation?.trim() &&
+        isValid
+      );
+    }
+  };
 
   const handleUserTypeChange = (event, newType) => {
     if (newType) {
@@ -53,27 +87,36 @@ const AddUserModal = () => {
   };
 
   const handleClose = () => {
+    reset();
     setOpen(false);
   };
 
   const onSubmit = async (data) => {
     try {
+      // Ensure isActive is true and isAdmin is false
+      const submissionData = {
+        ...data,
+        isActive: true,
+        isAdmin: false
+      };
+
       let response;
       if (userType === 'user') {
-        response = await addUser(data);
+        response = await addUser(submissionData);
       } else {
-        response = await addTeacher(data);
+        response = await addTeacher(submissionData);
       }
       if (!response.error) {
         toast.success(
-          userType === 'user' ? 'User was successfully added.' : 'Teacher was successfully added.'
+          userType === 'user' ? 'Používateľ bol úspešne pridaný' : 'Učiteľ bol úspešne pridaný'
         );
+        reset();
         handleClose();
       } else {
-        toast.error(`Error: ${response.error.data.message}`);
+        toast.error(`Chyba: ${response.error.data.message}`);
       }
     } catch (error) {
-      toast.error('An unexpected error occurred.', error);
+      toast.error('Vyskytla sa neočakávaná chyba', error);
     }
   };
 
@@ -104,17 +147,28 @@ const AddUserModal = () => {
             maxWidth: '100%'
           }}
         >
-          <DialogTitle>Pridaj používateľa alebo učiteľa</DialogTitle>
-          <ToggleButtonGroup
-            color="primary"
-            value={userType}
-            exclusive
-            onChange={handleUserTypeChange}
-            sx={{ mb: 2, alignSelf: 'center' }}
+          <Box
+            sx={{
+              display: 'flex',
+              width: '100%',
+              flexDirection: 'row',
+              justifyContent: 'space-between'
+            }}
           >
-            <ToggleButton value="user">Používateľ</ToggleButton>
-            <ToggleButton value="teacher">Učiteľ</ToggleButton>
-          </ToggleButtonGroup>
+            <Typography variant="h6" component="h2">
+              Pridaj používateľa alebo učiteľa
+            </Typography>
+            <ToggleButtonGroup
+              color="primary"
+              value={userType}
+              exclusive
+              onChange={handleUserTypeChange}
+              sx={{ mb: 2, alignSelf: 'center' }}
+            >
+              <ToggleButton value="user">Používateľ</ToggleButton>
+              <ToggleButton value="teacher">Učiteľ</ToggleButton>
+            </ToggleButtonGroup>
+          </Box>
 
           <TextField
             label="Meno"
@@ -123,6 +177,7 @@ const AddUserModal = () => {
             error={!!errors.name}
             helperText={errors.name?.message}
             fullWidth
+            required
           />
 
           <TextField
@@ -132,6 +187,7 @@ const AddUserModal = () => {
             error={!!errors.surname}
             helperText={errors.surname?.message}
             fullWidth
+            required
           />
 
           <TextField
@@ -141,6 +197,7 @@ const AddUserModal = () => {
             error={!!errors.email}
             helperText={errors.email?.message}
             fullWidth
+            required
           />
 
           {userType === 'user' && (
@@ -152,6 +209,7 @@ const AddUserModal = () => {
                 error={!!errors.groupNumber}
                 helperText={errors.groupNumber?.message}
                 fullWidth
+                required
               />
               <TextField
                 label="Študentské číslo"
@@ -161,15 +219,8 @@ const AddUserModal = () => {
                 error={!!errors.studentNumber}
                 helperText={errors.studentNumber?.message}
                 fullWidth
+                required
               />
-              <FormControlLabel control={<Checkbox {...register('isActive')} />} label="Aktívny" />
-              <FormControlLabel control={<Checkbox {...register('isAdmin')} />} label="Admin" />
-            </>
-          )}
-          {userType === 'teacher' && (
-            <>
-              <FormControlLabel control={<Checkbox {...register('isActive')} />} label="Aktívny" />
-              <FormControlLabel control={<Checkbox {...register('isAdmin')} />} label="Admin" />
             </>
           )}
 
@@ -181,27 +232,35 @@ const AddUserModal = () => {
             error={!!errors.password}
             helperText={errors.password?.message}
             fullWidth
+            required
           />
 
           <TextField
             label="Potvrďte heslo"
             type="password"
             variant="outlined"
-            {...register(userType === 'user' ? 'passwordConfirmation' : 'passwordConfirmation')}
-            error={!!errors[userType === 'user' ? 'passwordConfirmation' : 'passwordConfirmation']}
-            helperText={
-              errors[userType === 'user' ? 'passwordConfirmation' : 'passwordConfirmation']?.message
-            }
+            {...register('passwordConfirmation')}
+            error={!!errors.passwordConfirmation}
+            helperText={errors.passwordConfirmation?.message}
             fullWidth
+            required
           />
 
           <ErrorNotifier />
 
           <DialogActions>
-            <Button onClick={handleClose} variant="outlined">
+            <Button
+              onClick={handleClose}
+              variant="outlined"
+              disabled={isUserLoading || isTeacherLoading}
+            >
               Zrušiť
             </Button>
-            <Button type="submit" variant="contained" disabled={isUserLoading || isTeacherLoading}>
+            <Button
+              type="submit"
+              variant="contained"
+              disabled={isUserLoading || isTeacherLoading || !isFormValid()}
+            >
               Pridaj
             </Button>
           </DialogActions>

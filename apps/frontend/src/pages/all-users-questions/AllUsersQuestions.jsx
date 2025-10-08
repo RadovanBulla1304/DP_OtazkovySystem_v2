@@ -209,14 +209,14 @@ const AllUsersQuestions = () => {
 
   if (modulesError) {
     return (
-      <Box p={3}>
+      <Box sx={{ pb: 3, pt: 3 }}>
         <Alert severity="error">Chyba pri načítaní modulov: {modulesError.message}</Alert>
       </Box>
     );
   }
 
   return (
-    <Box p={3}>
+    <Box sx={{ pb: 3, pt: 3 }}>
       <Typography variant="h4" component="h1" gutterBottom>
         Validované otázky všetkých používateľov
       </Typography>

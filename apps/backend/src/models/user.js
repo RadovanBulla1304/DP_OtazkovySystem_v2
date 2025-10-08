@@ -17,7 +17,6 @@ const UserSchema = new mongoose.Schema(
     groupNumber: {
       type: String,
       required: true,
-      unique: true,
       trim: true,
     },
     studentNumber: {
@@ -77,6 +76,7 @@ const UserSchema = new mongoose.Schema(
 // Indexes for performance
 UserSchema.index({ email: 1 })
 UserSchema.index({ studentNumber: 1 })
+UserSchema.index({ groupNumber: 1 })
 UserSchema.index({ assignedSubjects: 1 })
 UserSchema.index({ "weeklyQuestionCount.week": 1, "weeklyQuestionCount.moduleId": 1 })
 
