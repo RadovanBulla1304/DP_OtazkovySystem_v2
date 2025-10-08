@@ -23,10 +23,12 @@ const AddSubjectModal = ({ open, onClose, onSuccess }) => {
   const {
     control,
     handleSubmit,
-    formState: { errors, isSubmitted },
-    reset
+    formState: { errors, isSubmitted, isValid },
+    reset,
+    watch
   } = useForm({
     resolver: joiResolver(createSubjectSchema),
+    mode: 'onChange',
     defaultValues: {
       name: '',
       code: '',
@@ -34,6 +36,11 @@ const AddSubjectModal = ({ open, onClose, onSuccess }) => {
       is_active: true
     }
   });
+
+  // Watch form values to check if required fields are filled
+  const name = watch('name');
+  const code = watch('code');
+  const isFormValid = name?.trim() && code?.trim() && isValid;
 
   const handleFormSubmit = async (data) => {
     setSubmitAttempted(true);
@@ -68,8 +75,8 @@ const AddSubjectModal = ({ open, onClose, onSuccess }) => {
             Chyba pri vytváraní predmetu
           </Alert>
         )}
-        <Grid container spacing={2} columns={12}>
-          <Grid item xs={12} md={6}>
+        <Grid container spacing={3}>
+          <Grid item xs={12}>
             <Controller
               name="name"
               control={control}
@@ -79,6 +86,7 @@ const AddSubjectModal = ({ open, onClose, onSuccess }) => {
                   autoFocus
                   fullWidth
                   label="Názov predmetu"
+                  required
                   error={(submitAttempted || isSubmitted) && !!errors.name}
                   helperText={(submitAttempted || isSubmitted) && errors.name?.message}
                   disabled={isLoading}
@@ -86,7 +94,7 @@ const AddSubjectModal = ({ open, onClose, onSuccess }) => {
               )}
             />
           </Grid>
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12}>
             <Controller
               name="code"
               control={control}
@@ -95,6 +103,7 @@ const AddSubjectModal = ({ open, onClose, onSuccess }) => {
                   {...field}
                   fullWidth
                   label="Kód predmetu"
+                  required
                   error={(submitAttempted || isSubmitted) && !!errors.code}
                   helperText={(submitAttempted || isSubmitted) && errors.code?.message}
                   disabled={isLoading}
@@ -102,7 +111,7 @@ const AddSubjectModal = ({ open, onClose, onSuccess }) => {
               )}
             />
           </Grid>
-          <Grid item xs={12} md={12}>
+          <Grid item xs={12}>
             <Controller
               name="description"
               control={control}
@@ -112,26 +121,9 @@ const AddSubjectModal = ({ open, onClose, onSuccess }) => {
                   fullWidth
                   label="Popis"
                   multiline
-                  minRows={2}
+                  rows={3}
                   error={(submitAttempted || isSubmitted) && !!errors.description}
                   helperText={(submitAttempted || isSubmitted) && errors.description?.message}
-                  disabled={isLoading}
-                />
-              )}
-            />
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <Controller
-              name="is_active"
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  fullWidth
-                  label="Aktívny (true/false)"
-                  onChange={(e) => field.onChange(e.target.value === 'true')}
-                  error={(submitAttempted || isSubmitted) && !!errors.is_active}
-                  helperText={(submitAttempted || isSubmitted) && errors.is_active?.message}
                   disabled={isLoading}
                 />
               )}
@@ -143,7 +135,11 @@ const AddSubjectModal = ({ open, onClose, onSuccess }) => {
         <Button onClick={handleClose} disabled={isLoading} variant="outlined">
           Zrušiť
         </Button>
-        <Button onClick={handleSubmit(handleFormSubmit)} variant="contained" disabled={isLoading}>
+        <Button
+          onClick={handleSubmit(handleFormSubmit)}
+          variant="contained"
+          disabled={isLoading || !isFormValid}
+        >
           {isLoading ? <CircularProgress size={24} /> : 'Pridať'}
         </Button>
       </DialogActions>

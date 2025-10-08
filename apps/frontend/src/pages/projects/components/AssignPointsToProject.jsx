@@ -76,6 +76,12 @@ const AssignPointsToProject = ({ open, onClose, project, onSuccess }) => {
     onClose();
   };
 
+  // Check if form is valid for submit button
+  const isFormValid = () => {
+    const pointsValue = parseInt(points);
+    return pointsValue && pointsValue > 0;
+  };
+
   return (
     <Dialog open={open} onClose={handleCancel} maxWidth="sm" fullWidth>
       <DialogTitle>Priradiť body za projekt</DialogTitle>
@@ -113,7 +119,12 @@ const AssignPointsToProject = ({ open, onClose, project, onSuccess }) => {
         <Button onClick={handleCancel} disabled={isLoading} variant="outlined">
           Zrušiť
         </Button>
-        <Button onClick={handleSubmit} variant="contained" color="primary" disabled={isLoading}>
+        <Button
+          onClick={handleSubmit}
+          variant="contained"
+          color="primary"
+          disabled={isLoading || !isFormValid()}
+        >
           {isLoading ? <CircularProgress size={24} /> : 'Priradiť body'}
         </Button>
       </DialogActions>

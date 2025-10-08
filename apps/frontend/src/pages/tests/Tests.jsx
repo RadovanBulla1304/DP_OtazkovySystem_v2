@@ -1,4 +1,5 @@
 import { useCurrentSubjectId } from '@app/hooks/useCurrentSubjectId';
+import { createTestSchema, updateTestSchema } from '@app/pages/admin/schemas/test.schema';
 import {
   useCreateTestMutation,
   useDeleteTestMutation,
@@ -29,6 +30,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import CreateQuestionModal from './components/CreateQuestionModal';
 import StartTestConfirmationModal from './components/StartTestConfirmationModal';
 import TestCard from './components/TestCard';
@@ -153,17 +155,29 @@ const Tests = () => {
         passing_score: formData.passing_score
       };
 
+      // Validate with appropriate schema
+      const schema = editingTest ? updateTestSchema : createTestSchema;
+      const { error } = schema.validate(testData, { abortEarly: false });
+
+      if (error) {
+        const errorMessages = error.details.map((detail) => detail.message).join(', ');
+        toast.error(errorMessages);
+        return;
+      }
+
       if (editingTest) {
         await updateTest({ id: editingTest._id, ...testData }).unwrap();
+        toast.success('Test bol úspešne aktualizovaný');
       } else {
         await createTest(testData).unwrap();
+        toast.success('Test bol úspešne vytvorený');
       }
 
       handleCloseDialog();
       refetch();
     } catch (error) {
       console.error('Error saving test:', error);
-      alert('An error occurred while saving the test.');
+      toast.error(error?.data?.message || 'Vyskytla sa chyba pri ukladaní testu');
     }
   };
 

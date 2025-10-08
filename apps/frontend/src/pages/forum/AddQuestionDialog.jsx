@@ -161,9 +161,16 @@ const AddQuestionDialog = ({ open, onClose }) => {
     onClose();
   };
 
+  // Check if form is valid for submit button
+  const isFormValid = () => {
+    return (
+      formData.header.trim() !== '' && formData.description.trim() !== '' && formData.modul !== ''
+    );
+  };
+
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
-      <DialogTitle>Pridať novú otázku do fóra</DialogTitle>
+      <DialogTitle>Pridať novú otázku</DialogTitle>
 
       <DialogContent>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 1 }}>
@@ -281,7 +288,7 @@ const AddQuestionDialog = ({ open, onClose }) => {
                 />
                 <Button
                   onClick={handleAddNewTag}
-                  variant="outlined"
+                  variant="contained"
                   size="small"
                   disabled={!newTagInput.trim()}
                 >
@@ -300,10 +307,10 @@ const AddQuestionDialog = ({ open, onClose }) => {
         <Button
           onClick={handleSubmit}
           variant="contained"
-          disabled={isLoading}
+          disabled={isLoading || !isFormValid()}
           startIcon={isLoading ? <CircularProgress size={20} /> : null}
         >
-          {isLoading ? 'Pridávam...' : 'Pridať otázku'}
+          {isLoading ? 'Pridávam...' : 'Pridať'}
         </Button>
       </DialogActions>
     </Dialog>

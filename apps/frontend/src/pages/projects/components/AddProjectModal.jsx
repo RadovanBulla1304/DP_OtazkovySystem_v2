@@ -67,6 +67,21 @@ const AddProjectModal = ({ open, onClose, onSuccess }) => {
     return true;
   };
 
+  // Check if form is valid for submit button
+  const isFormValid = () => {
+    if (!currentSubjectId) return false;
+    if (!formData.name.trim()) return false;
+    if (!formData.max_members || formData.max_members < 1) return false;
+
+    // Validate with schema without setting errors
+    const validationData = {
+      ...formData,
+      subject: currentSubjectId
+    };
+    const { error } = createProjectSchema.validate(validationData, { abortEarly: false });
+    return !error;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -114,7 +129,7 @@ const AddProjectModal = ({ open, onClose, onSuccess }) => {
   return (
     <>
       <Dialog open={open} onClose={handleCancel} maxWidth="sm" fullWidth>
-        <DialogTitle>Vytvoriť nový projekt</DialogTitle>
+        <DialogTitle>Pridať nový projekt</DialogTitle>
         <DialogContent>
           <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
             <Stack spacing={3}>
@@ -159,8 +174,13 @@ const AddProjectModal = ({ open, onClose, onSuccess }) => {
           <Button onClick={handleCancel} disabled={isLoading} variant="outlined">
             Zrušiť
           </Button>
-          <Button onClick={handleSubmit} variant="contained" color="primary" disabled={isLoading}>
-            {isLoading ? <CircularProgress size={24} /> : 'Vytvoriť projekt'}
+          <Button
+            onClick={handleSubmit}
+            variant="contained"
+            color="primary"
+            disabled={isLoading || !isFormValid()}
+          >
+            {isLoading ? <CircularProgress size={24} /> : 'Pridať'}
           </Button>
         </DialogActions>
       </Dialog>

@@ -3,73 +3,57 @@ const TestAttempt = require('../models/testAttempt');
 const Module = require('../models/modul');
 const Question = require('../models/question');
 const TeacherValidatedQuestionForTest = require('../models/teacherValidatedQuestionForTest');
+const { validate, validated } = require('../util/validation');
+const { createTestSchema, updateTestSchema } = require('../schemas/test.schema');
 
 // Create a new test
-createTest = async (req, res) => {
+createTest = [validate(createTestSchema), async (req, res) => {
     try {
-        const {
-            title,
-            description,
-            total_questions,
-            date_start,
-            date_end,
-            time_limit,
-            subject,
-            selected_modules,
-            max_attempts,
-            passing_score
-        } = req.body;
-
-        // Validate required fields
-        if (!title || !total_questions || !date_start || !date_end || !subject || !selected_modules?.length) {
-            return res.status(400).json({
-                message: 'Missing required fields: title, total_questions, date_start, date_end, subject, selected_modules'
-            });
-        }
+        const data = validated(req);
 
         // Validate dates
-        const startDate = new Date(date_start);
-        const endDate = new Date(date_end);
+        const startDate = new Date(data.date_start);
+        const endDate = new Date(data.date_end);
         if (startDate >= endDate) {
             return res.status(400).json({
-                message: 'End date must be after start date'
+                message: 'Dátum ukončenia musí byť po dátume začiatku'
             });
         }
 
         // Validate that selected modules exist and belong to the subject
         const modules = await Module.find({
-            _id: { $in: selected_modules },
-            subject: subject
+            _id: { $in: data.selected_modules },
+            subject: data.subject
         });
 
-        if (modules.length !== selected_modules.length) {
+        if (modules.length !== data.selected_modules.length) {
             return res.status(400).json({
-                message: 'Some selected modules do not exist or do not belong to the specified subject'
+                message: 'Niektoré vybrané moduly neexistujú alebo nepatria k zadanému predmetu'
             });
         }
 
         // Check if there are enough questions in selected modules
         // Skip validation if skipValidationCheck flag is present
-        if (!req.body.skipValidationCheck) {
+        if (!data.skipValidationCheck) {
             // First try to match with 'validated: true' (frontend field name)
             let questionCount = await Question.countDocuments({
-                modul: { $in: selected_modules },
+                modul: { $in: data.selected_modules },
                 validated: true
             });
 
             // If no validated questions, try with 'valid: true' (legacy field name)
             if (questionCount === 0) {
                 questionCount = await Question.countDocuments({
-                    modul: { $in: selected_modules },
+                    modul: { $in: data.selected_modules },
                     valid: true
                 });
             }
 
             console.log(`Found ${questionCount} valid/validated questions in selected modules`);
 
-            if (questionCount < total_questions) {
+            if (questionCount < data.total_questions) {
                 return res.status(400).json({
-                    message: `Not enough valid questions in selected modules. Available: ${questionCount}, Required: ${total_questions}`
+                    message: `Nedostatok validných otázok vo vybraných moduloch. Dostupné: ${questionCount}, Požadované: ${data.total_questions}`
                 });
             }
         } else {
@@ -77,34 +61,90 @@ createTest = async (req, res) => {
         }
 
         const test = new Test({
-            title,
-            description,
-            total_questions,
+            title: data.title,
+            description: data.description,
+            total_questions: data.total_questions,
             date_start: startDate,
             date_end: endDate,
-            time_limit: time_limit || 30,
-            subject,
-            selected_modules,
+            time_limit: data.time_limit || 30,
+            subject: data.subject,
+            selected_modules: data.selected_modules,
             createdBy: req.user.user_id,
-            max_attempts: max_attempts || 1,
-            passing_score: passing_score || 60
+            max_attempts: data.max_attempts || 1,
+            passing_score: data.passing_score || 60
         });
 
         const savedTest = await test.save();
         await savedTest.populate(['subject', 'selected_modules', 'createdBy']);
 
         res.status(201).json({
-            message: 'Test created successfully',
+            message: 'Test bol úspešne vytvorený',
             test: savedTest
         });
     } catch (error) {
         console.error('Error creating test:', error);
         res.status(500).json({
-            message: 'Error creating test',
+            message: 'Chyba pri vytváraní testu',
             error: error.message
         });
     }
-};
+}];
+
+// Update test
+const updateTest = [validate(updateTestSchema), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const data = validated(req);
+
+        // Validate dates if provided
+        if (data.date_start && data.date_end) {
+            const startDate = new Date(data.date_start);
+            const endDate = new Date(data.date_end);
+            if (startDate >= endDate) {
+                return res.status(400).json({
+                    message: 'Dátum ukončenia musí byť po dátume začiatku'
+                });
+            }
+        }
+
+        // Validate selected modules if provided
+        if (data.selected_modules && data.subject) {
+            const modules = await Module.find({
+                _id: { $in: data.selected_modules },
+                subject: data.subject
+            });
+
+            if (modules.length !== data.selected_modules.length) {
+                return res.status(400).json({
+                    message: 'Niektoré vybrané moduly neexistujú alebo nepatria k zadanému predmetu'
+                });
+            }
+        }
+
+        const test = await Test.findByIdAndUpdate(
+            id,
+            data,
+            { new: true, runValidators: true }
+        ).populate(['subject', 'selected_modules', 'createdBy']);
+
+        if (!test) {
+            return res.status(404).json({
+                message: 'Test nebol nájdený'
+            });
+        }
+
+        res.json({
+            message: 'Test bol úspešne aktualizovaný',
+            test
+        });
+    } catch (error) {
+        console.error('Error updating test:', error);
+        res.status(500).json({
+            message: 'Chyba pri aktualizácii testu',
+            error: error.message
+        });
+    }
+}];
 
 // Get all tests by subject
 const getTestsBySubject = async (req, res) => {
@@ -200,64 +240,7 @@ const getTestById = async (req, res) => {
     }
 };
 
-// Update test
-const updateTest = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const updateData = req.body;
 
-        // Don't allow updating createdBy
-        delete updateData.createdBy;
-
-        // Validate dates if provided
-        if (updateData.date_start && updateData.date_end) {
-            const startDate = new Date(updateData.date_start);
-            const endDate = new Date(updateData.date_end);
-            if (startDate >= endDate) {
-                return res.status(400).json({
-                    message: 'End date must be after start date'
-                });
-            }
-        }
-
-        // Validate selected modules if provided
-        if (updateData.selected_modules) {
-            const modules = await Module.find({
-                _id: { $in: updateData.selected_modules },
-                subject: updateData.subject
-            });
-
-            if (modules.length !== updateData.selected_modules.length) {
-                return res.status(400).json({
-                    message: 'Some selected modules do not exist or do not belong to the specified subject'
-                });
-            }
-        }
-
-        const test = await Test.findByIdAndUpdate(
-            id,
-            updateData,
-            { new: true, runValidators: true }
-        ).populate(['subject', 'selected_modules', 'createdBy']);
-
-        if (!test) {
-            return res.status(404).json({
-                message: 'Test not found'
-            });
-        }
-
-        res.json({
-            message: 'Test updated successfully',
-            test
-        });
-    } catch (error) {
-        console.error('Error updating test:', error);
-        res.status(500).json({
-            message: 'Error updating test',
-            error: error.message
-        });
-    }
-};
 
 // Delete test
 const deleteTest = async (req, res) => {
