@@ -1,4 +1,6 @@
 -------------------------------------------
 otazky
+
+aky je presny format csv suboru ? 
 -> nechat vsekty otazky kde user vidi otazky daneho predmetu modulu od vsetkych uzivatelov ? 
 -------------------------------------------

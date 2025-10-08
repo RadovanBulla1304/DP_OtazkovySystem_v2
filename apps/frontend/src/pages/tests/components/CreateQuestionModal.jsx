@@ -81,7 +81,8 @@ const CreateQuestionModal = ({ open, onClose, modules, onQuestionCreated }) => {
         modul: formData.modul,
         createdBy: teacherData?._id, // Add the teacher ID as creator
         validated_by_teacher: true,
-        validated_by_teacher_comment: 'Created directly by teacher',
+        validated_by_teacher_at: new Date().toISOString(),
+        validated_by_teacher_comment: 'Vytvorené priamo učiteľom',
         valid: true, // Add valid flag for backend compatibility
         validated: true // Add validated flag for frontend compatibility
       };
@@ -110,8 +111,8 @@ const CreateQuestionModal = ({ open, onClose, modules, onQuestionCreated }) => {
           },
           createdBy: teacherData?._id, // Add the teacher ID as creator
           validated_by_teacher: true,
-          validated_by_teacher_at: new Date(),
-          validated_by_teacher_comment: 'Created directly by teacher',
+          validated_by_teacher_at: new Date().toISOString(),
+          validated_by_teacher_comment: 'Vytvorené priamo učiteľom',
           validated: true, // Ensure it's marked as validated for consistency
           valid: true, // Add valid flag for backend compatibility
           user_agreement: { agreed: true } // Add user agreement for consistency with API expectations

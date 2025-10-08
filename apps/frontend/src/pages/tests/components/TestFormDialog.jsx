@@ -7,6 +7,8 @@ import {
   Alert,
   Box,
   Button,
+  Card,
+  CardContent,
   Chip,
   Dialog,
   DialogActions,
@@ -232,24 +234,92 @@ const TestFormDialog = ({
                 <Typography variant="subtitle2" gutterBottom>
                   Validované otázky z vybraných modulov ({validatedQuestions.length}):
                 </Typography>
-                <Paper sx={{ maxHeight: 300, overflow: 'auto', p: 2 }}>
-                  <List dense>
-                    {validatedQuestions.slice(0, 10).map((q) => (
-                      <ListItem key={q._id}>
-                        <ListItemText
-                          primary={q.text || q.question_text}
-                          secondary={`Modul: ${q.modul?.name || q.modul?.title || 'N/A'}`}
-                        />
-                      </ListItem>
+                <Paper sx={{ maxHeight: 500, overflow: 'auto', p: 2 }}>
+                  <Grid container spacing={2}>
+                    {validatedQuestions.map((q) => (
+                      <Grid item xs={12} sm={6} md={4} key={q._id}>
+                        <Card
+                          sx={{
+                            height: '100%',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            border: '1px solid',
+                            borderColor: 'divider'
+                          }}
+                        >
+                          <CardContent sx={{ flexGrow: 1, p: 2 }}>
+                            <Typography
+                              variant="subtitle2"
+                              gutterBottom
+                              sx={{
+                                fontWeight: 'bold',
+                                mb: 1.5,
+                                fontSize: '0.875rem',
+                                lineHeight: 1.3
+                              }}
+                            >
+                              {q.text || q.question_text}
+                            </Typography>
+
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                              sx={{ mb: 1, display: 'block' }}
+                            >
+                              Možnosti odpovede:
+                            </Typography>
+
+                            <List dense sx={{ py: 0 }}>
+                              {q.options &&
+                                Object.entries(q.options).map(([key, value]) => (
+                                  <ListItem key={key} sx={{ py: 0.25, px: 0 }}>
+                                    <ListItemText
+                                      primary={
+                                        <Box display="flex" alignItems="center" gap={0.5}>
+                                          <Chip
+                                            label={key.toUpperCase()}
+                                            size="small"
+                                            color={q.correct === key ? 'success' : 'default'}
+                                            sx={{
+                                              minWidth: 24,
+                                              height: 18,
+                                              fontSize: '0.65rem',
+                                              '& .MuiChip-label': { px: 0.5 }
+                                            }}
+                                          />
+                                          <Typography
+                                            variant="caption"
+                                            sx={{
+                                              fontWeight: q.correct === key ? 'bold' : 'normal',
+                                              fontSize: '0.75rem'
+                                            }}
+                                          >
+                                            {value}
+                                          </Typography>
+                                        </Box>
+                                      }
+                                    />
+                                  </ListItem>
+                                ))}
+                            </List>
+
+                            <Box
+                              sx={{
+                                mt: 1,
+                                pt: 1,
+                                borderTop: '1px solid',
+                                borderColor: 'divider'
+                              }}
+                            >
+                              <Typography variant="caption" color="text.secondary" display="block">
+                                <strong>Modul:</strong> {q.modul?.name || q.modul?.title || 'N/A'}
+                              </Typography>
+                            </Box>
+                          </CardContent>
+                        </Card>
+                      </Grid>
                     ))}
-                    {validatedQuestions.length > 10 && (
-                      <ListItem>
-                        <ListItemText
-                          secondary={`... a ${validatedQuestions.length - 10} ďalších otázok`}
-                        />
-                      </ListItem>
-                    )}
-                  </List>
+                  </Grid>
                 </Paper>
                 <Typography
                   variant="caption"

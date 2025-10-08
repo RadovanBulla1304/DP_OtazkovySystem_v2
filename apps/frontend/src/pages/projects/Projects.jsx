@@ -362,7 +362,11 @@ const Projects = () => {
             </Typography>
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setProjectToDelete(null)} disabled={isDeleting}>
+            <Button
+              onClick={() => setProjectToDelete(null)}
+              disabled={isDeleting}
+              variant="outlined"
+            >
               Zrušiť
             </Button>
             <Button
@@ -374,7 +378,7 @@ const Projects = () => {
               variant="contained"
               disabled={isDeleting}
             >
-              {isDeleting ? 'Deleting...' : 'Delete'}
+              {isDeleting ? 'Maže sa...' : 'Vymazať'}
             </Button>
           </DialogActions>
         </Dialog>

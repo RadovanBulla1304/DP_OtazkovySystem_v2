@@ -41,8 +41,11 @@ const PeerEvaluationModal = ({ open, onClose, subjectId }) => {
     if (existingRatings.length > 0) {
       const ratingsMap = {};
       existingRatings.forEach((rating) => {
-        const key = `${rating.user._id}-${rating.ratedProject._id}`;
-        ratingsMap[key] = rating.rating;
+        // Check if rating.user and rating.ratedProject exist before accessing _id
+        if (rating.user && rating.ratedProject) {
+          const key = `${rating.user._id}-${rating.ratedProject._id}`;
+          ratingsMap[key] = rating.rating;
+        }
       });
       setRatings(ratingsMap);
     }

@@ -237,7 +237,7 @@ export const api = createApi({
         method: 'POST',
         body: data
       }),
-      invalidatesTags: ['Questions']
+      invalidatesTags: ['Questions', 'Points']
     }),
     getQuestionsByModul: builder.query({
       query: (modulId) => ({
@@ -311,12 +311,12 @@ export const api = createApi({
       ]
     }),
     getValidatedQuestionsWithAgreementBySubject: builder.query({
-      query: (subjectId) => ({
-        url: `/question/subject/${subjectId}/validated-with-agreement`,
+      query: ({ subjectId, filter = 'all' }) => ({
+        url: `/question/subject/${subjectId}/validated-with-agreement?filter=${filter}`,
         method: 'GET'
       }),
       providesTags: (result, error, arg) => [
-        { type: 'Questions', id: `VALIDATED-SUBJECT-${arg}` },
+        { type: 'Questions', id: `VALIDATED-SUBJECT-${arg.subjectId}-${arg.filter}` },
         'Questions'
       ]
     }),

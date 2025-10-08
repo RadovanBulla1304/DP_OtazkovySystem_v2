@@ -231,7 +231,7 @@ const TestResults = () => {
                   <TableCell>
                     {questionItem.selected_answer
                       ? `${questionItem.selected_answer.toUpperCase()}. ${getAnswerText(question, questionItem.selected_answer)}`
-                      : 'No answer'}
+                      : 'Žiadna odpoveď'}
                   </TableCell>
                   <TableCell>
                     {question.correct

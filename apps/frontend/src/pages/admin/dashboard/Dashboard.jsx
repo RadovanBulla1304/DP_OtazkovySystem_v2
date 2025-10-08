@@ -57,25 +57,17 @@ const Dashboard = () => {
     if (!selectedModulId) return mapping;
     mapping[selectedModulId] = {};
 
-    // local helper captured here so lint doesn't complain about changing identity
-    const getWeekNumberFromDate = (createdAt) => {
-      try {
-        if (!selectedModul || !selectedModul.date_start || !createdAt) return 1;
-        const start = new Date(selectedModul.date_start);
-        const created = new Date(createdAt);
-        const diffDays = Math.floor((created - start) / (1000 * 60 * 60 * 24));
-        const wn = Math.floor(diffDays / 7) + 1;
-        return wn < 1 ? 1 : wn;
-      } catch {
-        return 1;
-      }
-    };
-
-    // server-side questions
+    // server-side questions - ALL user questions go to Week 1 (question creation week)
     modulQuestions.forEach((q) => {
       const creator = q.createdBy ?? q.created_by;
-      if (!creator || String(creator) !== String(userId)) return;
-      const wn = getWeekNumberFromDate(q.createdAt);
+      const creatorId = typeof creator === 'object' && creator?._id ? creator._id : creator;
+      const userIdStr = String(userId);
+      const creatorIdStr = String(creatorId);
+
+      if (!creator || creatorIdStr !== userIdStr) return;
+
+      // Always assign to Week 1 - Week 1 is for question creation
+      const wn = 1;
       if (!mapping[selectedModulId][wn]) mapping[selectedModulId][wn] = [];
       mapping[selectedModulId][wn].push(q);
     });
@@ -94,7 +86,7 @@ const Dashboard = () => {
     });
 
     return mapping;
-  }, [modulQuestions, localCreated, selectedModulId, userId, selectedModul]);
+  }, [modulQuestions, localCreated, selectedModulId, userId]);
 
   // We maintain localCreated for optimistic UI; server questions are mapped via questionsByWeekMerged.
   // No effect needed to copy modulQuestions into component state.

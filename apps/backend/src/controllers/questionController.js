@@ -4,6 +4,8 @@ const { createQuestionSchema, editQuestionSchema } = require("../schemas/questio
 
 const Question = require("../models/question");
 const Module = require("../models/modul");
+const User = require("../models/user");
+const Teacher = require("../models/teacher");
 /**
  * GET all questions
  */
@@ -220,17 +222,47 @@ exports.getValidatedQuestionsWithAgreementBySubject = async (req, res) => {
         const modules = await Module.find({ subject: req.params.subjectId }).select('_id');
         const moduleIds = modules.map(m => m._id);
 
-        // Find questions that are validated and have user agreement
-        const questions = await Question.find({
+        // Get filter from query params (all, student, teacher)
+        const filter = req.query.filter || 'all';
+
+        // Build query based on filter
+        let query = {
             modul: { $in: moduleIds },
-            validated: true,
-            'user_agreement.agreed': true
-        })
+            validated: true
+        };
+
+        if (filter === 'student') {
+            // Only student questions with user agreement
+            const students = await User.find({}).select('_id');
+            const studentIds = students.map(s => s._id);
+            query.createdBy = { $in: studentIds };
+            query['user_agreement.agreed'] = true;
+            console.log('Student filter - Found students:', studentIds.length);
+        } else if (filter === 'teacher') {
+            // Only teacher-created questions
+            const teachers = await Teacher.find({}).select('_id');
+            const teacherIds = teachers.map(t => t._id);
+            query.createdBy = { $in: teacherIds };
+            query.validated_by_teacher = true;
+            console.log('Teacher filter - Found teachers:', teacherIds.length);
+        } else {
+            // All: both student questions with agreement OR teacher questions
+            query.$or = [
+                { 'user_agreement.agreed': true },
+                { 'validated_by_teacher': true }
+            ];
+        }
+
+        console.log('Final query:', JSON.stringify(query, null, 2));
+
+        // Find questions that match the filter
+        const questions = await Question.find(query)
             .populate('modul', 'name')
             .populate('createdBy', 'name surname email')
             .populate('validated_by', 'firstName lastName email')
             .sort({ createdAt: -1 });
 
+        console.log('Found questions:', questions.length);
         res.status(200).json(questions);
     } catch (err) {
         throwError(`Error fetching validated questions with agreement: ${err.message}`, 500);
@@ -244,13 +276,6 @@ exports.teacherValidateQuestion = async (req, res) => {
     try {
         const { id } = req.params;
         const { validated_by_teacher, validated_by_teacher_comment } = req.body;
-
-        console.log('Teacher validate question called:', {
-            id,
-            validated_by_teacher,
-            validated_by_teacher_comment,
-            user: req.user
-        }); // Debug log
 
         // Validate input
         if (typeof validated_by_teacher !== 'boolean') {

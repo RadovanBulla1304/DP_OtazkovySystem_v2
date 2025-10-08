@@ -17,6 +17,9 @@ const createQuestionSchema = Joi.object({
     validated_by: objectId,
     validated_at: Joi.date(),
     validation_comment: Joi.string(),
+    validated_by_teacher: Joi.boolean(),
+    validated_by_teacher_at: Joi.date(),
+    validated_by_teacher_comment: Joi.string(),
     user_agreement: Joi.object({
         agreed: Joi.boolean(),
         comment: Joi.string(),
@@ -27,6 +30,7 @@ const createQuestionSchema = Joi.object({
         total_ratings: Joi.number(),
     }),
     is_active: Joi.boolean(),
+    valid: Joi.boolean(),
 });
 
 const editQuestionSchema = Joi.object({
@@ -44,6 +48,9 @@ const editQuestionSchema = Joi.object({
     validated_by: objectId,
     validated_at: Joi.date(),
     validation_comment: Joi.string(),
+    validated_by_teacher: Joi.boolean(),
+    validated_by_teacher_at: Joi.date(),
+    validated_by_teacher_comment: Joi.string(),
     user_agreement: Joi.object({
         agreed: Joi.boolean(),
         comment: Joi.string(),
@@ -54,6 +61,7 @@ const editQuestionSchema = Joi.object({
         total_ratings: Joi.number(),
     }),
     is_active: Joi.boolean(),
+    valid: Joi.boolean(),
 });
 
 module.exports = {

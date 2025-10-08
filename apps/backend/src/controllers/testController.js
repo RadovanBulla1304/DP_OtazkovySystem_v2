@@ -2,7 +2,6 @@ const Test = require('../models/test');
 const TestAttempt = require('../models/testAttempt');
 const Module = require('../models/modul');
 const Question = require('../models/question');
-const TeacherValidatedQuestionForTest = require('../models/teacherValidatedQuestionForTest');
 const { validate, validated } = require('../util/validation');
 const { createTestSchema, updateTestSchema } = require('../schemas/test.schema');
 
@@ -492,36 +491,21 @@ const startTestAttempt = async (req, res) => {
             });
         }
 
-        // Get all validated questions from test's pool
-        const validatedQuestionsInPool = await TeacherValidatedQuestionForTest.find({
-            test: testId,
-            modul: { $in: test.selected_modules }
-        }).populate('question');
-
-        // Also get all other teacher-validated questions from selected modules (not just those explicitly added to test)
+        // Get all teacher-validated questions from selected modules
         const allValidatedQuestions = await Question.find({
             modul: { $in: test.selected_modules },
-            validated: true
+            validated_by_teacher: true
         });
 
-        // Combine: prioritize questions explicitly added to test, then fill with other validated questions
-        const poolQuestionIds = new Set(validatedQuestionsInPool.map(vq => vq.question._id.toString()));
-        const additionalQuestions = allValidatedQuestions.filter(q => !poolQuestionIds.has(q._id.toString()));
-
-        const allAvailableQuestions = [
-            ...validatedQuestionsInPool.map(vq => vq.question),
-            ...additionalQuestions
-        ];
-
-        if (allAvailableQuestions.length < test.total_questions) {
+        if (allValidatedQuestions.length < test.total_questions) {
             return res.status(400).json({
                 success: false,
-                message: `Not enough questions available. Required: ${test.total_questions}, Available: ${allAvailableQuestions.length}`
+                message: `Not enough questions available. Required: ${test.total_questions}, Available: ${allValidatedQuestions.length}`
             });
         }
 
         // Randomly select questions
-        const shuffled = allAvailableQuestions.sort(() => 0.5 - Math.random());
+        const shuffled = allValidatedQuestions.sort(() => 0.5 - Math.random());
         const selectedQuestions = shuffled.slice(0, test.total_questions);
 
         // Create test attempt with selected questions

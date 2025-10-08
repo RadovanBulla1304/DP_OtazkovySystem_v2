@@ -1,8 +1,19 @@
-import ConfirmationDialog from '@app/components/ConfirmationDialog';
 import CenteredCheckIcon from '@app/components/table/CenteredCheckIcon';
 import { useGetUsersListQuery, useRemoveUserMutation } from '@app/redux/api';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Box, Button, Grid2, IconButton, Paper, Tooltip, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Grid2,
+  IconButton,
+  Paper,
+  Tooltip,
+  Typography
+} from '@mui/material';
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
@@ -21,13 +32,25 @@ const UsersList = () => {
   const [assignModalOpen, setAssignModalOpen] = useState(false);
   // State for points modal
   const [pointsModalOpen, setPointsModalOpen] = useState(false);
+  // State for delete confirmation
+  const [userToDelete, setUserToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  const onRemoveHandler = async (id) => {
-    const response = await removeUser(id);
-    if (!response.error) {
-      toast.success('Užívateľ bol úspešne odstránený');
-    } else {
-      toast.error('Chyba pri odstraňovaní užívateľa: ' + response.error?.data?.message);
+  const onRemoveHandler = async (user) => {
+    try {
+      setIsDeleting(true);
+      const response = await removeUser(user._id);
+      if (!response.error) {
+        toast.success('Používateľ bol úspešne odstránený');
+      } else {
+        toast.error('Chyba pri odstraňovaní používateľa: ' + response.error?.data?.message);
+      }
+    } catch (error) {
+      console.error('Error during deletion:', error);
+      toast.error('Chyba pri odstraňovaní používateľa');
+    } finally {
+      setIsDeleting(false);
+      setUserToDelete(null);
     }
   };
 
@@ -51,18 +74,19 @@ const UsersList = () => {
       type: 'actions',
       headerName: 'Akcie',
       getActions: (params) => [
-        <EditUserModal key={'edit'} userData={params.row} isTeacher={false} />, // user
-        <ConfirmationDialog
-          key={'delete'}
-          title={`Naozaj chcete odstranit pouzivatela ${params.row.name} ${params.row.surname} ?`}
-          onAccept={() => onRemoveHandler(params.row._id)}
-        >
-          <Tooltip title="Odstran pouzivatela">
-            <IconButton color="error">
-              <DeleteIcon />
-            </IconButton>
-          </Tooltip>
-        </ConfirmationDialog>
+        <EditUserModal key={'edit'} userData={params.row} isTeacher={false} />,
+        <Tooltip key={'delete'} title="Odstrániť používateľa">
+          <IconButton
+            color="error"
+            onClick={(e) => {
+              e.stopPropagation();
+              setUserToDelete(params.row);
+            }}
+            disabled={isDeleting}
+          >
+            <DeleteIcon />
+          </IconButton>
+        </Tooltip>
       ]
     }
   ];
@@ -162,6 +186,40 @@ const UsersList = () => {
         onClose={handleClosePointsModal}
         userIds={selectedUserIds}
       />
+
+      {/* Confirmation Dialog for Delete User */}
+      {userToDelete && (
+        <Dialog
+          open={!!userToDelete}
+          onClose={() => setUserToDelete(null)}
+          aria-labelledby="delete-user-dialog-title"
+          aria-describedby="delete-user-dialog-description"
+        >
+          <DialogTitle id="delete-user-dialog-title">Vymazať používateľa?</DialogTitle>
+          <DialogContent>
+            <Typography id="delete-user-dialog-description">
+              Naozaj chcete odstrániť používateľa{' '}
+              <strong>
+                {userToDelete.name} {userToDelete.surname}
+              </strong>
+              ? Táto akcia je nevratná.
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setUserToDelete(null)} variant="outlined" disabled={isDeleting}>
+              Zrušiť
+            </Button>
+            <Button
+              onClick={() => onRemoveHandler(userToDelete)}
+              color="error"
+              variant="contained"
+              disabled={isDeleting}
+            >
+              {isDeleting ? 'Mazanie...' : 'Vymazať'}
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
     </Box>
   );
 };

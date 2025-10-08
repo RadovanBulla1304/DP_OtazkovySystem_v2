@@ -1,9 +1,7 @@
-Pozriet ako sa poriadne ukladaju validovane otazky ucitelom
 
 -------------------------------------------
 todo
 
-opravit ako sa ukladaju validovane otazky(pri vytvoreni novej otazky pri vytvarani testu)
 poslat email pri registracii ! 
 otazky na receziu davat najprv len otazky ktore este neboli recenzovane. ak uz tieto otazky dosli vybrat random 
     -> ak ma otazka viac ako 2 recenzie vybrat nahodne jednu z nich. 
@@ -23,3 +21,5 @@ opravene
 //pouzivatelia si vedia hodnotit projekty navzajomnu znamku. spravi sa avg . flag pri useroch ktory neohodnotili projekty
 //vsade skontrolovat a dorobit pekne joi schemy
 //import pouzivatelov z csv -> iba pre predmet nie vytvorenie novych uzivatelov
+//opravit ako sa ukladaju validovane otazky(pri vytvoreni novej otazky pri vytvarani testu)
+//Pozriet ako sa poriadne ukladaju validovane otazky ucitelom

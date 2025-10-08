@@ -3,7 +3,7 @@ bugy
 
 week1 - 0/2 bodov nerefreshuje
 -------------------------------------------
-
+upravit priradenych userov k projektom - ked odstranim usera neodstrani sa z projektov
 
 
 

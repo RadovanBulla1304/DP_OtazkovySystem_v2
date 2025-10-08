@@ -10,6 +10,7 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
+  Grid,
   TextField,
   ToggleButton,
   ToggleButtonGroup,
@@ -58,7 +59,7 @@ const AddUserModal = () => {
         surname?.trim() &&
         email?.trim() &&
         groupNumber?.trim() &&
-        studentNumber?.trim() &&
+        studentNumber &&
         password?.trim() &&
         passwordConfirmation?.trim() &&
         isValid
@@ -78,16 +79,26 @@ const AddUserModal = () => {
   const handleUserTypeChange = (event, newType) => {
     if (newType) {
       setUserType(newType);
-      reset();
+      reset({
+        isActive: true,
+        isAdmin: false
+      });
     }
   };
 
   const handleClickOpen = () => {
+    reset({
+      isActive: true,
+      isAdmin: false
+    });
     setOpen(true);
   };
 
   const handleClose = () => {
-    reset();
+    reset({
+      isActive: true,
+      isAdmin: false
+    });
     setOpen(false);
   };
 
@@ -170,25 +181,30 @@ const AddUserModal = () => {
             </ToggleButtonGroup>
           </Box>
 
-          <TextField
-            label="Meno"
-            variant="outlined"
-            {...register('name')}
-            error={!!errors.name}
-            helperText={errors.name?.message}
-            fullWidth
-            required
-          />
-
-          <TextField
-            label="Priezvisko"
-            variant="outlined"
-            {...register('surname')}
-            error={!!errors.surname}
-            helperText={errors.surname?.message}
-            fullWidth
-            required
-          />
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Meno"
+                variant="outlined"
+                {...register('name')}
+                error={!!errors.name}
+                helperText={errors.name?.message}
+                fullWidth
+                required
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Priezvisko"
+                variant="outlined"
+                {...register('surname')}
+                error={!!errors.surname}
+                helperText={errors.surname?.message}
+                fullWidth
+                required
+              />
+            </Grid>
+          </Grid>
 
           <TextField
             label="Email"
@@ -201,27 +217,31 @@ const AddUserModal = () => {
           />
 
           {userType === 'user' && (
-            <>
-              <TextField
-                label="Skupina"
-                variant="outlined"
-                {...register('groupNumber')}
-                error={!!errors.groupNumber}
-                helperText={errors.groupNumber?.message}
-                fullWidth
-                required
-              />
-              <TextField
-                label="Študentské číslo"
-                variant="outlined"
-                type="number"
-                {...register('studentNumber')}
-                error={!!errors.studentNumber}
-                helperText={errors.studentNumber?.message}
-                fullWidth
-                required
-              />
-            </>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Skupina"
+                  variant="outlined"
+                  {...register('groupNumber')}
+                  error={!!errors.groupNumber}
+                  helperText={errors.groupNumber?.message}
+                  fullWidth
+                  required
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Študentské číslo"
+                  variant="outlined"
+                  type="number"
+                  {...register('studentNumber')}
+                  error={!!errors.studentNumber}
+                  helperText={errors.studentNumber?.message}
+                  fullWidth
+                  required
+                />
+              </Grid>
+            </Grid>
           )}
 
           <TextField

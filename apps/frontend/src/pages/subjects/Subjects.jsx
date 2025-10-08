@@ -237,7 +237,11 @@ const Subjects = () => {
             </Typography>
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setSubjectToDelete(null)} disabled={isDeleting}>
+            <Button
+              onClick={() => setSubjectToDelete(null)}
+              variant="outlined"
+              disabled={isDeleting}
+            >
               Zrušiť
             </Button>
             <Button

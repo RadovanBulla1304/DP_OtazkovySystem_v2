@@ -38,12 +38,12 @@ app.use("/subject", require("./src/routes/subject"));
 app.use("/modul", require("./src/routes/modul"));
 app.use("/question", require("./src/routes/question"));
 app.use("/test", require("./src/routes/test"));
+app.use("/teacher-validated-questions", require("./src/routes/teacherValidatedQuestion"));
 app.use("/project", require("./src/routes/project"));
 app.use("/point", require("./src/routes/point"));
 app.use("/forum", require("./src/routes/forumRoutes"));
 app.use("/questionRating", require("./src/routes/questionRating"));
 app.use("/admin", require("./src/routes/admin"));
-app.use("/teacher-validated-questions", require("./src/routes/teacherValidatedQuestion"));
 
 app.use(function (req, res, next) {
   throwError("Hľadaná stránka neexistuje", 404);

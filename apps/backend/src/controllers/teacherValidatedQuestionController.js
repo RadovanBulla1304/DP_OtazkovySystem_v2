@@ -1,165 +1,113 @@
-const TeacherValidatedQuestionForTest = require('../models/teacherValidatedQuestionForTest');
 const Question = require('../models/question');
-const Test = require('../models/test');
 
-// Get all validated questions for a test (filtered by test's selected modules)
+// Get validated questions for a specific test (legacy, might not be needed)
 const getValidatedQuestionsForTest = async (req, res) => {
     try {
         const { testId } = req.params;
-
-        const test = await Test.findById(testId).populate('selected_modules');
-        if (!test) {
-            return res.status(404).json({
-                success: false,
-                message: 'Test not found'
-            });
-        }
-
-        const validatedQuestions = await TeacherValidatedQuestionForTest.find({
-            test: testId
-        })
-            .populate({
-                path: 'question',
-                populate: {
-                    path: 'modul',
-                    select: 'name title'
-                }
-            })
-            .populate('modul', 'name title')
-            .populate('addedBy', 'name surname email')
-            .sort({ createdAt: -1 });
-
         res.json({
-            success: true,
-            data: validatedQuestions,
-            count: validatedQuestions.length
+            data: []
         });
     } catch (error) {
         console.error('Error fetching validated questions for test:', error);
         res.status(500).json({
-            success: false,
             message: 'Error fetching validated questions',
             error: error.message
         });
     }
 };
 
-// Get validated questions by modules (for showing available questions when creating test)
+// Get validated questions by modules
 const getValidatedQuestionsByModules = async (req, res) => {
     try {
-        const { moduleIds } = req.query; // Comma-separated module IDs
+        const { moduleIds } = req.query;
 
         if (!moduleIds) {
             return res.status(400).json({
-                success: false,
                 message: 'Module IDs are required'
             });
         }
 
-        const moduleArray = moduleIds.split(',');
+        // Split comma-separated module IDs
+        const moduleIdArray = moduleIds.split(',').filter(id => id.trim());
 
-        // Get all teacher-validated questions from these modules
+        if (moduleIdArray.length === 0) {
+            return res.json({
+                data: []
+            });
+        }
+
+        // Find all questions that are validated by teacher in the selected modules
         const questions = await Question.find({
-            modul: { $in: moduleArray },
-            validated: true // Teacher validated
+            modul: { $in: moduleIdArray },
+            validated_by_teacher: true
         })
             .populate('modul', 'name title')
-            .populate('createdBy', 'username email name surname')
+            .populate('createdBy', 'name surname email')
             .sort({ createdAt: -1 });
 
         res.json({
-            success: true,
-            data: questions,
-            count: questions.length
+            data: questions
         });
     } catch (error) {
         console.error('Error fetching validated questions by modules:', error);
         res.status(500).json({
-            success: false,
             message: 'Error fetching validated questions',
             error: error.message
         });
     }
 };
 
-// Add question to test's validated question pool
-const addQuestionToTestPool = async (req, res) => {
+// Get count of validated questions by modules
+const getValidatedQuestionsCount = async (req, res) => {
     try {
-        const { testId, questionId } = req.body;
-        const teacherId = req.user?.user_id;
+        const { moduleIds } = req.query;
 
-        if (!teacherId) {
-            return res.status(401).json({
-                success: false,
-                message: 'Teacher not authenticated'
+        if (!moduleIds) {
+            return res.json({
+                count: 0
             });
         }
 
-        if (!testId || !questionId) {
-            return res.status(400).json({
-                success: false,
-                message: 'Test ID and Question ID are required'
+        // Split comma-separated module IDs
+        const moduleIdArray = moduleIds.split(',').filter(id => id.trim());
+
+        if (moduleIdArray.length === 0) {
+            return res.json({
+                count: 0
             });
         }
 
-        // Verify test exists
-        const test = await Test.findById(testId);
-        if (!test) {
-            return res.status(404).json({
-                success: false,
-                message: 'Test not found'
-            });
-        }
-
-        // Verify question exists and get its module
-        const question = await Question.findById(questionId);
-        if (!question) {
-            return res.status(404).json({
-                success: false,
-                message: 'Question not found'
-            });
-        }
-
-        // Check if question already exists in test pool
-        const existing = await TeacherValidatedQuestionForTest.findOne({
-            test: testId,
-            question: questionId
+        // Count questions that are validated by teacher in the selected modules
+        const count = await Question.countDocuments({
+            modul: { $in: moduleIdArray },
+            validated_by_teacher: true
         });
 
-        if (existing) {
-            return res.status(400).json({
-                success: false,
-                message: 'Question already added to this test'
-            });
-        }
-
-        // Add question to pool
-        const validatedQuestion = await TeacherValidatedQuestionForTest.create({
-            question: questionId,
-            test: testId,
-            modul: question.modul,
-            addedBy: teacherId
-        });
-
-        await validatedQuestion.populate([
-            {
-                path: 'question',
-                populate: { path: 'modul', select: 'name title' }
-            },
-            { path: 'modul', select: 'name title' },
-            { path: 'addedBy', select: 'name surname email' }
-        ]);
-
-        res.status(201).json({
-            success: true,
-            message: 'Question added to test pool successfully',
-            data: validatedQuestion
+        res.json({
+            count
         });
     } catch (error) {
-        console.error('Error adding question to test pool:', error);
+        console.error('Error counting validated questions:', error);
         res.status(500).json({
-            success: false,
-            message: 'Error adding question to test pool',
+            message: 'Error counting validated questions',
+            error: error.message,
+            count: 0
+        });
+    }
+};
+
+// Add question to test pool (might not be needed with new approach)
+const addQuestionToTestPool = async (req, res) => {
+    try {
+        // This functionality might not be needed anymore
+        // Questions are automatically in the pool if validated_by_teacher = true
+        res.status(200).json({
+            message: 'Question is automatically in pool when validated by teacher'
+        });
+    } catch (error) {
+        console.error('Error adding question to pool:', error);
+        res.status(500).json({
+            message: 'Error adding question to pool',
             error: error.message
         });
     }
@@ -168,68 +116,38 @@ const addQuestionToTestPool = async (req, res) => {
 // Remove question from test pool
 const removeQuestionFromTestPool = async (req, res) => {
     try {
-        const { id } = req.params; // TeacherValidatedQuestionForTest ID
+        const { id } = req.params;
 
-        const deleted = await TeacherValidatedQuestionForTest.findByIdAndDelete(id);
+        // To remove from pool, set validated_by_teacher to false
+        const question = await Question.findByIdAndUpdate(
+            id,
+            { validated_by_teacher: false },
+            { new: true }
+        );
 
-        if (!deleted) {
+        if (!question) {
             return res.status(404).json({
-                success: false,
-                message: 'Validated question not found'
+                message: 'Question not found'
             });
         }
 
         res.json({
-            success: true,
-            message: 'Question removed from test pool successfully'
+            message: 'Question removed from pool',
+            data: question
         });
     } catch (error) {
-        console.error('Error removing question from test pool:', error);
+        console.error('Error removing question from pool:', error);
         res.status(500).json({
-            success: false,
-            message: 'Error removing question from test pool',
-            error: error.message
-        });
-    }
-};
-
-// Get count of validated questions available for test
-const getValidatedQuestionsCount = async (req, res) => {
-    try {
-        const { moduleIds } = req.query;
-
-        if (!moduleIds) {
-            return res.status(400).json({
-                success: false,
-                message: 'Module IDs are required'
-            });
-        }
-
-        const moduleArray = moduleIds.split(',');
-
-        const count = await Question.countDocuments({
-            modul: { $in: moduleArray },
-            validated: true
-        });
-
-        res.json({
-            success: true,
-            count
-        });
-    } catch (error) {
-        console.error('Error counting validated questions:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Error counting validated questions',
+            message: 'Error removing question from pool',
             error: error.message
         });
     }
 };
 
 module.exports = {
-    getValidatedQuestionsForTest,
+    // getValidatedQuestionsForTest,
     getValidatedQuestionsByModules,
-    addQuestionToTestPool,
-    removeQuestionFromTestPool,
-    getValidatedQuestionsCount
+    getValidatedQuestionsCount,
+    // addQuestionToTestPool,
+    // removeQuestionFromTestPool
 };
