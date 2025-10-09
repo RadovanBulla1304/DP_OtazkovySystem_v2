@@ -925,6 +925,21 @@ export const api = createApi({
       }),
       invalidatesTags: ['Points']
     }),
+    updatePoint: builder.mutation({
+      query: ({ pointId, points, reason }) => ({
+        url: `/point/${pointId}`,
+        method: 'PUT',
+        body: { points, reason }
+      }),
+      invalidatesTags: ['Points']
+    }),
+    deletePoint: builder.mutation({
+      query: (pointId) => ({
+        url: `/point/${pointId}`,
+        method: 'DELETE'
+      }),
+      invalidatesTags: ['Points']
+    }),
 
     // PROJECTS
     createProject: builder.mutation({
@@ -1137,6 +1152,8 @@ export const {
   useAwardPointsForQuestionValidationMutation,
   useAwardPointsForQuestionReparationMutation,
   useAwardCustomPointsMutation,
+  useUpdatePointMutation,
+  useDeletePointMutation,
   // PROJECTS
   useCreateProjectMutation,
   useGetAllProjectsQuery,

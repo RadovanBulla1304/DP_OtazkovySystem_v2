@@ -3,8 +3,8 @@
 todo
 
 poslat email pri registracii ! 
-statistika testu - pridat moznost resetovat pokus uzivatelovi
 Do 6.10 spravit funkcnu verrziu na testovanie ! 
+nastavit vsetky modaly aby mali identicky styl. hlavne velkosti nadpisov atd
 -------------------------------------------
 
 opravene
@@ -21,3 +21,4 @@ opravene
 //Pozriet ako sa poriadne ukladaju validovane otazky ucitelom
 //otazky na receziu davat najprv len otazky ktore este neboli recenzovane. ak uz tieto otazky dosli vybrat random 
     -> ak ma otazka viac ako 2 recenzie vybrat nahodne jednu z nich. -> toto treba testnut este 
+//statistika testu - pridat moznost resetovat pokus uzivatelovi

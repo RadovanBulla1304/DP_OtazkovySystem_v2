@@ -421,3 +421,78 @@ exports.awardCustomPoints = async (req, res) => {
         throwError(`Error awarding custom points: ${err.message}`, 500);
     }
 };
+
+/**
+ * Update existing point record
+ */
+exports.updatePoint = async (req, res) => {
+    try {
+        const { pointId } = req.params;
+        const { points, reason } = req.body;
+
+        // Validate input
+        if (!pointId) {
+            return throwError("Point ID is required", 400);
+        }
+
+        // Find the point record
+        const point = await Point.findById(pointId);
+        if (!point) {
+            return throwError("Point record not found", 404);
+        }
+
+        // Update fields if provided
+        if (points !== undefined) {
+            if (isNaN(points)) {
+                return throwError("Points must be a number", 400);
+            }
+            point.points = points;
+        }
+
+        if (reason !== undefined) {
+            point.reason = reason;
+        }
+
+        await point.save();
+
+        res.status(200).json({
+            success: true,
+            message: "Point record updated successfully",
+            data: point
+        });
+
+    } catch (err) {
+        throwError(`Error updating point: ${err.message}`, 500);
+    }
+};
+
+/**
+ * Delete a point record
+ */
+exports.deletePoint = async (req, res) => {
+    try {
+        const { pointId } = req.params;
+
+        // Find and delete the point record
+        const point = await Point.findById(pointId);
+        if (!point) {
+            return throwError("Point record not found", 404);
+        }
+
+        // Remove point from user's points array
+        await User.findByIdAndUpdate(
+            point.student,
+            { $pull: { points: pointId } }
+        );
+
+        await Point.findByIdAndDelete(pointId);
+
+        res.status(200).json({
+            success: true,
+            message: "Point record deleted successfully"
+        });
+
+    } catch (err) {
+        throwError(`Error deleting point: ${err.message}`, 500);
+    }
+};

@@ -17,4 +17,8 @@ router.post("/award/week3", pointController.awardPointsForQuestionReparation);
 // Custom points
 router.post("/award/custom", pointController.awardCustomPoints);
 
+// Update and delete point records - Only available to teachers
+router.put("/:pointId", pointController.updatePoint);
+router.delete("/:pointId", pointController.deletePoint);
+
 module.exports = router;

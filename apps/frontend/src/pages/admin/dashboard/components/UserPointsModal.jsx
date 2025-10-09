@@ -1,6 +1,11 @@
 import { useCurrentSubjectId } from '@app/hooks/useCurrentSubjectId';
-import { useGetModulsBySubjectQuery, useGetUsersPointsSummaryMutation } from '@app/redux/api';
+import {
+  useGetModulsBySubjectQuery,
+  useGetUsersPointsSummaryMutation,
+  useUpdatePointMutation
+} from '@app/redux/api';
 import CloseIcon from '@mui/icons-material/Close';
+import EditIcon from '@mui/icons-material/Edit';
 import {
   Box,
   Button,
@@ -18,16 +23,22 @@ import {
   TableHead,
   TablePagination,
   TableRow,
+  TextField,
+  Tooltip,
   Typography
 } from '@mui/material';
 import { format } from 'date-fns';
 import PropTypes from 'prop-types';
 import React, { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 
 const UserPointsModal = ({ open, onClose, userIds }) => {
   const [getUsersPointsSummary, { data: pointsData, isLoading, error }] =
     useGetUsersPointsSummaryMutation();
+  const [updatePoint] = useUpdatePointMutation();
   const [expandedUser, setExpandedUser] = useState(null);
+  const [editingCell, setEditingCell] = useState(null); // { userId, category, moduleId }
+  const [editValue, setEditValue] = useState('');
 
   // Get current subject ID and fetch modules
   const subjectId = useCurrentSubjectId();
@@ -81,6 +92,169 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
     setPage(0);
     // Close any expanded rows when changing rows per page
     setExpandedUser(null);
+  };
+
+  // Edit cell handlers
+  const handleCellClick = (userId, category, moduleId, currentValue, pointDetails) => {
+    setEditingCell({ userId, category, moduleId, pointDetails });
+    setEditValue(currentValue || '0');
+  };
+
+  const handleCellBlur = async () => {
+    if (!editingCell) return;
+
+    const newValue = parseInt(editValue) || 0;
+    const { userId, category, moduleId } = editingCell;
+
+    // Find the specific point record to update
+    const userData = pointsData?.data?.find((u) => u.user._id === userId);
+    if (!userData) {
+      setEditingCell(null);
+      return;
+    }
+
+    // Find matching point details for this category and module
+    // First, try strict matching (module + category)
+    let matchingPoints = userData.points.details.filter((detail) => {
+      if (category === 'test_performance') return detail.category === 'test_performance';
+      if (category === 'forum_participation') return detail.category === 'forum_participation';
+      if (category === 'project_work') return detail.category === 'project_work';
+      if (category === 'other') return detail.category === 'other';
+
+      // For module-based categories
+      if (!moduleId || moduleId.startsWith('empty-')) return false;
+
+      // Check if this detail belongs to the module
+      if (detail.question_id) {
+        const module = modules.find((m) => m._id === moduleId);
+        return module?.questions?.includes(detail.question_id) && detail.category === category;
+      }
+
+      return false;
+    });
+
+    // If no strict match found, try relaxed matching (just category for module-based)
+    // This allows editing any point record of that category type
+    if (
+      matchingPoints.length === 0 &&
+      !['test_performance', 'forum_participation', 'project_work', 'other'].includes(category)
+    ) {
+      matchingPoints = userData.points.details.filter((detail) => detail.category === category);
+    }
+
+    if (matchingPoints.length > 0) {
+      // Calculate current sum of all matching points
+      const currentSum = matchingPoints.reduce((sum, p) => sum + p.points, 0);
+      
+      // If the displayed value matches the sum, proceed
+      if (currentSum === newValue) {
+        setEditingCell(null);
+        return;
+      }
+
+      // Calculate the difference to apply
+      const difference = newValue - currentSum;
+      
+      // Update the first matching point by adding the difference
+      const pointToUpdate = matchingPoints[0];
+      const updatedPointValue = pointToUpdate.points + difference;
+
+      // Don't allow negative points
+      if (updatedPointValue < 0) {
+        toast.error('Body nemôžu byť záporné');
+        setEditingCell(null);
+        return;
+      }
+
+      try {
+        await updatePoint({
+          pointId: pointToUpdate._id,
+          points: updatedPointValue,
+          reason: pointToUpdate.reason
+        }).unwrap();
+
+        toast.success(`Body aktualizované: ${currentSum} → ${newValue} (${difference > 0 ? '+' : ''}${difference})`);
+        // Refresh data
+        getUsersPointsSummary(userIds);
+      } catch (error) {
+        console.error('Error updating point:', error);
+        toast.error('Chyba pri aktualizácii bodov');
+      }
+    } else {
+      // No existing point records for this category at all
+      toast.info('Používateľ nemá žiadne body v tejto kategórii na úpravu');
+    }
+
+    setEditingCell(null);
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      handleCellBlur();
+    } else if (e.key === 'Escape') {
+      setEditingCell(null);
+    }
+  };
+
+  // Editable Cell Component
+  const EditableCell = ({ userId, category, moduleId, value, pointDetails, sx }) => {
+    const isEditing =
+      editingCell?.userId === userId &&
+      editingCell?.category === category &&
+      editingCell?.moduleId === moduleId;
+
+    return (
+      <TableCell align="center" sx={{ ...sx, cursor: 'pointer', position: 'relative' }}>
+        {isEditing ? (
+          <TextField
+            autoFocus
+            type="number"
+            value={editValue}
+            onChange={(e) => setEditValue(e.target.value)}
+            onBlur={handleCellBlur}
+            onKeyDown={handleKeyDown}
+            inputProps={{ min: 0, style: { textAlign: 'center' } }}
+            size="small"
+            sx={{ width: '60px' }}
+          />
+        ) : (
+          <Box
+            onClick={() => handleCellClick(userId, category, moduleId, value, pointDetails)}
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 0.5,
+              '&:hover .edit-icon': {
+                opacity: 1
+              }
+            }}
+          >
+            <Typography variant="body2">{value || '-'}</Typography>
+            <Tooltip title="Kliknite pre úpravu">
+              <EditIcon
+                className="edit-icon"
+                sx={{
+                  fontSize: 14,
+                  opacity: 0,
+                  transition: 'opacity 0.2s',
+                  color: 'text.secondary'
+                }}
+              />
+            </Tooltip>
+          </Box>
+        )}
+      </TableCell>
+    );
+  };
+
+  EditableCell.propTypes = {
+    userId: PropTypes.string.isRequired,
+    category: PropTypes.string.isRequired,
+    moduleId: PropTypes.string,
+    value: PropTypes.number,
+    pointDetails: PropTypes.array,
+    sx: PropTypes.object
   };
 
   return (
@@ -420,81 +594,95 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
 
                               return (
                                 <React.Fragment key={`module-${moduleIndex}`}>
-                                  <TableCell
-                                    align="center"
+                                  <EditableCell
+                                    userId={userData.user._id}
+                                    category="question_creation"
+                                    moduleId={moduleId}
+                                    value={modulePoints.question_creation}
+                                    pointDetails={userData.points.details}
                                     sx={{
                                       borderRight: '1px solid rgba(224, 224, 224, 0.5)',
                                       bgcolor:
                                         moduleIndex % 2 === 0 ? 'rgba(0, 0, 0, 0.02)' : 'inherit'
                                     }}
-                                  >
-                                    {modulePoints.question_creation || '-'}
-                                  </TableCell>
-                                  <TableCell
-                                    align="center"
+                                  />
+                                  <EditableCell
+                                    userId={userData.user._id}
+                                    category="question_validation"
+                                    moduleId={moduleId}
+                                    value={modulePoints.question_validation}
+                                    pointDetails={userData.points.details}
                                     sx={{
                                       borderRight: '1px solid rgba(224, 224, 0.5)',
                                       bgcolor:
                                         moduleIndex % 2 === 0 ? 'rgba(0, 0, 0, 0.02)' : 'inherit'
                                     }}
-                                  >
-                                    {modulePoints.question_validation || '-'}
-                                  </TableCell>
-                                  <TableCell
-                                    align="center"
+                                  />
+                                  <EditableCell
+                                    userId={userData.user._id}
+                                    category="question_reparation"
+                                    moduleId={moduleId}
+                                    value={modulePoints.question_reparation}
+                                    pointDetails={userData.points.details}
                                     sx={{
                                       borderRight: '2px solid rgba(224, 224, 224, 1)',
                                       bgcolor:
                                         moduleIndex % 2 === 0 ? 'rgba(0, 0, 0, 0.02)' : 'inherit'
                                     }}
-                                  >
-                                    {modulePoints.question_reparation || '-'}
-                                  </TableCell>
+                                  />
                                 </React.Fragment>
                               );
                             })}
 
                             {/* Extra categories */}
-                            <TableCell
-                              align="center"
+                            <EditableCell
+                              userId={userData.user._id}
+                              category="test_performance"
+                              moduleId={null}
+                              value={extraPoints.test_performance}
+                              pointDetails={userData.points.details}
                               sx={{
                                 borderRight: '1px solid rgba(224, 224, 224, 1)',
                                 bgcolor: 'rgba(0, 0, 0, 0.03)',
                                 fontWeight: 'bold'
                               }}
-                            >
-                              {extraPoints.test_performance || 0}
-                            </TableCell>
-                            <TableCell
-                              align="center"
+                            />
+                            <EditableCell
+                              userId={userData.user._id}
+                              category="forum_participation"
+                              moduleId={null}
+                              value={extraPoints.forum_participation}
+                              pointDetails={userData.points.details}
                               sx={{
                                 borderRight: '1px solid rgba(224, 224, 224, 1)',
                                 bgcolor: 'rgba(0, 0, 0, 0.03)',
                                 fontWeight: 'bold'
                               }}
-                            >
-                              {extraPoints.forum_participation || 0}
-                            </TableCell>
-                            <TableCell
-                              align="center"
+                            />
+                            <EditableCell
+                              userId={userData.user._id}
+                              category="project_work"
+                              moduleId={null}
+                              value={extraPoints.project_work}
+                              pointDetails={userData.points.details}
                               sx={{
                                 borderRight: '1px solid rgba(224, 224, 224, 1)',
                                 bgcolor: 'rgba(0, 0, 0, 0.03)',
                                 fontWeight: 'bold'
                               }}
-                            >
-                              {extraPoints.project_work || 0}
-                            </TableCell>
-                            <TableCell
-                              align="center"
+                            />
+                            <EditableCell
+                              userId={userData.user._id}
+                              category="other"
+                              moduleId={null}
+                              value={extraPoints.other}
+                              pointDetails={userData.points.details}
                               sx={{
                                 borderRight: '2px solid rgba(224, 224, 224, 1)',
                                 bgcolor: 'rgba(0, 0, 0, 0.03)',
                                 fontWeight: 'bold'
                               }}
-                            >
-                              {extraPoints.other || 0}
-                            </TableCell>
+                            />
 
                             <TableCell align="center">
                               <Button
