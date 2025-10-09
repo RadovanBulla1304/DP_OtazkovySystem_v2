@@ -190,7 +190,7 @@ const EditQuestionModal = ({ open, question, onClose, onSubmit }) => {
         </DialogContent>
 
         <DialogActions>
-          <Button onClick={handleClose} disabled={isSubmitting}>
+          <Button onClick={handleClose} disabled={isSubmitting} color="error">
             Zrušiť
           </Button>
           <Button type="submit" variant="contained" disabled={isSubmitting}>

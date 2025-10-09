@@ -109,7 +109,7 @@ const RespondToValidationModal = ({
         />
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} variant="outlined">
+        <Button onClick={onClose} variant="outlined" color="error">
           Zrušiť
         </Button>
         <Button

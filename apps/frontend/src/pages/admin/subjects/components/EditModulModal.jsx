@@ -144,7 +144,7 @@ const EditModulModal = ({ open, onClose, onSuccess, modul }) => {
             />
           </LocalizationProvider>
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 2 }}>
-            <Button variant="outlined" onClick={handleCancel} disabled={isLoading}>
+            <Button variant="outlined" onClick={handleCancel} disabled={isLoading} color="error">
               Zrušiť
             </Button>
             <Button type="submit" variant="contained" color="primary" disabled={isLoading}>

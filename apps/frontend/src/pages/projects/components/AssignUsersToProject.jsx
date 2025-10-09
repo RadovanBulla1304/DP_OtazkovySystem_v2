@@ -95,7 +95,7 @@ const AssignUsersToProject = ({ open, onClose, projectId, onSuccess }) => {
         />
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleCancel} disabled={isAssigning} variant="outlined">
+        <Button onClick={handleCancel} disabled={isAssigning} variant="outlined" color="error">
           Zrušiť
         </Button>
         <Button

@@ -1,6 +1,7 @@
 import { useCreateQuestionMutation, useGetTeacherMeQuery } from '@app/redux/api';
 import {
   Alert,
+  Box,
   Button,
   CircularProgress,
   Dialog,
@@ -8,12 +9,12 @@ import {
   DialogContent,
   DialogTitle,
   FormControl,
-  Grid,
   InputLabel,
   MenuItem,
+  Radio,
+  RadioGroup,
   Select,
-  TextField,
-  Typography
+  TextField
 } from '@mui/material';
 import PropTypes from 'prop-types';
 import { useState } from 'react';
@@ -157,77 +158,96 @@ const CreateQuestionModal = ({ open, onClose, modules, onQuestionCreated }) => {
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
-      <DialogTitle>Vytvoriť novú otázku</DialogTitle>
-      <DialogContent>
-        <Grid container spacing={3} sx={{ mt: 1 }}>
-          <Grid item xs={12}>
-            <TextField
-              label="Text otázky"
-              fullWidth
-              multiline
-              rows={3}
-              value={formData.text}
-              onChange={(e) => handleInputChange('text', e.target.value)}
-              required
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <Typography variant="subtitle1" gutterBottom>
-              Možnosti odpovede
-            </Typography>
-          </Grid>{' '}
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      PaperProps={{
+        sx: { borderRadius: 3 }
+      }}
+    >
+      <DialogTitle sx={{ pb: 0, fontWeight: 600, marginBottom: 2 }}>
+        Vytvoriť novú otázku
+      </DialogTitle>
+      <DialogContent
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 3,
+          mx: 'auto',
+          minWidth: { md: '30rem', xs: '90vw' }
+        }}
+      >
+        <TextField
+          label="Text otázky"
+          variant="outlined"
+          multiline
+          minRows={3}
+          value={formData.text}
+          onChange={(e) => handleInputChange('text', e.target.value)}
+          fullWidth
+          required
+          sx={{
+            bgcolor: '#fff',
+            borderRadius: 2
+          }}
+        />
+
+        <RadioGroup
+          value={formData.correct}
+          onChange={(e) => handleInputChange('correct', e.target.value)}
+          sx={{
+            flexDirection: 'column',
+            gap: 2
+          }}
+        >
           {['a', 'b', 'c', 'd'].map((option) => (
-            <Grid item xs={12} sm={6} key={option}>
+            <Box
+              key={option}
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1
+              }}
+            >
+              <Radio value={option} checked={formData.correct === option} sx={{ p: 1 }} />
               <TextField
-                label={`Možnosť ${option.toUpperCase()}`}
-                fullWidth
+                label={`Odpoveď ${option.toUpperCase()}`}
+                variant="outlined"
                 value={formData.options[option]}
                 onChange={(e) => handleOptionChange(option, e.target.value)}
+                fullWidth
                 required
+                sx={{
+                  bgcolor: '#fff',
+                  borderRadius: 2
+                }}
               />
-            </Grid>
+            </Box>
           ))}
-          <Grid item xs={12} sm={6}>
-            <FormControl fullWidth required>
-              <InputLabel>Správna odpoveď</InputLabel>
-              <Select
-                value={formData.correct}
-                onChange={(e) => handleInputChange('correct', e.target.value)}
-                label="Správna odpoveď"
-              >
-                <MenuItem value="a">Možnosť A</MenuItem>
-                <MenuItem value="b">Možnosť B</MenuItem>
-                <MenuItem value="c">Možnosť C</MenuItem>
-                <MenuItem value="d">Možnosť D</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <FormControl fullWidth required>
-              <InputLabel>Modul</InputLabel>
-              <Select
-                value={formData.modul}
-                onChange={(e) => handleInputChange('modul', e.target.value)}
-                label="Modul"
-              >
-                {modules.map((module) => (
-                  <MenuItem key={module._id} value={module._id}>
-                    {module.name || module.title || 'Modul bez názvu'}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-        </Grid>
+        </RadioGroup>
+
+        <FormControl fullWidth required>
+          <InputLabel>Modul</InputLabel>
+          <Select
+            value={formData.modul}
+            onChange={(e) => handleInputChange('modul', e.target.value)}
+            label="Modul"
+          >
+            {modules.map((module) => (
+              <MenuItem key={module._id} value={module._id}>
+                {module.name || module.title || 'Modul bez názvu'}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
       </DialogContent>
       {error && (
         <Alert severity="warning" sx={{ mx: 3, mb: 2 }}>
           {error}
         </Alert>
       )}
-      <DialogActions>
-        <Button onClick={handleClose} variant="outlined">
+      <DialogActions sx={{ px: 3, pb: 2 }}>
+        <Button onClick={handleClose} color="error" variant="outlined">
           Zrušiť
         </Button>
         <Button

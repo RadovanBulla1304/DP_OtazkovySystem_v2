@@ -366,6 +366,7 @@ const Projects = () => {
               onClick={() => setProjectToDelete(null)}
               disabled={isDeleting}
               variant="outlined"
+              color="error"
             >
               Zrušiť
             </Button>

@@ -116,7 +116,7 @@ const AssignPointsToProject = ({ open, onClose, project, onSuccess }) => {
         </Box>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleCancel} disabled={isLoading} variant="outlined">
+        <Button onClick={handleCancel} disabled={isLoading} variant="outlined" color="error">
           Zrušiť
         </Button>
         <Button

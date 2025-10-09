@@ -45,7 +45,7 @@ const StartTestConfirmationModal = ({ test, open, onClose, onConfirm }) => {
         </Box>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} variant="outlined">
+        <Button onClick={onClose} variant="outlined" color="error">
           Zrušiť
         </Button>
         <Button onClick={onConfirm} variant="contained" color="primary">

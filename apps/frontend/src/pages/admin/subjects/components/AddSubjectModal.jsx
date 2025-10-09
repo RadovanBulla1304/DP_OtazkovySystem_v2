@@ -132,7 +132,7 @@ const AddSubjectModal = ({ open, onClose, onSuccess }) => {
         </Grid>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose} disabled={isLoading} variant="outlined">
+        <Button onClick={handleClose} disabled={isLoading} variant="outlined" color="error">
           Zrušiť
         </Button>
         <Button

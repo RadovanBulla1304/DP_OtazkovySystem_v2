@@ -103,6 +103,7 @@ const CommentSection = ({ questionId }) => {
                   setNewComment('');
                 }}
                 disabled={addingComment}
+                color="error"
               >
                 Zrušiť
               </Button>

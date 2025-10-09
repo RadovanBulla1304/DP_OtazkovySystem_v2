@@ -261,7 +261,12 @@ const UsersList = () => {
             </Typography>
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setUserToDelete(null)} variant="outlined" disabled={isDeleting}>
+            <Button
+              onClick={() => setUserToDelete(null)}
+              variant="outlined"
+              disabled={isDeleting}
+              color="error"
+            >
               Zrušiť
             </Button>
             <Button

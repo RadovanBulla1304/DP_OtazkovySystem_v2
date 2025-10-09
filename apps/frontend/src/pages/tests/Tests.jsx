@@ -366,6 +366,7 @@ const Tests = () => {
               onClick={() => setDeleteConfirmModal(null)}
               disabled={deleting}
               variant="outlined"
+              color="error"
             >
               Zrušiť
             </Button>

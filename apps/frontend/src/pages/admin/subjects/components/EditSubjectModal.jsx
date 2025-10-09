@@ -92,7 +92,7 @@ const EditSubjectModal = ({ open, onClose, onSuccess, subject }) => {
         />
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose} disabled={isLoading} variant="outlined">
+        <Button onClick={handleClose} disabled={isLoading} variant="outlined" color="error">
           Zrušiť
         </Button>
         <Button onClick={handleSubmit(handleFormSubmit)} variant="contained" disabled={isLoading}>

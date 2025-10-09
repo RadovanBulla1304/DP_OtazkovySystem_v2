@@ -24,7 +24,7 @@ const DeleteSubjectDialog = ({ open, onClose, onConfirm, subject, isDeleting }) 
         </Typography>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} variant="outlined" disabled={isDeleting}>
+        <Button onClick={onClose} variant="outlined" disabled={isDeleting} color="error">
           Zrušiť
         </Button>
         <Button onClick={onConfirm} color="error" variant="contained" disabled={isDeleting}>

@@ -407,7 +407,7 @@ const AssignUsersFromCSVModal = ({ open, onClose, subjectId, onSuccess }) => {
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={handleClose} disabled={isAssigning} variant="outlined">
+        <Button onClick={handleClose} disabled={isAssigning} variant="outlined" color="error">
           Zrušiť
         </Button>
         <Button

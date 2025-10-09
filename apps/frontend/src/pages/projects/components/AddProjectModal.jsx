@@ -171,7 +171,7 @@ const AddProjectModal = ({ open, onClose, onSuccess }) => {
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCancel} disabled={isLoading} variant="outlined">
+          <Button onClick={handleCancel} disabled={isLoading} variant="outlined" color="error">
             Zrušiť
           </Button>
           <Button

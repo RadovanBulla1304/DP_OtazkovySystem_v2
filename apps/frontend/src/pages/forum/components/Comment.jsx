@@ -241,6 +241,8 @@ const Comment = ({ comment, questionId, level = 0 }) => {
                     setReplyText('');
                   }}
                   disabled={addingReply}
+                  variant="outlined"
+                  color="error"
                 >
                   Zrušiť
                 </Button>

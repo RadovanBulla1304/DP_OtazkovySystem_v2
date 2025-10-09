@@ -214,6 +214,7 @@ const EditUserModal = ({ userData, isTeacher }) => {
               onClick={handleClose}
               variant="outlined"
               disabled={isUserLoading || isTeacherLoading}
+              color="error"
             >
               Zrušiť
             </Button>

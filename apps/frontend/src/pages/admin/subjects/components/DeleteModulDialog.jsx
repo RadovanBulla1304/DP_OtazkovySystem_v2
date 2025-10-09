@@ -23,7 +23,7 @@ const DeleteModulDialog = ({ open, onClose, onConfirm, modul, isDeleting }) => {
         </DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} disabled={isDeleting}>
+        <Button onClick={onClose} disabled={isDeleting} color="error">
           Zrušiť
         </Button>
         <Button onClick={onConfirm} color="error" variant="contained" disabled={isDeleting}>

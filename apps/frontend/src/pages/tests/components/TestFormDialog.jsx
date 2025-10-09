@@ -68,7 +68,9 @@ const TestFormDialog = ({
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle>{editingTest ? 'Upraviť test' : 'Vytvoriť nový test'}</DialogTitle>
+      <DialogTitle sx={{ pb: 0, fontWeight: 600 }}>
+        {editingTest ? 'Upraviť test' : 'Vytvoriť nový test'}
+      </DialogTitle>
       <DialogContent>
         <Grid container spacing={3} sx={{ mt: 1 }}>
           <Grid item xs={12}>
@@ -345,7 +347,7 @@ const TestFormDialog = ({
         </Grid>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} variant="outlined">
+        <Button onClick={onClose} variant="outlined" color="error">
           Zrušiť
         </Button>
         <Button

@@ -182,7 +182,7 @@ const ValidateByTeacherModal = ({ open, onClose, question, onSubmit, isSubmittin
 
               {/* Action Buttons */}
               <Box sx={{ display: 'flex', gap: 2, mt: 3, justifyContent: 'flex-end' }}>
-                <Button onClick={onClose} disabled={isSubmitting} variant="outlined">
+                <Button onClick={onClose} disabled={isSubmitting} variant="outlined" color="error">
                   Zrušiť
                 </Button>
                 <Button

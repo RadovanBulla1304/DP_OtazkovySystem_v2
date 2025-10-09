@@ -1,0 +1,38 @@
+import { createTheme } from '@mui/material/styles';
+
+const theme = createTheme({
+    palette: {
+        primary: {
+            main: '#1976d2'
+        },
+        error: {
+            main: '#d32f2f'
+        }
+    },
+    components: {
+        MuiButton: {
+            styleOverrides: {
+                outlined: {
+                    '&:hover': {
+                        borderColor: '#b71c1c', // Dark red border on hover
+                        backgroundColor: 'rgba(183, 28, 28, 0.04)', // Subtle red background
+                        boxShadow: '0 2px 8px rgba(183, 28, 28, 0.25)' // Red box shadow
+                    }
+                },
+                outlinedError: {
+                    '&:hover': {
+                        backgroundColor: 'rgba(127, 0, 0, 0.04)',
+                        boxShadow: '0 2px 8px rgba(127, 0, 0, 0.3)'
+                    }
+                },
+                contained: {
+                    '&:hover': {
+                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)' // Enhanced shadow for contained buttons
+                    }
+                }
+            }
+        }
+    }
+});
+
+export default theme;

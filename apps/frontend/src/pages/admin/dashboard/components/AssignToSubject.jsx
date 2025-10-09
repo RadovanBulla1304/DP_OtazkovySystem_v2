@@ -81,7 +81,7 @@ const AssignToSubject = ({ open, onClose, userIds, onSuccess }) => {
             </Select>
           </FormControl>
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-            <Button variant="outlined" onClick={handleCancel} disabled={isLoading}>
+            <Button variant="outlined" onClick={handleCancel} disabled={isLoading} color="error">
               Zrušiť
             </Button>
             <Button
