@@ -724,6 +724,38 @@ const getUserTestAttempts = async (req, res) => {
     }
 };
 
+// Delete a test attempt
+const deleteTestAttempt = async (req, res) => {
+    try {
+        const { attemptId } = req.params;
+
+        // Find the test attempt
+        const testAttempt = await TestAttempt.findById(attemptId);
+
+        if (!testAttempt) {
+            return res.status(404).json({
+                success: false,
+                message: 'Test attempt not found'
+            });
+        }
+
+        // Delete the test attempt
+        await TestAttempt.findByIdAndDelete(attemptId);
+
+        res.status(200).json({
+            success: true,
+            message: 'Test attempt deleted successfully'
+        });
+    } catch (error) {
+        console.error('Error deleting test attempt:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error deleting test attempt',
+            error: error.message
+        });
+    }
+};
+
 module.exports = {
     createTest,
     getTestsBySubject,
@@ -736,5 +768,6 @@ module.exports = {
     startTestAttempt,
     submitTestAttempt,
     getTestAttemptById,
-    getUserTestAttempts
+    getUserTestAttempts,
+    deleteTestAttempt
 };

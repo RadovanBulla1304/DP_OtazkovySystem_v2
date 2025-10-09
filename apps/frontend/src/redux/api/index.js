@@ -810,6 +810,16 @@ export const api = createApi({
       }),
       providesTags: (result, error, arg) => [{ type: 'TestAttempts', id: `TEST-${arg}` }]
     }),
+    deleteTestAttempt: builder.mutation({
+      query: (attemptId) => ({
+        url: `/test/attempt/${attemptId}`,
+        method: 'DELETE'
+      }),
+      invalidatesTags: (result, error, attemptId) => [
+        { type: 'TestAttempts', id: 'LIST' },
+        { type: 'TestAttempt', id: attemptId }
+      ]
+    }),
 
     // TEACHER VALIDATED QUESTIONS FOR TESTS
     getValidatedQuestionsForTest: builder.query({
@@ -1107,6 +1117,7 @@ export const {
   useLazyGetTestAttemptByIdQuery,
   useGetUserTestAttemptsQuery,
   useLazyGetUserTestAttemptsQuery,
+  useDeleteTestAttemptMutation,
   // TEACHER VALIDATED QUESTIONS
   useGetValidatedQuestionsForTestQuery,
   useLazyGetValidatedQuestionsForTestQuery,

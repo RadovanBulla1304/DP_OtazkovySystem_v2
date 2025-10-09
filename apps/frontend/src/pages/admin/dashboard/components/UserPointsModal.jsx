@@ -724,7 +724,7 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
           </Box>
         )}
 
-        <Button onClick={onClose} variant="outlined">
+        <Button onClick={onClose} variant="outlined" color="error">
           Zrušiť
         </Button>
       </DialogActions>

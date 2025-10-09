@@ -11,7 +11,8 @@ const {
     startTestAttempt,
     submitTestAttempt,
     getTestAttemptById,
-    getUserTestAttempts
+    getUserTestAttempts,
+    deleteTestAttempt
 } = require("../controllers/testController");
 
 const router = express.Router();
@@ -35,5 +36,6 @@ router.post("/:id/start-attempt", startTestAttempt);       // Start a new test a
 router.post("/attempt/:attemptId/submit", submitTestAttempt); // Submit test attempt with answers
 router.get("/attempt/:attemptId", getTestAttemptById);     // Get test attempt details
 router.get("/:id/user-attempts", getUserTestAttempts);     // Get user's attempts for a test
+router.delete("/attempt/:attemptId", deleteTestAttempt);   // Delete a test attempt
 
 module.exports = router;
