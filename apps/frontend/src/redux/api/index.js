@@ -239,7 +239,7 @@ export const api = createApi({
         method: 'POST',
         body: data
       }),
-      invalidatesTags: ['Questions', 'Points']
+      invalidatesTags: ['Questions', 'Points', 'ValidatedQuestions']
     }),
     getQuestionsByModul: builder.query({
       query: (modulId) => ({

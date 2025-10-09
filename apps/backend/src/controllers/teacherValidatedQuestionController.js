@@ -37,6 +37,9 @@ const getValidatedQuestionsByModules = async (req, res) => {
         }
 
         // Find all questions that are validated by teacher in the selected modules
+        // This includes:
+        // 1. Teacher-created questions (validated_by_teacher: true, no user_agreement field needed)
+        // 2. Student-created questions that are validated by teacher AND agreed by student
         const questions = await Question.find({
             modul: { $in: moduleIdArray },
             validated_by_teacher: true
@@ -78,6 +81,7 @@ const getValidatedQuestionsCount = async (req, res) => {
         }
 
         // Count questions that are validated by teacher in the selected modules
+        // This includes both teacher-created and student-created questions
         const count = await Question.countDocuments({
             modul: { $in: moduleIdArray },
             validated_by_teacher: true
@@ -96,58 +100,7 @@ const getValidatedQuestionsCount = async (req, res) => {
     }
 };
 
-// Add question to test pool (might not be needed with new approach)
-const addQuestionToTestPool = async (req, res) => {
-    try {
-        // This functionality might not be needed anymore
-        // Questions are automatically in the pool if validated_by_teacher = true
-        res.status(200).json({
-            message: 'Question is automatically in pool when validated by teacher'
-        });
-    } catch (error) {
-        console.error('Error adding question to pool:', error);
-        res.status(500).json({
-            message: 'Error adding question to pool',
-            error: error.message
-        });
-    }
-};
-
-// Remove question from test pool
-const removeQuestionFromTestPool = async (req, res) => {
-    try {
-        const { id } = req.params;
-
-        // To remove from pool, set validated_by_teacher to false
-        const question = await Question.findByIdAndUpdate(
-            id,
-            { validated_by_teacher: false },
-            { new: true }
-        );
-
-        if (!question) {
-            return res.status(404).json({
-                message: 'Question not found'
-            });
-        }
-
-        res.json({
-            message: 'Question removed from pool',
-            data: question
-        });
-    } catch (error) {
-        console.error('Error removing question from pool:', error);
-        res.status(500).json({
-            message: 'Error removing question from pool',
-            error: error.message
-        });
-    }
-};
-
 module.exports = {
-    // getValidatedQuestionsForTest,
     getValidatedQuestionsByModules,
     getValidatedQuestionsCount,
-    // addQuestionToTestPool,
-    // removeQuestionFromTestPool
 };
