@@ -198,11 +198,10 @@ const MainLayout = ({ children }) => {
 
   let drawerOption = [];
 
-  if (user?.isAdmin || teacher?.isAdmin) {
+  if (user?.isAdmin || teacher) {
     drawerOption.push(
       { isHeader: true, title: 'Správca' },
       { title: 'Používatelia', navTo: '/admin/users', icon: <GroupIcon /> },
-      // { isHeader: true, title: 'Funkcie' },
       { title: 'Predmety', navTo: '/subjects', icon: <SchoolIcon /> }
     );
   }

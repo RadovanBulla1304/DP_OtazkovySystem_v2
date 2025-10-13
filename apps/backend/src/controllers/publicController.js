@@ -3,7 +3,7 @@ const User = require("../models/user");
 const Teacher = require("../models/teacher");
 const { throwError } = require("../util/universal");
 const { validate, validated } = require("../util/validation");
-const { signinSchema, signupSchema, signinTeacherSchema } = require("../schemas/auth.schema");
+const { signinSchema, signupSchema, signupTeacherSchema, signinTeacherSchema } = require("../schemas/auth.schema");
 // Teacher sign-in
 
 
@@ -79,6 +79,53 @@ exports.Register = [
       {
         user_id: user._id,
         isAdmin: user.isAdmin,
+      },
+      process.env.TOKEN_KEY
+    );
+
+    res.status(201).send({ token });
+  },
+];
+
+exports.RegisterTeacher = [
+  validate(signupTeacherSchema),
+  async (req, res) => {
+    const { email, password, password_confirmation, name, surname } = validated(req);
+
+    // Check if passwords match
+    if (password !== password_confirmation) {
+      throwError("Heslá sa nezhodujú", 400);
+    }
+
+    // Check if teacher already exists
+    const existingTeacher = await Teacher.findOne({ email });
+    if (existingTeacher) {
+      throwError("Email je už registrovaný", 400);
+    }
+
+    // Hash the password using crypto
+    const hashedPassword = crypto
+      .createHmac("sha256", process.env.SALT_KEY)
+      .update(password)
+      .digest("hex");
+
+    // Create and save the new teacher
+    const teacher = new Teacher({
+      name,
+      surname,
+      email,
+      password: hashedPassword,
+      isActive: true,
+      isAdmin: false, // Default to false, admin can upgrade later
+    });
+
+    await teacher.save();
+
+    // Generate JWT token
+    const token = jwt.sign(
+      {
+        user_id: teacher._id,
+        isAdmin: teacher.isAdmin,
       },
       process.env.TOKEN_KEY
     );

@@ -50,7 +50,6 @@ const UsersList = () => {
       // The API returns: { user: { _id, name, ... }, points: { totalPoints, details } }
       const userId = userPointData.user._id;
       pointsMap[userId] = userPointData.points.totalPoints || 0;
-      console.log(userPointData);
     });
 
     // Create a map of subjectId -> subject name

@@ -1,35 +1,71 @@
 import { LoadingButton } from '@mui/lab';
-import { Box, Card, Container, Link, TextField, Typography } from '@mui/material';
+import {
+  Box,
+  Card,
+  Container,
+  Link,
+  TextField,
+  ToggleButton,
+  ToggleButtonGroup,
+  Typography
+} from '@mui/material';
 import { useState } from 'react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
-import { registerUser } from './authService';
+import { registerTeacher, registerUser } from './authService';
 
 const AuthRegister = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-
   const [error, setError] = useState(null);
+  const [userType, setUserType] = useState('student'); // 'student' or 'teacher'
+
+  const handleUserTypeChange = (event, newUserType) => {
+    if (newUserType !== null) {
+      setUserType(newUserType);
+      setError(null); // Clear errors when switching
+    }
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setIsLoading(true);
     setError(null);
-    const data = {
-      name: event.target.name.value.trim(),
-      surname: event.target.surname.value.trim(),
-      email: event.target.email.value.trim(),
-      groupNumber: event.target.groupNumber.value.trim(),
-      studentNumber: event.target.studentNumber.value.trim(),
-      password: event.target.password.value,
-      password_confirmation: event.target.password_confirmation.value
-    };
-    try {
-      await registerUser(data);
-      setIsLoading(false);
-      navigate('/auth/login');
-    } catch (err) {
-      setIsLoading(false);
-      setError(err?.response?.data?.message || 'Registrácia zlyhala.');
+
+    if (userType === 'student') {
+      const data = {
+        name: event.target.name.value.trim(),
+        surname: event.target.surname.value.trim(),
+        email: event.target.email.value.trim(),
+        groupNumber: event.target.groupNumber.value.trim(),
+        studentNumber: event.target.studentNumber.value.trim(),
+        password: event.target.password.value,
+        password_confirmation: event.target.password_confirmation.value
+      };
+      try {
+        await registerUser(data);
+        setIsLoading(false);
+        navigate('/auth/login');
+      } catch (err) {
+        setIsLoading(false);
+        setError(err?.response?.data?.message || 'Registrácia zlyhala.');
+      }
+    } else {
+      // Teacher registration
+      const data = {
+        name: event.target.name.value.trim(),
+        surname: event.target.surname.value.trim(),
+        email: event.target.email.value.trim(),
+        password: event.target.password.value,
+        password_confirmation: event.target.password_confirmation.value
+      };
+      try {
+        await registerTeacher(data);
+        setIsLoading(false);
+        navigate('/auth/login');
+      } catch (err) {
+        setIsLoading(false);
+        setError(err?.response?.data?.message || 'Registrácia zlyhala.');
+      }
     }
   };
 
@@ -38,7 +74,25 @@ const AuthRegister = () => {
       <Typography align="center" sx={{ mt: '10%' }} variant="h4">
         Registrácia
       </Typography>
-      <Card sx={{ mt: '10%', mb: '20%', p: 2 }}>
+      <Card sx={{ mt: '5%', mb: '20%', p: 2 }}>
+        {/* Toggle between Student and Teacher */}
+        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
+          <ToggleButtonGroup
+            value={userType}
+            exclusive
+            onChange={handleUserTypeChange}
+            aria-label="user type"
+            color="primary"
+          >
+            <ToggleButton value="student" aria-label="student">
+              Študent
+            </ToggleButton>
+            <ToggleButton value="teacher" aria-label="teacher">
+              Učiteľ
+            </ToggleButton>
+          </ToggleButtonGroup>
+        </Box>
+
         <Box component="form" onSubmit={handleSubmit}>
           <TextField
             variant="outlined"
@@ -68,27 +122,39 @@ const AuthRegister = () => {
             autoComplete="email"
             fullWidth
             required
+            helperText={
+              userType === 'student'
+                ? 'Email musí končiť @stud.uniza.sk'
+                : 'Email musí končiť @uniza.sk'
+            }
             sx={{ mb: 2 }}
           />
-          <TextField
-            variant="outlined"
-            label="Skupina"
-            name="groupNumber"
-            id="groupNumber"
-            fullWidth
-            required
-            sx={{ mb: 2 }}
-          />
-          <TextField
-            variant="outlined"
-            label="Študentské číslo"
-            name="studentNumber"
-            id="studentNumber"
-            type="number"
-            fullWidth
-            required
-            sx={{ mb: 2 }}
-          />
+
+          {/* Student-specific fields */}
+          {userType === 'student' && (
+            <>
+              <TextField
+                variant="outlined"
+                label="Skupina"
+                name="groupNumber"
+                id="groupNumber"
+                fullWidth
+                required
+                sx={{ mb: 2 }}
+              />
+              <TextField
+                variant="outlined"
+                label="Študentské číslo"
+                name="studentNumber"
+                id="studentNumber"
+                type="number"
+                fullWidth
+                required
+                sx={{ mb: 2 }}
+              />
+            </>
+          )}
+
           <TextField
             required
             type="password"
@@ -98,6 +164,7 @@ const AuthRegister = () => {
             variant="outlined"
             label="Heslo"
             fullWidth
+            helperText="Heslo musí mať aspoň 6 znakov, jedno veľké písmeno a jedno číslo"
             sx={{ mb: 2 }}
           />
           <TextField

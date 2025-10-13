@@ -146,7 +146,11 @@ export const api = createApi({
       query: (subjectId) => ({
         url: `/subject/${subjectId}`,
         method: 'GET'
-      })
+      }),
+      providesTags: (result, error, subjectId) => [
+        { type: 'Subjects', id: subjectId },
+        'Subjects'
+      ]
     }),
     asignUserToSubject: builder.mutation({
       query: (data) => ({

@@ -1,7 +1,12 @@
 import axios from 'axios';
 
 export const registerUser = async (data) => {
-  const response = await axios.post('api/public/register', data);
+  const response = await axios.post('/api/public/register', data);
+  return response.data;
+};
+
+export const registerTeacher = async (data) => {
+  const response = await axios.post('/api/public/register-teacher', data);
   return response.data;
 };
 export const getUserFromStorage = () => {

@@ -4,7 +4,9 @@ todo
 
 darkmode
 
-unaasign uzivatel z predemtu. pridat confimration modal 
+
+
+nedovolit editovat body v tabulke ak tam nie je bod
 email musi koncit na uniza/ stud.uniza -> asi iba joi staci zmenit nie ? 
 delete teacher dialog upravit aby vyzeral ako ostane. 
 poslat email pri registracii ! 
@@ -27,3 +29,5 @@ opravene
 //otazky na receziu davat najprv len otazky ktore este neboli recenzovane. ak uz tieto otazky dosli vybrat random 
     -> ak ma otazka viac ako 2 recenzie vybrat nahodne jednu z nich. -> toto treba testnut este 
 //statistika testu - pridat moznost resetovat pokus uzivatelovi
+//refresh of assigned users i subject detail
+//unaasign uzivatel z predemtu. pridat confimration modal 

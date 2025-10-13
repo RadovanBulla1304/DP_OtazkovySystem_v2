@@ -37,6 +37,7 @@ import DeleteModulDialog from './components/DeleteModulDialog';
 import DeleteSubjectDialog from './components/DeleteSubjectDialog';
 import EditModulModal from './components/EditModulModal';
 import EditSubjectModal from './components/EditSubjectModal';
+import UnassignUsersDialog from './components/UnassignUsersDialog';
 
 const SubjectDetail = () => {
   const { subjectId } = useParams();
@@ -68,6 +69,9 @@ const SubjectDetail = () => {
 
   // CSV upload modal state
   const [isCSVModalOpen, setIsCSVModalOpen] = useState(false);
+
+  // Unassign users dialog state
+  const [isUnassignDialogOpen, setIsUnassignDialogOpen] = useState(false);
 
   // Fetch subject details
   const {
@@ -203,7 +207,19 @@ const SubjectDetail = () => {
   };
 
   // Unassign users handler
-  const handleUnassignUsers = async () => {
+  const handleOpenUnassignDialog = () => {
+    if (!selectedAssignedUserIds.length) {
+      toast.warn('Vyberte aspoň jedného používateľa');
+      return;
+    }
+    setIsUnassignDialogOpen(true);
+  };
+
+  const handleCloseUnassignDialog = () => {
+    setIsUnassignDialogOpen(false);
+  };
+
+  const handleConfirmUnassignUsers = async () => {
     if (!selectedAssignedUserIds.length) return;
     try {
       await unasignUserFromSubject({
@@ -216,8 +232,10 @@ const SubjectDetail = () => {
       toast.success('Používateľ(ia) boli odobraní z predmetu');
       setSelectedAssignedUserIds([]);
       await refetchSubject();
+      setIsUnassignDialogOpen(false);
     } catch (error) {
       toast.error('Chyba pri odoberaní používateľov z predmetu', error);
+      setIsUnassignDialogOpen(false);
     }
   };
 
@@ -443,7 +461,7 @@ const SubjectDetail = () => {
             variant="contained"
             color="error"
             disabled={selectedAssignedUserIds.length === 0 || isUnassigning}
-            onClick={handleUnassignUsers}
+            onClick={handleOpenUnassignDialog}
           >
             Odstrániť priradenie používateľov
           </Button>
@@ -524,6 +542,15 @@ const SubjectDetail = () => {
         onConfirm={handleConfirmDeleteModul}
         modul={modulToDelete}
         isDeleting={isDeletingModul}
+      />
+
+      {/* Confirmation Dialog for Unassign Users */}
+      <UnassignUsersDialog
+        open={isUnassignDialogOpen}
+        userCount={selectedAssignedUserIds.length}
+        isUnassigning={isUnassigning}
+        onClose={handleCloseUnassignDialog}
+        onConfirm={handleConfirmUnassignUsers}
       />
     </Box>
   );

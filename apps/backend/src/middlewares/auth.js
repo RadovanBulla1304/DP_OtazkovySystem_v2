@@ -31,8 +31,11 @@ const verifyToken = async (req, res, next) => {
     }
     req.user = { user_id: user._id };
     if (req.url.includes("/admin")) {
-      // Only allow admin access for users or teachers with isAdmin/is_admin true
-      if (!(user.isAdmin || user.is_admin)) {
+      // Check if user is from Teacher collection (all teachers have admin access for now)
+      const isTeacher = await Teacher.findById(decoded.user_id);
+
+      // Allow access if user is a teacher OR has isAdmin flag
+      if (!isTeacher && !(user.isAdmin || user.is_admin)) {
         return res.status(403).send();
       }
     }

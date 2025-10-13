@@ -60,9 +60,10 @@ const TeamSwitcher = ({ collapsed = false }) => {
   const open = Boolean(anchorEl);
 
   // Filter subjects based on user assignment
+  // Teachers see all subjects, students see only assigned subjects
   const subjects = React.useMemo(() => {
-    if (user?.isAdmin) return allSubjects;
-    return allSubjects.filter((subj) => subj.assigned_students?.includes(user._id));
+    if (user?.isTeacher || user?.isAdmin) return allSubjects;
+    return allSubjects.filter((subj) => subj.assigned_students?.includes(user?._id));
   }, [allSubjects, user]);
 
   React.useEffect(() => {
@@ -151,8 +152,10 @@ const TeamSwitcher = ({ collapsed = false }) => {
                 ))
               )}
 
-              {user.isAdmin && subjects.length > 0 && <Divider sx={{ my: 1 }} />}
-              {user.isAdmin && (
+              {(user?.isAdmin || user?.isTeacher) && subjects.length > 0 && (
+                <Divider sx={{ my: 1 }} />
+              )}
+              {(user?.isAdmin || user?.isTeacher) && (
                 <ListItemButton
                   onClick={handleAddSubject}
                   sx={{ '&:hover': { cursor: 'pointer' } }}
@@ -214,25 +217,26 @@ const TeamSwitcher = ({ collapsed = false }) => {
               </ListItem>
             ) : (
               subjects.map((subject) => (
-                <ListItem
+                <ListItemButton
                   key={subject.id}
-                  button
                   onClick={() => handleSubjectSelect(subject)}
                   selected={currentSubject?.id === subject.id}
                   sx={{ '&:hover': { cursor: 'pointer' } }}
                 >
                   <SubjectAvatar>{subject.name.charAt(0)}</SubjectAvatar>
                   <ListItemText primary={subject.name} />
-                </ListItem>
+                </ListItemButton>
               ))
             )}
 
-            {user.isAdmin && subjects.length > 0 && <Divider sx={{ my: 1 }} />}
-            {user.isAdmin && (
-              <ListItem button onClick={handleAddSubject} sx={{ '&:hover': { cursor: 'pointer' } }}>
+            {(user?.isAdmin || user?.isTeacher) && subjects.length > 0 && (
+              <Divider sx={{ my: 1 }} />
+            )}
+            {(user?.isAdmin || user?.isTeacher) && (
+              <ListItemButton onClick={handleAddSubject} sx={{ '&:hover': { cursor: 'pointer' } }}>
                 <AddIcon fontSize="small" sx={{ mr: 1 }} />
                 <ListItemText primary="Pridať predmet" />
-              </ListItem>
+              </ListItemButton>
             )}
           </List>
         </Box>
