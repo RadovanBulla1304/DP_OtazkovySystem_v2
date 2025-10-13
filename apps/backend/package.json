@@ -21,7 +21,8 @@
         "joi": "^17.13.3",
         "jsonwebtoken": "^9.0.2",
         "mongoose": "^8.8.1",
-        "node-cron": "^3.0.3"
+        "node-cron": "^3.0.3",
+        "nodemailer": "^7.0.9"
     },
     "devDependencies": {
         "jest": "^29.7.0",

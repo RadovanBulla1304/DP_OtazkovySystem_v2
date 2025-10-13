@@ -17,12 +17,14 @@ const AuthRegister = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
   const [userType, setUserType] = useState('student'); // 'student' or 'teacher'
 
   const handleUserTypeChange = (event, newUserType) => {
     if (newUserType !== null) {
       setUserType(newUserType);
       setError(null); // Clear errors when switching
+      setSuccessMessage(null); // Clear success message when switching
     }
   };
 
@@ -30,6 +32,7 @@ const AuthRegister = () => {
     event.preventDefault();
     setIsLoading(true);
     setError(null);
+    setSuccessMessage(null);
 
     if (userType === 'student') {
       const data = {
@@ -42,9 +45,18 @@ const AuthRegister = () => {
         password_confirmation: event.target.password_confirmation.value
       };
       try {
-        await registerUser(data);
+        const response = await registerUser(data);
         setIsLoading(false);
-        navigate('/auth/login');
+
+        // Check if email confirmation is required
+        if (response?.requiresEmailConfirmation) {
+          setSuccessMessage(
+            response.message ||
+              'Registrácia prebehla úspešne. Skontrolujte svoj email a potvrďte registráciu.'
+          );
+        } else {
+          navigate('/auth/login');
+        }
       } catch (err) {
         setIsLoading(false);
         setError(err?.response?.data?.message || 'Registrácia zlyhala.');
@@ -183,12 +195,18 @@ const AuthRegister = () => {
               {error}
             </Typography>
           )}
+          {successMessage && (
+            <Typography color="success.main" sx={{ mb: 2, textAlign: 'center' }}>
+              {successMessage}
+            </Typography>
+          )}
           <LoadingButton
             loading={isLoading}
             type="submit"
             variant="contained"
             fullWidth
             sx={{ mt: 2 }}
+            disabled={!!successMessage}
           >
             Registrovať sa
           </LoadingButton>

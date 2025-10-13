@@ -4,6 +4,8 @@ const Teacher = require("../models/teacher");
 const { throwError } = require("../util/universal");
 const { validate, validated } = require("../util/validation");
 const { signinSchema, signupSchema, signupTeacherSchema, signinTeacherSchema } = require("../schemas/auth.schema");
+const { sendConfirmationEmail } = require("../services/emailService");
+const crypto = require("crypto");
 // Teacher sign-in
 
 
@@ -38,7 +40,6 @@ exports.signinTeacher = [
     res.status(200).send({ token });
   },
 ];
-const crypto = require("crypto");
 
 exports.Register = [
   validate(signupSchema),
@@ -61,6 +62,11 @@ exports.Register = [
       .update(password)
       .digest("hex");
 
+    // Generate email confirmation token
+    const confirmationToken = crypto.randomBytes(32).toString('hex');
+    const tokenExpires = new Date();
+    tokenExpires.setHours(tokenExpires.getHours() + 24); // Token valid for 24 hours
+
     // Create and save the new user
     const user = new User({
       name,
@@ -69,21 +75,26 @@ exports.Register = [
       groupNumber,
       studentNumber,
       password: hashedPassword,
-      isActive: true, // or false if you want email verification flow
+      isActive: false, // User must confirm email first
+      emailConfirmed: false,
+      emailConfirmationToken: confirmationToken,
+      emailConfirmationExpires: tokenExpires,
     });
 
     await user.save();
 
-    // Generate JWT token
-    const token = jwt.sign(
-      {
-        user_id: user._id,
-        isAdmin: user.isAdmin,
-      },
-      process.env.TOKEN_KEY
-    );
+    // Send confirmation email
+    try {
+      await sendConfirmationEmail(email, name, confirmationToken);
+    } catch (error) {
+      console.error('Error sending confirmation email:', error);
+      // Continue even if email fails - user can request a new token later
+    }
 
-    res.status(201).send({ token });
+    res.status(201).send({
+      message: 'Registrácia prebehla úspešne. Skontrolujte svoj email a potvrďte registráciu.',
+      requiresEmailConfirmation: true
+    });
   },
 ];
 
@@ -149,7 +160,16 @@ exports.SignIn = [
       .update(password)
       .digest("hex");
 
-    if (hashedPassword !== user.password || !user.isActive) {
+    if (hashedPassword !== user.password) {
+      throwError(req.t("messages.invalid_credentials"), 400);
+    }
+
+    // Check if email is confirmed
+    if (!user.emailConfirmed) {
+      throwError("Email nie je potvrdený. Skontrolujte svoju emailovú schránku a potvrďte registráciu.", 403);
+    }
+
+    if (!user.isActive) {
       throwError(req.t("messages.invalid_credentials"), 400);
     }
 
@@ -179,4 +199,68 @@ exports.checkUiVersion = async (req, res) => {
   }
 
   return res.status(200).send(respObj);
+};
+
+exports.ConfirmEmail = async (req, res) => {
+  try {
+    const { token } = req.params;
+
+    console.log('📧 Confirmation request received for token:', token);
+
+    if (!token) {
+      console.log('❌ No token provided');
+      return res.status(400).send({ message: 'Token je povinný' });
+    }
+
+    // First, try to find user with this token (active confirmation)
+    let user = await User.findOne({
+      emailConfirmationToken: token,
+      emailConfirmationExpires: { $gt: new Date() }, // Token not expired
+    });
+
+    console.log('🔍 User search result:', user ? `Found: ${user.email}` : 'Not found');
+
+    if (!user) {
+      // Check if the email was already confirmed (token was cleared)
+      // Try to find any user that had this token but already confirmed
+      const confirmedUser = await User.findOne({
+        emailConfirmed: true,
+        $or: [
+          { emailConfirmationToken: token },
+          { emailConfirmationToken: { $exists: false } }
+        ]
+      });
+
+      if (confirmedUser) {
+        console.log('✅ Email already confirmed for user:', confirmedUser.email);
+        return res.status(200).send({
+          message: 'Tento email je už potvrdený. Môžete sa prihlásiť.',
+          success: true,
+          alreadyConfirmed: true
+        });
+      }
+
+      console.log('❌ User not found or token expired');
+      return res.status(400).send({
+        message: 'Neplatný alebo expirovaný token. Prosím, registrujte sa znova.'
+      });
+    }
+
+    // Update user
+    user.emailConfirmed = true;
+    user.isActive = true;
+    user.emailConfirmationToken = undefined;
+    user.emailConfirmationExpires = undefined;
+    await user.save();
+
+    console.log('✅ Email confirmed successfully for:', user.email);
+
+    res.status(200).send({
+      message: 'Email bol úspešne potvrdený. Môžete sa prihlásiť.',
+      success: true
+    });
+  } catch (error) {
+    console.error('❌ Error confirming email:', error);
+    res.status(500).send({ message: 'Chyba pri potvrdení emailu' });
+  }
 };

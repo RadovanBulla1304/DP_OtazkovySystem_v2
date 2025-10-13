@@ -1,3 +1,4 @@
+import * as authService from '@app/pages/auth/authService';
 import { useGetAllProjectRatingsQuery, useSaveProjectRatingMutation } from '@app/redux/api';
 import {
   Box,
@@ -20,12 +21,11 @@ import {
 import PropTypes from 'prop-types';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-import * as authService from '@app/pages/auth/authService';
 
 const PeerEvaluationModal = ({ open, onClose, subjectId }) => {
   const [ratings, setRatings] = useState({});
   const [editingCell, setEditingCell] = useState(null);
-  
+
   const currentUser = authService.getUserFromStorage();
 
   const {
@@ -59,7 +59,7 @@ const PeerEvaluationModal = ({ open, onClose, subjectId }) => {
     if (currentUser?._id !== studentId) {
       return;
     }
-    
+
     // Prevent editing own project
     if (studentProjectId === projectId) {
       return;
@@ -218,9 +218,13 @@ const PeerEvaluationModal = ({ open, onClose, subjectId }) => {
                     const cellKey = `${student._id}-${project._id}`;
                     const isEditing = editingCell === cellKey;
                     const value = getCellValue(student._id, project._id);
-                    
+
                     // Determine cursor: not-allowed for own project, default for other rows, pointer for current user's row
-                    const cursorStyle = isOwn ? 'not-allowed' : (isCurrentUserRow ? 'pointer' : 'default');
+                    const cursorStyle = isOwn
+                      ? 'not-allowed'
+                      : isCurrentUserRow
+                        ? 'pointer'
+                        : 'default';
 
                     return (
                       <TableCell
@@ -230,7 +234,11 @@ const PeerEvaluationModal = ({ open, onClose, subjectId }) => {
                           cursor: cursorStyle,
                           backgroundColor: isOwn ? '#bebebe' : 'transparent',
                           '&:hover': {
-                            backgroundColor: isOwn ? '#bebebe' : (isCurrentUserRow ? '#e3f2fd' : 'transparent')
+                            backgroundColor: isOwn
+                              ? '#bebebe'
+                              : isCurrentUserRow
+                                ? '#e3f2fd'
+                                : 'transparent'
                           },
                           padding: '4px'
                         }}

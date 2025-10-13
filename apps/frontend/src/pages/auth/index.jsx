@@ -2,6 +2,7 @@ import { Navigate } from 'react-router-dom';
 import { AuthPage } from './auth-login';
 
 import AuthRegister from './auth-register';
+import ConfirmEmail from './confirm-email';
 
 const routes = [
   {
@@ -16,6 +17,10 @@ const routes = [
   {
     path: 'register',
     element: <AuthRegister />
+  },
+  {
+    path: 'confirm-email/:token',
+    element: <ConfirmEmail />
   }
 ];
 

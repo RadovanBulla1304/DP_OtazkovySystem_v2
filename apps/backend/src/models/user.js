@@ -39,6 +39,9 @@ const UserSchema = new mongoose.Schema(
     },
     isAdmin: { type: Boolean, default: false },
     isActive: { type: Boolean, default: true },
+    emailConfirmed: { type: Boolean, default: false },
+    emailConfirmationToken: { type: String },
+    emailConfirmationExpires: { type: Date },
     assignedSubjects: [
       {
         type: mongoose.Schema.Types.ObjectId,

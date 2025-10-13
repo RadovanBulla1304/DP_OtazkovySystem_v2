@@ -1,12 +1,13 @@
 const express = require("express");
 const router = express.Router();
-const { SignIn, Register, RegisterTeacher, checkUiVersion, signinTeacher, meTeacher } = require("../controllers/publicController");
+const { SignIn, Register, RegisterTeacher, checkUiVersion, signinTeacher, meTeacher, ConfirmEmail } = require("../controllers/publicController");
 // Teacher sign-in route
 
 router.post("/signin", SignIn);
 router.post("/signin-teacher", signinTeacher);
 router.post("/register", Register);
 router.post("/register-teacher", RegisterTeacher);
+router.get("/confirm-email/:token", ConfirmEmail);
 router.post("/activation/:email/:hash", (req, res) => {
   res.status(404).send();
 });
