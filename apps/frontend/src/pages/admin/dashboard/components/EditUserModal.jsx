@@ -10,11 +10,11 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
+  DialogTitle,
   Grid,
   IconButton,
   TextField,
-  Tooltip,
-  Typography
+  Tooltip
 } from '@mui/material';
 import PropTypes from 'prop-types';
 import { useForm } from 'react-hook-form';
@@ -140,9 +140,9 @@ const EditUserModal = ({ userData, isTeacher }) => {
             maxWidth: '100%'
           }}
         >
-          <Typography variant="h6" component="h2">
+          <DialogTitle sx={{ fontWeight: 600, p: 0 }}>
             {isTeacher ? 'Upraviť učiteľa' : 'Upraviť používateľa'}
-          </Typography>
+          </DialogTitle>
 
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>

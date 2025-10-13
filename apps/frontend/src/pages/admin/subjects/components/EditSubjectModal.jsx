@@ -68,7 +68,7 @@ const EditSubjectModal = ({ open, onClose, onSuccess, subject }) => {
         sx: { minWidth: 500 }
       }}
     >
-      <DialogTitle>Upraviť názov predmetu</DialogTitle>
+      <DialogTitle sx={{ fontWeight: 600 }}>Upraviť názov predmetu</DialogTitle>
       <DialogContent sx={{ pt: '16px !important', pb: 2, px: 3 }}>
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>

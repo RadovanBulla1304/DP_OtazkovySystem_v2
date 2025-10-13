@@ -15,7 +15,7 @@ const StartTestConfirmationModal = ({ test, open, onClose, onConfirm }) => {
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Spustiť test ?</DialogTitle>
+      <DialogTitle sx={{ fontWeight: 600 }}>Spustiť test ?</DialogTitle>
       <DialogContent>
         <Box>
           <Typography variant="h6" gutterBottom>

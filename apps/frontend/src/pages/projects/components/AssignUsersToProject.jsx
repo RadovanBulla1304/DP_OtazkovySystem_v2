@@ -61,7 +61,7 @@ const AssignUsersToProject = ({ open, onClose, projectId, onSuccess }) => {
     <Dialog open={open} onClose={handleCancel} maxWidth="lg" fullWidth>
       <DialogTitle>
         <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Typography variant="h6">Priradiť používateľov k projektu</Typography>
+          <DialogTitle sx={{ fontWeight: 600, p: 0 }}>Priradiť používateľov k projektu</DialogTitle>
           {selectedUsers.length > 0 && (
             <Typography variant="body2" color="primary">
               {selectedUsers.length} používateľ(ov) vybratých

@@ -129,7 +129,7 @@ const AddProjectModal = ({ open, onClose, onSuccess }) => {
   return (
     <>
       <Dialog open={open} onClose={handleCancel} maxWidth="sm" fullWidth>
-        <DialogTitle>Pridať nový projekt</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 600 }}>Pridať nový projekt</DialogTitle>
         <DialogContent>
           <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
             <Stack spacing={3}>

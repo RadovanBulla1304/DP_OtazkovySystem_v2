@@ -5,19 +5,7 @@ import {
   useRemoveUserMutation
 } from '@app/redux/api';
 import DeleteIcon from '@mui/icons-material/Delete';
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Grid2,
-  IconButton,
-  Paper,
-  Tooltip,
-  Typography
-} from '@mui/material';
+import { Box, Button, Grid2, IconButton, Paper, Tooltip, Typography } from '@mui/material';
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
@@ -25,6 +13,7 @@ import AddUserModal from '../../dashboard/components/AddUserModal';
 import AssignToSubject from '../../dashboard/components/AssignToSubject';
 import EditUserModal from '../../dashboard/components/EditUserModal';
 import UserPointsModal from '../../dashboard/components/UserPointsModal';
+import DeleteUserDialog from './DeleteUserDialog';
 
 const UsersList = () => {
   const { data, isLoading } = useGetUsersListQuery();
@@ -243,43 +232,13 @@ const UsersList = () => {
       />
 
       {/* Confirmation Dialog for Delete User */}
-      {userToDelete && (
-        <Dialog
-          open={!!userToDelete}
-          onClose={() => setUserToDelete(null)}
-          aria-labelledby="delete-user-dialog-title"
-          aria-describedby="delete-user-dialog-description"
-        >
-          <DialogTitle id="delete-user-dialog-title">Vymazať používateľa?</DialogTitle>
-          <DialogContent>
-            <Typography id="delete-user-dialog-description">
-              Naozaj chcete odstrániť používateľa{' '}
-              <strong>
-                {userToDelete.name} {userToDelete.surname}
-              </strong>
-              ? Táto akcia je nevratná.
-            </Typography>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={() => setUserToDelete(null)}
-              variant="outlined"
-              disabled={isDeleting}
-              color="error"
-            >
-              Zrušiť
-            </Button>
-            <Button
-              onClick={() => onRemoveHandler(userToDelete)}
-              color="error"
-              variant="contained"
-              disabled={isDeleting}
-            >
-              {isDeleting ? 'Mazanie...' : 'Vymazať'}
-            </Button>
-          </DialogActions>
-        </Dialog>
-      )}
+      <DeleteUserDialog
+        open={!!userToDelete}
+        user={userToDelete}
+        isDeleting={isDeleting}
+        onClose={() => setUserToDelete(null)}
+        onConfirm={() => onRemoveHandler(userToDelete)}
+      />
     </Box>
   );
 };

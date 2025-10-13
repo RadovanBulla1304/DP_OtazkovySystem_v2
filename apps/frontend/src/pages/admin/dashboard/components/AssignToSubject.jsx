@@ -3,13 +3,13 @@ import {
   Box,
   Button,
   CircularProgress,
+  DialogTitle,
   FormControl,
   InputLabel,
   MenuItem,
   Modal,
   Select,
-  Stack,
-  Typography
+  Stack
 } from '@mui/material';
 import PropTypes from 'prop-types';
 import { useState } from 'react';
@@ -60,9 +60,9 @@ const AssignToSubject = ({ open, onClose, userIds, onSuccess }) => {
   return (
     <Modal open={open} onClose={handleCancel} aria-labelledby="modal-assign-subject-title">
       <Box sx={style} component="form" onSubmit={handleSubmit}>
-        <Typography id="modal-assign-subject-title" variant="h6" component="h2" mb={3}>
+        <DialogTitle id="modal-assign-subject-title" sx={{ fontWeight: 600, p: 0 }} mb={3}>
           Priradiť používateľov k predmetu
-        </Typography>
+        </DialogTitle>
         <Stack spacing={3}>
           <FormControl fullWidth>
             <InputLabel id="select-subject-label">Predmet</InputLabel>

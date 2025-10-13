@@ -2,7 +2,7 @@ import { useGetUserPointsQuery, useUpdateQuestionMutation } from '@app/redux/api
 import { Box, Button, Chip, Stack, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
 import { useState } from 'react';
-import EditQuestionModal from '../../../subjects/components/EditQuestionModal';
+import EditQuestionModal from '../EditQuestionModal';
 
 const Week3 = ({
   week,

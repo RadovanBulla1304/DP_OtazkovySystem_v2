@@ -16,7 +16,9 @@ const DeleteSubjectDialog = ({ open, onClose, onConfirm, subject, isDeleting }) 
       aria-labelledby="delete-subject-dialog-title"
       aria-describedby="delete-subject-dialog-description"
     >
-      <DialogTitle id="delete-subject-dialog-title">Vymazať predmet?</DialogTitle>
+      <DialogTitle id="delete-subject-dialog-title" sx={{ fontWeight: 600 }}>
+        Vymazať predmet?
+      </DialogTitle>
       <DialogContent>
         <Typography id="delete-subject-dialog-description">
           Naozaj chcete odstrániť predmet <strong>{subject?.name}</strong> a všetky jeho moduly?

@@ -68,7 +68,7 @@ const AddSubjectModal = ({ open, onClose, onSuccess }) => {
 
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
-      <DialogTitle>Vytvoriť nový predmet</DialogTitle>
+      <DialogTitle sx={{ fontWeight: 600 }}>Vytvoriť nový predmet</DialogTitle>
       <DialogContent sx={{ pt: 2 }}>
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>

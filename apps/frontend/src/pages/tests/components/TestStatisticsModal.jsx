@@ -59,7 +59,7 @@ const TestStatisticsModal = ({ testId, open, onClose }) => {
     <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
       <DialogTitle>
         <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Typography variant="h5">Štatistiky testu</Typography>
+          <DialogTitle sx={{ p: 0, fontWeight: 600 }}>Štatistiky testu</DialogTitle>
           <IconButton onClick={onClose} size="small">
             <CancelIcon />
           </IconButton>
@@ -394,8 +394,8 @@ const TestStatisticsModal = ({ testId, open, onClose }) => {
         )}
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} variant="outlined">
-          Zavrieť
+        <Button onClick={onClose} variant="outlined" color="error">
+          Zrušiť
         </Button>
       </DialogActions>
 
@@ -405,7 +405,9 @@ const TestStatisticsModal = ({ testId, open, onClose }) => {
         onClose={() => setDeleteAttemptId(null)}
         aria-labelledby="delete-attempt-dialog-title"
       >
-        <DialogTitle id="delete-attempt-dialog-title">Vymazať pokus o test?</DialogTitle>
+        <DialogTitle id="delete-attempt-dialog-title" sx={{ fontWeight: 600 }}>
+          Vymazať pokus o test?
+        </DialogTitle>
         <DialogContent>
           <Typography>Naozaj chcete vymazať tento pokus o test? Táto akcia je nevratná.</Typography>
         </DialogContent>

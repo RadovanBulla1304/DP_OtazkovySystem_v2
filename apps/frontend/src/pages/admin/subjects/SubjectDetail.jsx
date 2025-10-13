@@ -412,6 +412,7 @@ const SubjectDetail = () => {
           <DataGrid
             rows={modules}
             columns={columns}
+            density="compact"
             getRowId={(row) => row._id || Math.random().toString()}
             pageSizeOptions={[5, 10, 25]}
             initialState={{
@@ -451,6 +452,7 @@ const SubjectDetail = () => {
           <DataGrid
             rows={assignedUsersInfo}
             columns={assignedUsersColumns}
+            density="compact"
             getRowId={(row) => row._id}
             checkboxSelection
             isRowSelectable={() => true}

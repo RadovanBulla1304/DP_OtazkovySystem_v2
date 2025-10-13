@@ -1,6 +1,8 @@
 -------------------------------------------
 bugy
 
+addmodul modal prerobit na dialog 
+v week2 na pravej strane dahboaardu sa mi neloadli otazky
 -------------------------------------------
 
 

@@ -139,7 +139,7 @@ const AllUsersQuestions = () => {
 
   return (
     <Box sx={{ pb: 3, pt: 3 }}>
-      <Typography variant="h4" component="h1" gutterBottom>
+      <Typography variant="h4" gutterBottom>
         Validované otázky všetkých používateľov
       </Typography>
       {/* Filters */}

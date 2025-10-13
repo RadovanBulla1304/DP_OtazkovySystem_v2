@@ -170,7 +170,7 @@ const AddQuestionDialog = ({ open, onClose }) => {
 
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
-      <DialogTitle>Pridať novú otázku</DialogTitle>
+      <DialogTitle sx={{ fontWeight: 600 }}>Pridať novú otázku</DialogTitle>
 
       <DialogContent>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 1 }}>

@@ -84,7 +84,7 @@ const AssignPointsToProject = ({ open, onClose, project, onSuccess }) => {
 
   return (
     <Dialog open={open} onClose={handleCancel} maxWidth="sm" fullWidth>
-      <DialogTitle>Priradiť body za projekt</DialogTitle>
+      <DialogTitle sx={{ fontWeight: 600 }}>Priradiť body za projekt</DialogTitle>
       <DialogContent>
         <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
           {project && (

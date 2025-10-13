@@ -145,7 +145,7 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
     if (matchingPoints.length > 0) {
       // Calculate current sum of all matching points
       const currentSum = matchingPoints.reduce((sum, p) => sum + p.points, 0);
-      
+
       // If the displayed value matches the sum, proceed
       if (currentSum === newValue) {
         setEditingCell(null);
@@ -154,7 +154,7 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
 
       // Calculate the difference to apply
       const difference = newValue - currentSum;
-      
+
       // Update the first matching point by adding the difference
       const pointToUpdate = matchingPoints[0];
       const updatedPointValue = pointToUpdate.points + difference;
@@ -173,7 +173,9 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
           reason: pointToUpdate.reason
         }).unwrap();
 
-        toast.success(`Body aktualizované: ${currentSum} → ${newValue} (${difference > 0 ? '+' : ''}${difference})`);
+        toast.success(
+          `Body aktualizované: ${currentSum} → ${newValue} (${difference > 0 ? '+' : ''}${difference})`
+        );
         // Refresh data
         getUsersPointsSummary(userIds);
       } catch (error) {

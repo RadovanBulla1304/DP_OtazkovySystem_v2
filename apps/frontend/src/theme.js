@@ -14,13 +14,13 @@ const theme = createTheme({
             styleOverrides: {
                 outlined: {
                     '&:hover': {
-                        borderColor: '#b71c1c', // Dark red border on hover
-                        backgroundColor: 'rgba(183, 28, 28, 0.04)', // Subtle red background
-                        boxShadow: '0 2px 8px rgba(183, 28, 28, 0.25)' // Red box shadow
+                        boxShadow: '0 2px 8px rgba(183, 28, 28, 0.18)' // Red box shadow
                     }
                 },
                 outlinedError: {
                     '&:hover': {
+                        borderColor: '#b71c1c', // Dark red border on hover
+
                         backgroundColor: 'rgba(127, 0, 0, 0.04)',
                         boxShadow: '0 2px 8px rgba(127, 0, 0, 0.3)'
                     }

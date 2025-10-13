@@ -1,22 +1,34 @@
-import ConfirmationDialog from '@app/components/ConfirmationDialog';
 import CenteredCheckIcon from '@app/components/table/CenteredCheckIcon';
 import { useGetAllTeachersQuery, useRemoveTeacherMutation } from '@app/redux/api';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { IconButton, Paper, Tooltip, Typography } from '@mui/material';
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
+import { useState } from 'react';
 import { toast } from 'react-toastify';
 import EditUserModal from '../../dashboard/components/EditUserModal';
+import DeleteTeacherDialog from './DeleteTeacherDialog';
 
 const TeacherList = () => {
   const { data = [], isLoading } = useGetAllTeachersQuery();
   const [removeTeacher] = useRemoveTeacherMutation();
+  const [teacherToDelete, setTeacherToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  const onRemoveHandler = async (id) => {
-    const response = await removeTeacher(id);
-    if (!response.error) {
-      toast.success('Učiteľ bol úspešne odstránený');
-    } else {
-      toast.error('Chyba pri odstraňovaní učiteľa: ' + response.error?.data?.message);
+  const onRemoveHandler = async (teacher) => {
+    try {
+      setIsDeleting(true);
+      const response = await removeTeacher(teacher._id);
+      if (!response.error) {
+        toast.success('Učiteľ bol úspešne odstránený');
+      } else {
+        toast.error('Chyba pri odstraňovaní učiteľa: ' + response.error?.data?.message);
+      }
+    } catch (error) {
+      console.error('Error during deletion:', error);
+      toast.error('Chyba pri odstraňovaní učiteľa');
+    } finally {
+      setIsDeleting(false);
+      setTeacherToDelete(null);
     }
   };
 
@@ -42,17 +54,18 @@ const TeacherList = () => {
       headerName: 'Akcie',
       getActions: (params) => [
         <EditUserModal key={'edit'} userData={params.row} isTeacher={true} />, // teacher
-        <ConfirmationDialog
-          key={'delete'}
-          title={`Naozaj chcete odstrániť učiteľa ${params.row.name} ${params.row.surname}?`}
-          onAccept={() => onRemoveHandler(params.row._id)}
-        >
-          <Tooltip title="Odstráň učiteľa">
-            <IconButton color="error">
-              <DeleteIcon />
-            </IconButton>
-          </Tooltip>
-        </ConfirmationDialog>
+        <Tooltip key={'delete'} title="Odstrániť učiteľa">
+          <IconButton
+            color="error"
+            onClick={(e) => {
+              e.stopPropagation();
+              setTeacherToDelete(params.row);
+            }}
+            disabled={isDeleting}
+          >
+            <DeleteIcon />
+          </IconButton>
+        </Tooltip>
       ]
     }
   ];
@@ -82,6 +95,15 @@ const TeacherList = () => {
           ignoreDiacritics
         />
       </Paper>
+
+      {/* Confirmation Dialog for Delete Teacher */}
+      <DeleteTeacherDialog
+        open={!!teacherToDelete}
+        teacher={teacherToDelete}
+        isDeleting={isDeleting}
+        onClose={() => setTeacherToDelete(null)}
+        onConfirm={() => onRemoveHandler(teacherToDelete)}
+      />
     </>
   );
 };

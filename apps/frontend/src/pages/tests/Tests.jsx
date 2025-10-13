@@ -355,7 +355,9 @@ const Tests = () => {
           aria-labelledby="delete-test-dialog-title"
           aria-describedby="delete-test-dialog-description"
         >
-          <DialogTitle id="delete-test-dialog-title">Vymazať test?</DialogTitle>
+          <DialogTitle id="delete-test-dialog-title" sx={{ fontWeight: 600 }}>
+            Vymazať test?
+          </DialogTitle>
           <DialogContent>
             <DialogContentText id="delete-test-dialog-description">
               Naozaj chcete odstrániť tento test a všetky jeho pokusy? Táto akcia je nevratná.

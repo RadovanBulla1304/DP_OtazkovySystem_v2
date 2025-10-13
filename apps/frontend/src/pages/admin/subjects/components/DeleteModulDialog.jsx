@@ -3,8 +3,8 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
-  DialogContentText,
-  DialogTitle
+  DialogTitle,
+  Typography
 } from '@mui/material';
 import PropTypes from 'prop-types';
 
@@ -16,14 +16,16 @@ const DeleteModulDialog = ({ open, onClose, onConfirm, modul, isDeleting }) => {
       aria-labelledby="delete-modul-dialog-title"
       aria-describedby="delete-modul-dialog-description"
     >
-      <DialogTitle id="delete-modul-dialog-title">Vymazať modul?</DialogTitle>
+      <DialogTitle id="delete-modul-dialog-title" sx={{ fontWeight: 600 }}>
+        Vymazať modul?
+      </DialogTitle>
       <DialogContent>
-        <DialogContentText id="delete-modul-dialog-description">
+        <Typography id="delete-modul-dialog-description">
           Naozaj chcete odstrániť modul <strong>{modul?.title}</strong>? Táto akcia je nevratná.
-        </DialogContentText>
+        </Typography>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} disabled={isDeleting} color="error">
+        <Button onClick={onClose} disabled={isDeleting} color="error" variant="outlined">
           Zrušiť
         </Button>
         <Button onClick={onConfirm} color="error" variant="contained" disabled={isDeleting}>

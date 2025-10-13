@@ -1,6 +1,6 @@
 import { useEditModulMutation } from '@app/redux/api';
 import { joiResolver } from '@hookform/resolvers/joi';
-import { Box, Button, Modal, Stack, TextField, Typography } from '@mui/material';
+import { Box, Button, DialogTitle, Modal, Stack, TextField } from '@mui/material';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import dayjs from 'dayjs';
@@ -83,9 +83,9 @@ const EditModulModal = ({ open, onClose, onSuccess, modul }) => {
   return (
     <Modal open={open} onClose={handleCancel} aria-labelledby="modal-editmodul-title">
       <Box sx={style} component="form" onSubmit={handleSubmit(onSubmit)}>
-        <Typography id="modal-editmodul-title" variant="h6" component="h2" mb={3}>
+        <DialogTitle id="modal-editmodul-title" sx={{ fontWeight: 600, p: 0, mb: 3 }}>
           Upraviť modul
-        </Typography>
+        </DialogTitle>
 
         <Stack spacing={3}>
           <Controller

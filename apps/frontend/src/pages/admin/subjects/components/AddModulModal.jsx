@@ -3,12 +3,14 @@ import { joiResolver } from '@hookform/resolvers/joi';
 import {
   Box,
   Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   FormControlLabel,
-  Modal,
   Stack,
   Switch,
-  TextField,
-  Typography
+  TextField
 } from '@mui/material';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -17,18 +19,6 @@ import { useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { createModulSchema } from '../../schemas/modul.schema';
-
-const style = {
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  width: 400,
-  bgcolor: 'background.paper',
-  boxShadow: 24,
-  p: 4,
-  borderRadius: 2
-};
 
 const AddModulModal = ({ open, onClose, subjectId, onSuccess }) => {
   const [createModul, { isLoading }] = useCreateModulMutation();
@@ -100,157 +90,166 @@ const AddModulModal = ({ open, onClose, subjectId, onSuccess }) => {
   };
 
   return (
-    <Modal open={open} onClose={handleCancel} aria-labelledby="modal-modal-title">
-      <Box sx={style} component="form" onSubmit={handleSubmit(onSubmit)}>
-        <Typography id="modal-modal-title" variant="h6" component="h2" mb={3}>
+    <Dialog open={open} onClose={handleCancel} maxWidth="lg" fullwidth>
+      <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ p: 2, width: 500 }}>
+        <DialogTitle id="modal-modal-title" sx={{ fontWeight: 600, p: 0, pb: 2 }}>
           Pridať nový modul
-        </Typography>
+        </DialogTitle>
 
-        <Stack spacing={3}>
-          <Controller
-            name="title"
-            control={control}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                label="Názov modulu"
-                fullWidth
-                error={!!errors.title}
-                helperText={errors.title?.message}
-                disabled={isLoading}
-              />
-            )}
-          />
-
-          <Controller
-            name="description"
-            control={control}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                label="Popis modulu"
-                fullWidth
-                multiline
-                minRows={2}
-                error={!!errors.description}
-                helperText={errors.description?.message}
-                disabled={isLoading}
-              />
-            )}
-          />
-
-          {/* week_number is computed automatically and not set manually */}
-
-          <LocalizationProvider dateAdapter={AdapterDateFns}>
+        <DialogContent sx={{ p: 0 }}>
+          <Stack spacing={3}>
             <Controller
-              name="date_start"
+              name="title"
               control={control}
               render={({ field }) => (
-                <DatePicker
-                  label="Dátum začiatku"
-                  value={field.value}
-                  onChange={(date) => field.onChange(date)}
+                <TextField
+                  {...field}
+                  label="Názov modulu"
+                  fullWidth
+                  error={!!errors.title}
+                  helperText={errors.title?.message}
                   disabled={isLoading}
-                  slotProps={{
-                    textField: {
-                      fullWidth: true,
-                      error: !!errors.date_start,
-                      helperText: errors.date_start?.message
-                    }
-                  }}
                 />
               )}
             />
-
-            {/* Week duration buttons */}
-            {startDate && (
-              <Box sx={{ display: 'flex', gap: 1, my: 1 }}>
-                {[1, 2, 3].map((weeks) => (
-                  <Button
-                    key={weeks}
-                    variant="outlined"
-                    size="small"
-                    onClick={() => {
-                      const newEnd = new Date(startDate);
-                      newEnd.setDate(newEnd.getDate() + 7 * weeks - 1);
-                      setValue('date_end', newEnd);
-                    }}
-                  >
-                    {weeks} týždeň{weeks > 1 ? 'e' : ''}
-                  </Button>
-                ))}
-              </Box>
-            )}
 
             <Controller
-              name="date_end"
+              name="description"
               control={control}
               render={({ field }) => (
-                <DatePicker
-                  label="Dátum konca"
-                  value={field.value}
-                  onChange={(date) => field.onChange(date)}
-                  disabled={isLoading || !startDate}
-                  minDate={startDate || undefined}
-                  slotProps={{
-                    textField: {
-                      fullWidth: true,
-                      error: !!errors.date_end,
-                      helperText: errors.date_end?.message
-                    }
-                  }}
+                <TextField
+                  {...field}
+                  label="Popis modulu"
+                  fullWidth
+                  multiline
+                  minRows={2}
+                  error={!!errors.description}
+                  helperText={errors.description?.message}
+                  disabled={isLoading}
                 />
               )}
             />
-          </LocalizationProvider>
 
-          <Controller
-            name="required_questions_per_user"
-            control={control}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                label="Počet povinných otázok na užívateľa"
-                type="number"
-                fullWidth
-                error={!!errors.required_questions_per_user}
-                helperText={errors.required_questions_per_user?.message}
-                disabled={isLoading}
-                inputProps={{ min: 1 }}
-              />
-            )}
-          />
+            {/* week_number is computed automatically and not set manually */}
 
-          <Controller
-            name="is_active"
-            control={control}
-            render={({ field }) => (
-              <FormControlLabel
-                control={
-                  <Switch
-                    {...field}
-                    checked={!!field.value}
-                    onChange={(_, checked) => field.onChange(checked)}
-                    color="primary"
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
+              <Controller
+                name="date_start"
+                control={control}
+                render={({ field }) => (
+                  <DatePicker
+                    label="Dátum začiatku"
+                    value={field.value}
+                    onChange={(date) => field.onChange(date)}
                     disabled={isLoading}
+                    slotProps={{
+                      textField: {
+                        fullWidth: true,
+                        error: !!errors.date_start,
+                        helperText: errors.date_start?.message
+                      }
+                    }}
                   />
-                }
-                label="Modul je aktívny"
+                )}
               />
-            )}
-          />
 
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 2 }}>
-            <Button variant="outlined" onClick={handleCancel} disabled={isLoading} color="error">
-              Zrušiť
-            </Button>
-            <Button type="submit" variant="contained" color="primary" disabled={isLoading}>
-              {isLoading ? 'Ukladá sa...' : 'Uložiť'}
-            </Button>
-          </Box>
-        </Stack>
+              {/* Week duration buttons */}
+              {startDate && (
+                <Box sx={{ display: 'flex', gap: 1, my: 1 }}>
+                  {[1, 2, 3].map((weeks) => (
+                    <Button
+                      key={weeks}
+                      variant="outlined"
+                      size="small"
+                      onClick={() => {
+                        const newEnd = new Date(startDate);
+                        newEnd.setDate(newEnd.getDate() + 7 * weeks - 1);
+                        setValue('date_end', newEnd);
+                      }}
+                    >
+                      {weeks} týždeň{weeks > 1 ? 'e' : ''}
+                    </Button>
+                  ))}
+                </Box>
+              )}
+
+              <Controller
+                name="date_end"
+                control={control}
+                render={({ field }) => (
+                  <DatePicker
+                    label="Dátum konca"
+                    value={field.value}
+                    onChange={(date) => field.onChange(date)}
+                    disabled={isLoading || !startDate}
+                    minDate={startDate || undefined}
+                    slotProps={{
+                      textField: {
+                        fullWidth: true,
+                        error: !!errors.date_end,
+                        helperText: errors.date_end?.message
+                      }
+                    }}
+                  />
+                )}
+              />
+            </LocalizationProvider>
+
+            <Controller
+              name="required_questions_per_user"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label="Počet povinných otázok na užívateľa"
+                  type="number"
+                  fullWidth
+                  error={!!errors.required_questions_per_user}
+                  helperText={errors.required_questions_per_user?.message}
+                  disabled={isLoading}
+                  inputProps={{ min: 1 }}
+                />
+              )}
+            />
+
+            <Controller
+              name="is_active"
+              control={control}
+              render={({ field }) => (
+                <FormControlLabel
+                  control={
+                    <Switch
+                      {...field}
+                      checked={!!field.value}
+                      onChange={(_, checked) => field.onChange(checked)}
+                      color="primary"
+                      disabled={isLoading}
+                    />
+                  }
+                  label="Modul je aktívny"
+                />
+              )}
+            />
+
+            <DialogActions>
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+                <Button
+                  variant="outlined"
+                  onClick={handleCancel}
+                  disabled={isLoading}
+                  color="error"
+                >
+                  Zrušiť
+                </Button>
+                <Button type="submit" variant="contained" color="primary" disabled={isLoading}>
+                  {isLoading ? 'Ukladá sa...' : 'Uložiť'}
+                </Button>
+              </Box>
+            </DialogActions>
+          </Stack>
+        </DialogContent>
       </Box>
-    </Modal>
+    </Dialog>
   );
 };
 

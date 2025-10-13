@@ -147,16 +147,7 @@ const PeerEvaluationModal = ({ open, onClose, subjectId }) => {
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xl" fullWidth>
-      <DialogTitle>
-        <Box>
-          <Typography variant="h6" component="div">
-            Vzájomné hodnotenie projektov
-          </Typography>
-          <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
-            Kliknite na bunku pre zadanie hodnotenia. Nemôžete hodnotiť vlastný projekt.
-          </Typography>
-        </Box>
-      </DialogTitle>
+      <DialogTitle sx={{ fontWeight: 600 }}>Vzájomné hodnotenie projektov</DialogTitle>
       <DialogContent>
         <TableContainer component={Paper} sx={{ maxHeight: 600 }}>
           <Table stickyHeader size="small">

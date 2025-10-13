@@ -150,7 +150,7 @@ const Forum = () => {
           />
 
           {/* Module filter */}
-          <FormControl sx={{ minWidth: 200 }}>
+          <FormControl sx={{ minWidth: 150 }}>
             <InputLabel>Modul</InputLabel>
             <Select value={filters.modul} onChange={handleFilterChange('modul')} label="Modul">
               <MenuItem value="">Všetky moduly</MenuItem>
@@ -162,9 +162,40 @@ const Forum = () => {
             </Select>
           </FormControl>
 
+          {/* Author type filter */}
+          <FormControl sx={{ minWidth: 150 }}>
+            <InputLabel>Autor</InputLabel>
+            <Select
+              value={filters.createdByModel}
+              onChange={handleFilterChange('createdByModel')}
+              label="Autor"
+            >
+              <MenuItem value="">Všetci</MenuItem>
+              <MenuItem value="User">Anonymní používatelia</MenuItem>
+              <MenuItem value="Teacher">Učitelia</MenuItem>
+            </Select>
+          </FormControl>
+
+          {/* Sort filter */}
+          <FormControl sx={{ minWidth: 150 }}>
+            <InputLabel>Zoradiť podľa</InputLabel>
+            <Select
+              value={filters.sortBy}
+              onChange={handleFilterChange('sortBy')}
+              label="Zoradiť podľa"
+            >
+              <MenuItem value="likes">Najobľúbenejšie (Like)</MenuItem>
+              <MenuItem value="dislikes">Najnegatívnejšie (Dislike)</MenuItem>
+              <MenuItem value="popular">Najpopulárnejšie</MenuItem>
+              <MenuItem value="comments">Najviac komentárov</MenuItem>
+              <MenuItem value="newest">Najnovšie</MenuItem>
+              <MenuItem value="oldest">Najstaršie</MenuItem>
+            </Select>
+          </FormControl>
+
           {/* Tags filter - Chips */}
-          <Box sx={{ minWidth: 300 }}>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+          <Box sx={{ minWidth: 200 }}>
+            <Typography variant="body2" color="text.secondary">
               Filtrovať podľa tagov
             </Typography>
             <Box
@@ -199,37 +230,6 @@ const Forum = () => {
               )}
             </Box>
           </Box>
-
-          {/* Sort filter */}
-          <FormControl sx={{ minWidth: 200 }}>
-            <InputLabel>Zoradiť podľa</InputLabel>
-            <Select
-              value={filters.sortBy}
-              onChange={handleFilterChange('sortBy')}
-              label="Zoradiť podľa"
-            >
-              <MenuItem value="likes">Najobľúbenejšie (Like)</MenuItem>
-              <MenuItem value="dislikes">Najnegatívnejšie (Dislike)</MenuItem>
-              <MenuItem value="popular">Najpopulárnejšie</MenuItem>
-              <MenuItem value="comments">Najviac komentárov</MenuItem>
-              <MenuItem value="newest">Najnovšie</MenuItem>
-              <MenuItem value="oldest">Najstaršie</MenuItem>
-            </Select>
-          </FormControl>
-
-          {/* Author type filter */}
-          <FormControl sx={{ minWidth: 200 }}>
-            <InputLabel>Autor</InputLabel>
-            <Select
-              value={filters.createdByModel}
-              onChange={handleFilterChange('createdByModel')}
-              label="Autor"
-            >
-              <MenuItem value="">Všetci</MenuItem>
-              <MenuItem value="User">Anonymní používatelia</MenuItem>
-              <MenuItem value="Teacher">Učitelia</MenuItem>
-            </Select>
-          </FormControl>
 
           {/* Clear filters */}
           <Button onClick={handleClearFilters} variant="outlined" sx={{ height: 'fit-content' }}>

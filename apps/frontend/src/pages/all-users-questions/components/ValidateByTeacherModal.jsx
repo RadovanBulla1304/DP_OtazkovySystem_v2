@@ -60,7 +60,7 @@ const ValidateByTeacherModal = ({ open, onClose, question, onSubmit, isSubmittin
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>
         <Box display="flex" alignItems="center" gap={1}>
-          <Typography variant="h6">Validácia otázky učiteľom</Typography>
+          <DialogTitle sx={{ fontWeight: 600, p: 0 }}>Validácia otázky učiteľom</DialogTitle>
           {question.validated_by_teacher && (
             <Chip label="Validované učiteľom" color="primary" size="small" />
           )}

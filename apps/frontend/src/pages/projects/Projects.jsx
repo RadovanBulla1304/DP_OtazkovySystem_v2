@@ -328,7 +328,6 @@ const Projects = () => {
                             color="error"
                             onClick={(e) => {
                               e.stopPropagation();
-                              console.log('Delete button clicked for project:', project.name);
                               setProjectToDelete(project);
                             }}
                             disabled={isDeleting}
@@ -354,7 +353,9 @@ const Projects = () => {
           aria-labelledby="delete-project-dialog-title"
           aria-describedby="delete-project-dialog-description"
         >
-          <DialogTitle id="delete-project-dialog-title">Odstrániť projekt?</DialogTitle>
+          <DialogTitle id="delete-project-dialog-title" sx={{ fontWeight: 600 }}>
+            Odstrániť projekt?
+          </DialogTitle>
           <DialogContent>
             <Typography id="delete-project-dialog-description">
               Ste si istý, že chcete odstrániť projekt <strong>{projectToDelete.name}</strong>? Táto

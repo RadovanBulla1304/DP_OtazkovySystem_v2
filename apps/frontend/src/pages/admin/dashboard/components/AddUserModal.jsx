@@ -10,11 +10,11 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
+  DialogTitle,
   Grid,
   TextField,
   ToggleButton,
-  ToggleButtonGroup,
-  Typography
+  ToggleButtonGroup
 } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-toastify';
@@ -166,9 +166,9 @@ const AddUserModal = () => {
               justifyContent: 'space-between'
             }}
           >
-            <Typography variant="h6" component="h2">
+            <DialogTitle sx={{ fontWeight: 600, p: 0 }}>
               Pridaj používateľa alebo učiteľa
-            </Typography>
+            </DialogTitle>
             <ToggleButtonGroup
               color="primary"
               value={userType}
