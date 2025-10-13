@@ -13,7 +13,6 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Divider,
   IconButton,
   Paper,
   Table,
@@ -27,7 +26,6 @@ import {
   Tooltip,
   Typography
 } from '@mui/material';
-import { format } from 'date-fns';
 import PropTypes from 'prop-types';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
@@ -36,7 +34,6 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
   const [getUsersPointsSummary, { data: pointsData, isLoading, error }] =
     useGetUsersPointsSummaryMutation();
   const [updatePoint] = useUpdatePointMutation();
-  const [expandedUser, setExpandedUser] = useState(null);
   const [editingCell, setEditingCell] = useState(null); // { userId, category, moduleId }
   const [editValue, setEditValue] = useState('');
 
@@ -60,42 +57,24 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
     }
   }, [open, userIds, getUsersPointsSummary]);
 
-  // Capitalize first letter of category
-  const formatCategory = (category) => {
-    if (!category) return '';
-    return category.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-  };
-
-  // Format date to readable form
-  const formatDate = (dateString) => {
-    if (!dateString) return '';
-    return format(new Date(dateString), 'dd.MM.yyyy HH:mm');
-  };
-
-  const handleToggleDetails = (userId) => {
-    if (expandedUser === userId) {
-      setExpandedUser(null);
-    } else {
-      setExpandedUser(userId);
-    }
-  };
-
   // Pagination handlers
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
-    // Close any expanded rows when changing page
-    setExpandedUser(null);
   };
 
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
-    // Close any expanded rows when changing rows per page
-    setExpandedUser(null);
   };
 
   // Edit cell handlers
   const handleCellClick = (userId, category, moduleId, currentValue, pointDetails) => {
+    // Check if there are any points for this category
+    if (!pointDetails || pointDetails.length === 0) {
+      toast.info('Používateľ nemá žiadne body v tejto kategórii na úpravu');
+      return;
+    }
+
     setEditingCell({ userId, category, moduleId, pointDetails });
     setEditValue(currentValue || '0');
   };
@@ -205,8 +184,12 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
       editingCell?.category === category &&
       editingCell?.moduleId === moduleId;
 
+    // Check if cell has points and is editable
+    const hasPoints = pointDetails && pointDetails.length > 0;
+    const cursorStyle = hasPoints ? 'pointer' : 'default';
+
     return (
-      <TableCell align="center" sx={{ ...sx, cursor: 'pointer', position: 'relative' }}>
+      <TableCell align="center" sx={{ ...sx, cursor: cursorStyle, position: 'relative' }}>
         {isEditing ? (
           <TextField
             autoFocus
@@ -228,22 +211,26 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
               justifyContent: 'center',
               gap: 0.5,
               '&:hover .edit-icon': {
-                opacity: 1
+                opacity: hasPoints ? 1 : 0
               }
             }}
           >
-            <Typography variant="body2">{value || '-'}</Typography>
-            <Tooltip title="Kliknite pre úpravu">
-              <EditIcon
-                className="edit-icon"
-                sx={{
-                  fontSize: 14,
-                  opacity: 0,
-                  transition: 'opacity 0.2s',
-                  color: 'text.secondary'
-                }}
-              />
-            </Tooltip>
+            <Typography variant="body2" sx={{ color: hasPoints ? 'inherit' : 'text.disabled' }}>
+              {value || '-'}
+            </Typography>
+            {hasPoints && (
+              <Tooltip title="Kliknite pre úpravu">
+                <EditIcon
+                  className="edit-icon"
+                  sx={{
+                    fontSize: 14,
+                    opacity: 0,
+                    transition: 'opacity 0.2s',
+                    color: 'text.secondary'
+                  }}
+                />
+              </Tooltip>
+            )}
           </Box>
         )}
       </TableCell>
@@ -263,13 +250,14 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
     <Dialog
       open={open}
       onClose={onClose}
-      maxWidth="lg"
-      fullWidth
+      maxWidth={false}
       PaperProps={{
         sx: {
+          width: '95vw',
+          maxWidth: '95vw',
+          maxHeight: '95vh',
           borderRadius: '8px',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
-          maxHeight: '90vh'
+          boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
         }
       }}
     >
@@ -434,9 +422,6 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
                     >
                       Iné
                     </TableCell>
-                    <TableCell rowSpan={2} sx={{ fontWeight: 'bold' }}>
-                      Akcie
-                    </TableCell>
                   </TableRow>
                   {/* Activity type row */}
                   <TableRow>
@@ -464,6 +449,7 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
                       </React.Fragment>
                     ))}
                     {/* Extra columns */}
+                    <TableCell sx={{ borderRight: '1px solid rgba(224, 224, 224, 1)' }}></TableCell>
                     <TableCell sx={{ borderRight: '1px solid rgba(224, 224, 224, 1)' }}></TableCell>
                     <TableCell sx={{ borderRight: '1px solid rgba(224, 224, 224, 1)' }}></TableCell>
                     <TableCell sx={{ borderRight: '2px solid rgba(224, 224, 224, 1)' }}></TableCell>
@@ -685,193 +671,7 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
                                 fontWeight: 'bold'
                               }}
                             />
-
-                            <TableCell align="center">
-                              <Button
-                                size="small"
-                                variant={
-                                  expandedUser === userData.user._id ? 'contained' : 'outlined'
-                                }
-                                color={expandedUser === userData.user._id ? 'secondary' : 'primary'}
-                                onClick={() => handleToggleDetails(userData.user._id)}
-                                sx={{
-                                  minWidth: '120px',
-                                  fontSize: '0.75rem',
-                                  fontWeight: 'bold'
-                                }}
-                              >
-                                {expandedUser === userData.user._id
-                                  ? 'Skryť detail'
-                                  : 'Zobraziť detail'}
-                              </Button>
-                            </TableCell>
                           </TableRow>
-                          {/* Expanded details view */}
-                          {expandedUser === userData.user._id && (
-                            <TableRow>
-                              <TableCell colSpan={42} sx={{ py: 0 }}>
-                                <Box sx={{ p: 2 }}>
-                                  <Typography variant="h6" gutterBottom>
-                                    Detail bodov používateľa {userData.user.name}{' '}
-                                    {userData.user.surname}
-                                  </Typography>
-                                  <Divider sx={{ my: 1 }} />
-
-                                  {/* Group points by module for better organization */}
-                                  {Array.from({ length: 12 }, (_, moduleIndex) => {
-                                    const module = modules[moduleIndex];
-
-                                    // Filter points for this module
-                                    const modulePoints = userData.points.details.filter(
-                                      (detail) => {
-                                        // Special categories don't belong to modules
-                                        if (
-                                          [
-                                            'test_performance',
-                                            'forum_participation',
-                                            'project_work',
-                                            'other'
-                                          ].includes(detail.category)
-                                        ) {
-                                          return false;
-                                        }
-
-                                        // First priority: try question-based matching
-                                        if (detail.question_id && module?.questions) {
-                                          return module.questions.includes(detail.question_id);
-                                        }
-
-                                        // Second priority: try week-based matching with intelligent distribution
-                                        const weekMatch =
-                                          detail.reason?.match(/týždni (\d+)/i) ||
-                                          detail.reason?.match(/[Tt]ýždeň (\d+)/);
-
-                                        if (weekMatch && weekMatch[1]) {
-                                          const week = parseInt(weekMatch[1]);
-                                          if (modules.length > 0) {
-                                            // Distribute weeks across available modules (Week 1-3 -> Module 1, Week 4-6 -> Module 2, etc.)
-                                            const targetModuleIndex =
-                                              Math.floor((week - 1) / 3) % modules.length;
-                                            return targetModuleIndex === moduleIndex;
-                                          } else {
-                                            // Fallback for empty modules
-                                            const targetModuleIndex = Math.min(
-                                              Math.floor((week - 1) / 3),
-                                              11
-                                            );
-                                            return targetModuleIndex === moduleIndex;
-                                          }
-                                        }
-
-                                        return false;
-                                      }
-                                    );
-
-                                    // Show all modules, even empty ones to maintain structure
-                                    const hasPoints = modulePoints.length > 0;
-                                    const moduleName = module?.title || `-`;
-
-                                    return (
-                                      <Box key={`module-details-${moduleIndex}`} sx={{ mb: 2 }}>
-                                        <Typography
-                                          variant="subtitle1"
-                                          sx={{ mt: 2, mb: 1, fontWeight: 'bold' }}
-                                        >
-                                          Modul {moduleIndex + 1}: {moduleName}
-                                        </Typography>
-                                        {hasPoints ? (
-                                          <Table size="small">
-                                            <TableHead>
-                                              <TableRow>
-                                                <TableCell>Dátum</TableCell>
-                                                <TableCell>Kategória</TableCell>
-                                                <TableCell>Body</TableCell>
-                                                <TableCell>Dôvod</TableCell>
-                                              </TableRow>
-                                            </TableHead>
-                                            <TableBody>
-                                              {modulePoints.map((detail) => (
-                                                <TableRow key={detail._id}>
-                                                  <TableCell>
-                                                    {formatDate(detail.createdAt)}
-                                                  </TableCell>
-                                                  <TableCell>
-                                                    {formatCategory(detail.category)}
-                                                  </TableCell>
-                                                  <TableCell>{detail.points}</TableCell>
-                                                  <TableCell>{detail.reason}</TableCell>
-                                                </TableRow>
-                                              ))}
-                                            </TableBody>
-                                          </Table>
-                                        ) : (
-                                          <Typography
-                                            variant="body2"
-                                            color="text.secondary"
-                                            sx={{ ml: 2 }}
-                                          >
-                                            Žiadne body v tomto týždni.
-                                          </Typography>
-                                        )}
-                                      </Box>
-                                    );
-                                  })}
-
-                                  {/* Special categories section */}
-                                  {[
-                                    'test_performance',
-                                    'forum_participation',
-                                    'project_work',
-                                    'other'
-                                  ].map((category) => {
-                                    const categoryPoints = userData.points.details.filter(
-                                      (detail) => detail.category === category
-                                    );
-
-                                    if (categoryPoints.length === 0) return null;
-
-                                    return (
-                                      <Box key={`category-${category}`} sx={{ mb: 2 }}>
-                                        <Typography
-                                          variant="subtitle1"
-                                          sx={{ mt: 2, mb: 1, fontWeight: 'bold' }}
-                                        >
-                                          {formatCategory(category)}
-                                        </Typography>
-                                        <Table size="small">
-                                          <TableHead>
-                                            <TableRow>
-                                              <TableCell>Dátum</TableCell>
-                                              <TableCell>Body</TableCell>
-                                              <TableCell>Dôvod</TableCell>
-                                            </TableRow>
-                                          </TableHead>
-                                          <TableBody>
-                                            {categoryPoints.map((detail) => (
-                                              <TableRow key={detail._id}>
-                                                <TableCell>
-                                                  {formatDate(detail.createdAt)}
-                                                </TableCell>
-                                                <TableCell>{detail.points}</TableCell>
-                                                <TableCell>{detail.reason}</TableCell>
-                                              </TableRow>
-                                            ))}
-                                          </TableBody>
-                                        </Table>
-                                      </Box>
-                                    );
-                                  })}
-
-                                  {/* Show message if no detailed points data */}
-                                  {userData.points.details.length === 0 && (
-                                    <Typography variant="body2" color="text.secondary">
-                                      Používateľ nemá žiadne body.
-                                    </Typography>
-                                  )}
-                                </Box>
-                              </TableCell>
-                            </TableRow>
-                          )}
                         </React.Fragment>
                       );
                     })}

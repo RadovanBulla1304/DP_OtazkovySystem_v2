@@ -1,13 +1,20 @@
 import { createTheme } from '@mui/material/styles';
 
-const theme = createTheme({
+const getTheme = (mode) => createTheme({
     palette: {
+        mode: mode,
         primary: {
             main: '#1976d2'
         },
         error: {
             main: '#d32f2f'
-        }
+        },
+        ...(mode === 'dark' && {
+            background: {
+                default: '#121212',
+                paper: '#1e1e1e'
+            }
+        })
     },
     components: {
         MuiButton: {
@@ -35,4 +42,4 @@ const theme = createTheme({
     }
 });
 
-export default theme;
+export default getTheme;

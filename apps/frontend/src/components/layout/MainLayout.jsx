@@ -1,11 +1,15 @@
 import logoExpanded from '@app/assets/UNIZA_TEXT_A.png';
+import logoExpandedWhite from '@app/assets/UNIZA_TEXT_A_White.png';
 import logoCollapsed from '@app/assets/UNIZA_TEXT_B.png';
+import logoCollapsedWhite from '@app/assets/UNIZA_TEXT_B_White.png';
 import * as authService from '@app/pages/auth/authService';
 import { useGetTeacherMeQuery, useGetUserMeQuery } from '@app/redux/api';
 import { replaceDiacritics } from '@app/utils/common.util';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import AvTimerIcon from '@mui/icons-material/AvTimer';
+import Brightness4Icon from '@mui/icons-material/Brightness4';
+import Brightness7Icon from '@mui/icons-material/Brightness7';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -30,6 +34,7 @@ import Typography from '@mui/material/Typography';
 import PropTypes from 'prop-types';
 import * as React from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { ThemeModeContext } from '../../contexts/ThemeModeContext';
 import ProfileMenu from './profile-menu.component';
 import TeamSwitcher from './TeamSwitcher';
 const drawerWidth = 240;
@@ -131,6 +136,7 @@ const NavItem = styled(ListItemButton)(({ theme }) => ({
 const MainLayout = ({ children }) => {
   const matched = useMediaQuery('(min-width:900px)');
   const navigate = useNavigate();
+  const { mode, toggleThemeMode } = React.useContext(ThemeModeContext);
   const { data: user } = useGetUserMeQuery();
   const { data: teacher } = useGetTeacherMeQuery();
   const [drawerCollapsed, setDrawerCollapsed] = React.useState(false);
@@ -164,7 +170,8 @@ const MainLayout = ({ children }) => {
   };
 
   DrawerContent.propTypes = {
-    drawerCollapsed: PropTypes.bool.isRequired
+    drawerCollapsed: PropTypes.bool.isRequired,
+    mode: PropTypes.string.isRequired
   };
 
   const handleDrawerTransitionEnd = () => {
@@ -328,7 +335,7 @@ const MainLayout = ({ children }) => {
             }
           }}
         >
-          <DrawerContent drawerCollapsed={false} />
+          <DrawerContent drawerCollapsed={false} mode={mode} />
         </SmoothDrawer>
         <SmoothDrawer
           variant="permanent"
@@ -340,7 +347,7 @@ const MainLayout = ({ children }) => {
           }}
           open
         >
-          <DrawerContent drawerCollapsed={drawerCollapsed} />
+          <DrawerContent drawerCollapsed={drawerCollapsed} mode={mode} />
         </SmoothDrawer>
       </Box>
       <SmoothBox
@@ -361,7 +368,11 @@ const MainLayout = ({ children }) => {
     </Box>
   );
 
-  function DrawerContent({ drawerCollapsed }) {
+  function DrawerContent({ drawerCollapsed, mode }) {
+    // Select logos based on theme mode
+    const currentLogoExpanded = mode === 'dark' ? logoExpandedWhite : logoExpanded;
+    const currentLogoCollapsed = mode === 'dark' ? logoCollapsedWhite : logoCollapsed;
+
     return (
       <Box
         sx={{
@@ -385,7 +396,7 @@ const MainLayout = ({ children }) => {
             }}
           >
             <img
-              src={logoExpanded}
+              src={currentLogoExpanded}
               alt="uniza logo expanded"
               style={{
                 height: '50px',
@@ -396,7 +407,7 @@ const MainLayout = ({ children }) => {
               draggable={false}
             />
             <img
-              src={logoCollapsed}
+              src={currentLogoCollapsed}
               alt="uniza logo collapsed"
               style={{
                 height: '50px',
@@ -496,6 +507,48 @@ const MainLayout = ({ children }) => {
               );
             })}
           </List>
+
+          {/* Theme toggle button at the bottom */}
+          <Box
+            sx={{
+              px: drawerCollapsed ? 1 : 2,
+              py: 2,
+              borderTop: '1px solid',
+              borderColor: 'divider',
+              transition: `all ${animationDuration} ${customEasing}`
+            }}
+          >
+            <Tooltip
+              title={mode === 'dark' ? 'Prepnúť na svetlý režim' : 'Prepnúť na tmavý režim'}
+              placement="right"
+              sx={{ textWrap: 'nowrap' }}
+            >
+              <IconButton
+                onClick={toggleThemeMode}
+                sx={{
+                  width: '100%',
+                  borderRadius: drawerCollapsed ? '50%' : '8px',
+                  justifyContent: drawerCollapsed ? 'center' : 'flex-start',
+                  px: drawerCollapsed ? 0 : 2,
+                  py: 1.5
+                }}
+              >
+                {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
+                {!drawerCollapsed && (
+                  <Typography
+                    sx={{
+                      ml: 2,
+                      transition: `opacity ${animationDuration} ${customEasing}`,
+                      opacity: drawerCollapsed ? 0 : 1,
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    {mode === 'dark' ? 'Svetlý režim' : 'Tmavý režim'}
+                  </Typography>
+                )}
+              </IconButton>
+            </Tooltip>
+          </Box>
 
           {/* {!user?.isAdmin && (
             <Box

@@ -4,8 +4,6 @@ todo
 
 darkmode
 
-nedovolit editovat body v tabulke ak tam nie je bod
-poslat email pri registracii ! 
 Do 6.10 spravit funkcnu verrziu na testovanie ! 
 -------------------------------------------
 
@@ -29,3 +27,5 @@ opravene
 //email musi koncit na uniza/ stud.uniza -> asi iba joi staci zmenit nie ? 
 //delete teacher dialog upravit aby vyzeral ako ostane. 
 //nastavit vsetky modaly aby mali identicky styl. hlavne velkosti nadpisov atd
+//poslat email pri registracii ! 
+//nedovolit editovat body v tabulke ak tam nie je bod

@@ -31,9 +31,10 @@ const AddModulModal = ({ open, onClose, subjectId, onSuccess }) => {
     reset,
     setValue,
     watch,
-    formState: { errors }
+    formState: { errors, isValid }
   } = useForm({
     resolver: joiResolver(createModulSchema),
+    mode: 'onChange', // Enable validation on change
     defaultValues: {
       title: '',
       description: '',
@@ -90,8 +91,8 @@ const AddModulModal = ({ open, onClose, subjectId, onSuccess }) => {
   };
 
   return (
-    <Dialog open={open} onClose={handleCancel} maxWidth="lg" fullwidth>
-      <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ p: 2, width: 500 }}>
+    <Dialog open={open} onClose={handleCancel} maxWidth="sm" fullWidth>
+      <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ p: 2, width: '100%' }}>
         <DialogTitle id="modal-modal-title" sx={{ fontWeight: 600, p: 0, pb: 2 }}>
           Pridať nový modul
         </DialogTitle>
@@ -241,8 +242,13 @@ const AddModulModal = ({ open, onClose, subjectId, onSuccess }) => {
                 >
                   Zrušiť
                 </Button>
-                <Button type="submit" variant="contained" color="primary" disabled={isLoading}>
-                  {isLoading ? 'Ukladá sa...' : 'Uložiť'}
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  disabled={isLoading || !isValid}
+                >
+                  {isLoading ? 'Ukladá sa...' : 'Pridať'}
                 </Button>
               </Box>
             </DialogActions>
