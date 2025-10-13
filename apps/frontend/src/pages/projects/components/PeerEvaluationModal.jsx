@@ -20,10 +20,13 @@ import {
 import PropTypes from 'prop-types';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
+import * as authService from '@app/pages/auth/authService';
 
 const PeerEvaluationModal = ({ open, onClose, subjectId }) => {
   const [ratings, setRatings] = useState({});
   const [editingCell, setEditingCell] = useState(null);
+  
+  const currentUser = authService.getUserFromStorage();
 
   const {
     data: ratingsData,
@@ -52,6 +55,11 @@ const PeerEvaluationModal = ({ open, onClose, subjectId }) => {
   }, [ratingsData]);
 
   const handleCellClick = (studentId, projectId, studentProjectId) => {
+    // Prevent editing if not the current user's row
+    if (currentUser?._id !== studentId) {
+      return;
+    }
+    
     // Prevent editing own project
     if (studentProjectId === projectId) {
       return;
@@ -206,19 +214,23 @@ const PeerEvaluationModal = ({ open, onClose, subjectId }) => {
                   </TableCell>
                   {projects.map((project) => {
                     const isOwn = isOwnProject(student.projectId, project._id);
+                    const isCurrentUserRow = currentUser?._id === student._id;
                     const cellKey = `${student._id}-${project._id}`;
                     const isEditing = editingCell === cellKey;
                     const value = getCellValue(student._id, project._id);
+                    
+                    // Determine cursor: not-allowed for own project, default for other rows, pointer for current user's row
+                    const cursorStyle = isOwn ? 'not-allowed' : (isCurrentUserRow ? 'pointer' : 'default');
 
                     return (
                       <TableCell
                         key={project._id}
                         align="center"
                         sx={{
-                          cursor: isOwn ? 'not-allowed' : 'pointer',
-                          backgroundColor: isOwn ? '#f5f5f5' : 'transparent',
+                          cursor: cursorStyle,
+                          backgroundColor: isOwn ? '#bebebe' : 'transparent',
                           '&:hover': {
-                            backgroundColor: isOwn ? '#f5f5f5' : '#e3f2fd'
+                            backgroundColor: isOwn ? '#bebebe' : (isCurrentUserRow ? '#e3f2fd' : 'transparent')
                           },
                           padding: '4px'
                         }}
