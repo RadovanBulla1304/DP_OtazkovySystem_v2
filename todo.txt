@@ -2,15 +2,6 @@
 -------------------------------------------
 todo
 
-darkmode -> uz skoro spraveny . disable pri login a registracii, taktiez pri userpointsmodal, pri vsetkych otazkach co validuje ucitel
-opravit "passed" pri teste 
-refresh bodov tabulk epo edite
-vsetky toasty po slovensky 
-ked sa vytvori test nech je nepublishnuty. ked uz je test v rozashu datumov nech sa autmoaticky zverejni 
-ked vytvaram novy test netreab zobrazit vsetky otazky. staci nejake statisyiky. z akych rkov z akych modulov atd..
-otestovat forum ked je viac tagov
-prehodit "sprava" na spodok menu ako je dark mode 
-v peerveview student vzdy vidi iba svoj riadok. ucitel vidi celu tabulku vsetkych stud
 pri vytvarani projektu nastavit max pocet bodov
 ucitel nebude vidiet vsetky predmety, ked sa registrejume ako novy ucitel najprv nevidim ziadne predmety. ked vytvorim predmet 
     -> mozem priradit, dalsieho ucitela tomuto predmetu. Treba vytvorit admina ktory uvidi vsetky predmety 
@@ -21,8 +12,6 @@ ucitel nebude vidiet vsetky predmety, ked sa registrejume ako novy ucitel najprv
 student je pridany k predmetu len 1 rok..  hranica 1.9. -> po jednom roku potrebujeme odstranit priradenie predmetu ale nechat jeho data 
  -> na najblizsie 3 roky (schvaleen otazky a posty vo fore su navzdy tie sa nevymazavaju)
 
- pridat do fora filtrovanie autora -> "moje" 
- pri vsetkychj otazkach co vidi ucitel pridat filtraciu podla roku/datumu
 
 pri delete : 
 studenta -> zachovat (schvalene otazky, prispevky vo fore)
@@ -51,3 +40,14 @@ opravene
 //nastavit vsetky modaly aby mali identicky styl. hlavne velkosti nadpisov atd
 //poslat email pri registracii ! 
 //nedovolit editovat body v tabulke ak tam nie je bod
+//opravit "passed" pri teste 
+//prehodit "sprava" na spodok menu ako je dark mode 
+//v peerveview student vzdy vidi iba svoj riadok. ucitel vidi celu tabulku vsetkych stud
+//otestovat forum ked je viac tagov
+//refresh bodov tabulke po edite v userspointmodal
+//ked sa vytvori test nech je nepublishnuty. ked uz je test v rozashu datumov nech sa autmoaticky zverejni 
+//pridat do fora filtrovanie autora -> "moje" 
+//pri vsetkychj otazkach co vidi ucitel pridat filtraciu podla roku/datumu
+//ked vytvaram novy test netreab zobrazit vsetky otazky. staci nejake statistiky. z akych rkov z akych modulov atd..
+//vsetky toasty po slovensky 
+//darkmode -> uz skoro spraveny . disable pri login a registracii, taktiez pri userpointsmodal, pri vsetkych otazkach co validuje ucitel

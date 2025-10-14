@@ -417,13 +417,14 @@ export const api = createApi({
 
     // FORUM QUESTIONS
     getForumQuestions: builder.query({
-      query: ({ page = 1, limit = 10, modul, tags, search, sortBy, createdByModel } = {}) => {
+      query: ({ page = 1, limit = 10, modul, tags, search, sortBy, createdByModel, createdBy } = {}) => {
         const params = new URLSearchParams({ page, limit });
         if (modul) params.append('modul', modul);
         if (tags) params.append('tags', tags);
         if (search) params.append('search', search);
         if (sortBy) params.append('sortBy', sortBy);
         if (createdByModel) params.append('createdByModel', createdByModel);
+        if (createdBy) params.append('createdBy', createdBy);
 
         return {
           url: `/forum/questions?${params.toString()}`,

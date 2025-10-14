@@ -163,6 +163,11 @@ const UsersList = () => {
 
   const handleClosePointsModal = () => {
     setPointsModalOpen(false);
+    // Refetch points data when modal closes to update the table
+    if (data && data.length > 0) {
+      const userIds = data.map((user) => user._id);
+      getUsersPointsSummary(userIds);
+    }
   };
 
   return (

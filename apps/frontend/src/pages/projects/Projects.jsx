@@ -95,14 +95,14 @@ const Projects = () => {
       const response = await deleteProject(project._id);
 
       if (response.error) {
-        toast.error('Error deleting project: ' + response.error?.data?.message);
+        toast.error('Chyba pri mazaní projektu: ' + response.error?.data?.message);
       } else {
-        toast.success('Project deleted successfully');
+        toast.success('Projekt bol úspešne vymazaný');
         await refetch();
       }
     } catch (error) {
       console.error('Error during deletion process:', error);
-      toast.error('Error deleting project');
+      toast.error('Chyba pri mazaní projektu');
     } finally {
       setIsDeleting(false);
       setProjectToDelete(null);
@@ -181,7 +181,7 @@ const Projects = () => {
   if (isError) {
     return (
       <Box display="flex" justifyContent="center" mt={4}>
-        <Typography color="error">Error loading projects</Typography>
+        <Typography color="error">Chyba pri načítavaní projektov</Typography>
       </Box>
     );
   }
@@ -405,7 +405,7 @@ const Projects = () => {
           onClose={handleCloseAssignPoints}
           project={assignPointsProject}
           onSuccess={() => {
-            toast.success('Points assigned successfully');
+            toast.success('Body boli úspešne priradené');
           }}
         />
       )}

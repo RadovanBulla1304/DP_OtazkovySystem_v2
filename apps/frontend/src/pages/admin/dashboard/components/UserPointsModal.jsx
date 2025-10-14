@@ -215,7 +215,12 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
               }
             }}
           >
-            <Typography variant="body2" sx={{ color: hasPoints ? 'inherit' : 'text.disabled' }}>
+            <Typography
+              variant="body2"
+              sx={{
+                color: hasPoints ? 'text.primary' : 'text.disabled'
+              }}
+            >
               {value || '-'}
             </Typography>
             {hasPoints && (
@@ -263,10 +268,11 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
     >
       <DialogTitle
         sx={{
-          backgroundColor: '#f8f8f8',
-          borderBottom: '1px solid #e0e0e0',
+          borderBottom: '1px solid',
+          borderColor: 'divider',
           fontWeight: 'bold',
-          fontSize: '1.2rem'
+          fontSize: '1.2rem',
+          color: 'text.primary'
         }}
       >
         Body používateľov
@@ -282,10 +288,10 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
           <CloseIcon />
         </IconButton>
       </DialogTitle>
-      <DialogContent sx={{ padding: '16px', backgroundColor: '#fafafa' }}>
+      <DialogContent sx={{ padding: '16px' }}>
         {isLoading && (
           <Box sx={{ textAlign: 'center', padding: '20px' }}>
-            <Typography>Načítavanie bodov...</Typography>
+            <Typography color="text.primary">Načítavanie bodov...</Typography>
           </Box>
         )}
 
@@ -302,7 +308,7 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
             <Box
               sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, alignItems: 'center' }}
             >
-              <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: 'text.primary' }}>
                 Celkom používateľov: {pointsData ? pointsData.data.length : 0}
               </Typography>
             </Box>
@@ -322,31 +328,35 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
                 stickyHeader
                 sx={{
                   '& .MuiTableHead-root': {
-                    backgroundColor: '#f5f5f5',
-                    borderBottom: '2px solid rgba(224, 224, 224, 1)'
+                    borderBottom: '2px solid',
+                    borderColor: 'divider'
                   },
                   '& .MuiTableRow-root': {
                     '&:nth-of-type(odd)': {
-                      backgroundColor: 'rgba(0, 0, 0, 0.01)'
+                      backgroundColor: 'action.hover'
                     },
                     '&:hover': {
-                      backgroundColor: 'rgba(0, 0, 0, 0.04)'
+                      backgroundColor: 'action.selected'
                     }
                   },
                   '& .MuiTableCell-head': {
-                    backgroundColor: '#f5f5f5',
-                    color: '#333333'
+                    color: 'text.primary'
+                  },
+                  '& .MuiTableCell-body': {
+                    color: 'text.primary'
                   }
                 }}
               >
-                <TableHead sx={{ borderBottom: '3px solid rgba(224, 224, 224, 1)' }}>
+                <TableHead sx={{ borderBottom: '3px solid', borderColor: 'divider' }}>
                   {/* Main header row with column groups */}
                   <TableRow>
                     <TableCell
                       rowSpan={2}
                       sx={{
-                        borderRight: '2px solid rgba(224, 224, 224, 1)',
-                        fontWeight: 'bold'
+                        borderRight: '2px solid',
+                        borderColor: 'divider',
+                        fontWeight: 'bold',
+                        color: 'text.primary'
                       }}
                     >
                       Používateľ
@@ -354,8 +364,10 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
                     <TableCell
                       rowSpan={2}
                       sx={{
-                        borderRight: '2px solid rgba(224, 224, 224, 1)',
-                        fontWeight: 'bold'
+                        borderRight: '2px solid',
+                        borderColor: 'divider',
+                        fontWeight: 'bold',
+                        color: 'text.primary'
                       }}
                     >
                       Celkové body
@@ -373,9 +385,11 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
                           colSpan={3}
                           align="center"
                           sx={{
-                            borderRight: '2px solid rgba(224, 224, 224, 1)',
-                            bgcolor: 'rgba(0, 0, 0, 0.04)',
-                            fontWeight: 'bold'
+                            borderRight: '2px solid',
+                            borderColor: 'divider',
+                            bgcolor: 'action.hover',
+                            fontWeight: 'bold',
+                            color: 'text.primary'
                           }}
                         >
                           {displayName}
@@ -385,9 +399,11 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
                     <TableCell
                       align="center"
                       sx={{
-                        borderRight: '1px solid rgba(224, 224, 224, 1)',
-                        bgcolor: 'rgba(0, 0, 0, 0.08)',
-                        fontWeight: 'bold'
+                        borderRight: '1px solid',
+                        borderColor: 'divider',
+                        bgcolor: 'action.selected',
+                        fontWeight: 'bold',
+                        color: 'text.primary'
                       }}
                     >
                       Test
@@ -395,9 +411,11 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
                     <TableCell
                       align="center"
                       sx={{
-                        borderRight: '1px solid rgba(224, 224, 224, 1)',
-                        bgcolor: 'rgba(0, 0, 0, 0.08)',
-                        fontWeight: 'bold'
+                        borderRight: '1px solid',
+                        borderColor: 'divider',
+                        bgcolor: 'action.selected',
+                        fontWeight: 'bold',
+                        color: 'text.primary'
                       }}
                     >
                       Fórum
@@ -405,9 +423,11 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
                     <TableCell
                       align="center"
                       sx={{
-                        borderRight: '1px solid rgba(224, 224, 224, 1)',
-                        bgcolor: 'rgba(0, 0, 0, 0.08)',
-                        fontWeight: 'bold'
+                        borderRight: '1px solid',
+                        borderColor: 'divider',
+                        bgcolor: 'action.selected',
+                        fontWeight: 'bold',
+                        color: 'text.primary'
                       }}
                     >
                       Projekt
@@ -415,9 +435,11 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
                     <TableCell
                       align="center"
                       sx={{
-                        borderRight: '2px solid rgba(224, 224, 224, 1)',
-                        bgcolor: 'rgba(0, 0, 0, 0.08)',
-                        fontWeight: 'bold'
+                        borderRight: '2px solid',
+                        borderColor: 'divider',
+                        bgcolor: 'action.selected',
+                        fontWeight: 'bold',
+                        color: 'text.primary'
                       }}
                     >
                       Iné
@@ -430,29 +452,49 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
                       <React.Fragment key={`module-activities-${i + 1}`}>
                         <TableCell
                           align="center"
-                          sx={{ borderRight: '1px solid rgba(224, 224, 224, 0.5)' }}
+                          sx={{
+                            borderRight: '1px solid',
+                            borderColor: 'divider',
+                            color: 'text.primary'
+                          }}
                         >
                           Pridať
                         </TableCell>
                         <TableCell
                           align="center"
-                          sx={{ borderRight: '1px solid rgba(224, 224, 224, 0.5)' }}
+                          sx={{
+                            borderRight: '1px solid',
+                            borderColor: 'divider',
+                            color: 'text.primary'
+                          }}
                         >
                           Validovať
                         </TableCell>
                         <TableCell
                           align="center"
-                          sx={{ borderRight: '2px solid rgba(224, 224, 224, 1)' }}
+                          sx={{
+                            borderRight: '2px solid',
+                            borderColor: 'divider',
+                            color: 'text.primary'
+                          }}
                         >
                           Potvrdenie
                         </TableCell>
                       </React.Fragment>
                     ))}
                     {/* Extra columns */}
-                    <TableCell sx={{ borderRight: '1px solid rgba(224, 224, 224, 1)' }}></TableCell>
-                    <TableCell sx={{ borderRight: '1px solid rgba(224, 224, 224, 1)' }}></TableCell>
-                    <TableCell sx={{ borderRight: '1px solid rgba(224, 224, 224, 1)' }}></TableCell>
-                    <TableCell sx={{ borderRight: '2px solid rgba(224, 224, 224, 1)' }}></TableCell>
+                    <TableCell
+                      sx={{ borderRight: '1px solid', borderColor: 'divider' }}
+                    ></TableCell>
+                    <TableCell
+                      sx={{ borderRight: '1px solid', borderColor: 'divider' }}
+                    ></TableCell>
+                    <TableCell
+                      sx={{ borderRight: '1px solid', borderColor: 'divider' }}
+                    ></TableCell>
+                    <TableCell
+                      sx={{ borderRight: '2px solid', borderColor: 'divider' }}
+                    ></TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -554,8 +596,8 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
                       return (
                         <React.Fragment key={userData.user._id}>
                           <TableRow>
-                            <TableCell sx={{ borderRight: '2px solid rgba(224, 224, 224, 1)' }}>
-                              <Typography variant="subtitle2">
+                            <TableCell sx={{ borderRight: '2px solid', borderColor: 'divider' }}>
+                              <Typography variant="subtitle2" color="text.primary">
                                 {userData.user.name} {userData.user.surname}
                               </Typography>
                               <Typography variant="caption" color="text.secondary">
@@ -565,8 +607,10 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
                             <TableCell
                               align="center"
                               sx={{
-                                borderRight: '2px solid rgba(224, 224, 224, 1)',
-                                fontWeight: 'bold'
+                                borderRight: '2px solid',
+                                borderColor: 'divider',
+                                fontWeight: 'bold',
+                                color: 'text.primary'
                               }}
                             >
                               {userData.points.totalPoints || 0}
@@ -589,9 +633,9 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
                                     value={modulePoints.question_creation}
                                     pointDetails={userData.points.details}
                                     sx={{
-                                      borderRight: '1px solid rgba(224, 224, 224, 0.5)',
-                                      bgcolor:
-                                        moduleIndex % 2 === 0 ? 'rgba(0, 0, 0, 0.02)' : 'inherit'
+                                      borderRight: '1px solid',
+                                      borderColor: 'divider',
+                                      bgcolor: moduleIndex % 2 === 0 ? 'action.hover' : 'inherit'
                                     }}
                                   />
                                   <EditableCell
@@ -601,9 +645,9 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
                                     value={modulePoints.question_validation}
                                     pointDetails={userData.points.details}
                                     sx={{
-                                      borderRight: '1px solid rgba(224, 224, 0.5)',
-                                      bgcolor:
-                                        moduleIndex % 2 === 0 ? 'rgba(0, 0, 0, 0.02)' : 'inherit'
+                                      borderRight: '1px solid',
+                                      borderColor: 'divider',
+                                      bgcolor: moduleIndex % 2 === 0 ? 'action.hover' : 'inherit'
                                     }}
                                   />
                                   <EditableCell
@@ -613,9 +657,9 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
                                     value={modulePoints.question_reparation}
                                     pointDetails={userData.points.details}
                                     sx={{
-                                      borderRight: '2px solid rgba(224, 224, 224, 1)',
-                                      bgcolor:
-                                        moduleIndex % 2 === 0 ? 'rgba(0, 0, 0, 0.02)' : 'inherit'
+                                      borderRight: '2px solid',
+                                      borderColor: 'divider',
+                                      bgcolor: moduleIndex % 2 === 0 ? 'action.hover' : 'inherit'
                                     }}
                                   />
                                 </React.Fragment>
@@ -630,8 +674,9 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
                               value={extraPoints.test_performance}
                               pointDetails={userData.points.details}
                               sx={{
-                                borderRight: '1px solid rgba(224, 224, 224, 1)',
-                                bgcolor: 'rgba(0, 0, 0, 0.03)',
+                                borderRight: '1px solid',
+                                borderColor: 'divider',
+                                bgcolor: 'action.selected',
                                 fontWeight: 'bold'
                               }}
                             />
@@ -642,8 +687,9 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
                               value={extraPoints.forum_participation}
                               pointDetails={userData.points.details}
                               sx={{
-                                borderRight: '1px solid rgba(224, 224, 224, 1)',
-                                bgcolor: 'rgba(0, 0, 0, 0.03)',
+                                borderRight: '1px solid',
+                                borderColor: 'divider',
+                                bgcolor: 'action.selected',
                                 fontWeight: 'bold'
                               }}
                             />
@@ -654,8 +700,9 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
                               value={extraPoints.project_work}
                               pointDetails={userData.points.details}
                               sx={{
-                                borderRight: '1px solid rgba(224, 224, 224, 1)',
-                                bgcolor: 'rgba(0, 0, 0, 0.03)',
+                                borderRight: '1px solid',
+                                borderColor: 'divider',
+                                bgcolor: 'action.selected',
                                 fontWeight: 'bold'
                               }}
                             />
@@ -666,8 +713,9 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
                               value={extraPoints.other}
                               pointDetails={userData.points.details}
                               sx={{
-                                borderRight: '2px solid rgba(224, 224, 224, 1)',
-                                bgcolor: 'rgba(0, 0, 0, 0.03)',
+                                borderRight: '2px solid',
+                                borderColor: 'divider',
+                                bgcolor: 'action.selected',
                                 fontWeight: 'bold'
                               }}
                             />
@@ -684,8 +732,8 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
       <DialogActions
         sx={{
           padding: '16px',
-          backgroundColor: '#f8f8f8',
-          borderTop: '1px solid #e0e0e0',
+          borderTop: '1px solid',
+          borderColor: 'divider',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center'

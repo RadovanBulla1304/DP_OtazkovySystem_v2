@@ -14,8 +14,7 @@ const MinimalLayout = () => {
       sx={{
         display: 'flex',
         width: '100vw',
-        height: '100vh',
-        backgroundColor: '#e9f0f3'
+        height: 'auto'
       }}
     >
       <Outlet />

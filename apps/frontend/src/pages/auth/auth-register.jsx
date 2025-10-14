@@ -3,6 +3,7 @@ import {
   Box,
   Card,
   Container,
+  Grid,
   Link,
   TextField,
   ToggleButton,
@@ -82,11 +83,24 @@ const AuthRegister = () => {
   };
 
   return (
-    <Container component="main" maxWidth="sm">
-      <Typography align="center" sx={{ mt: '10%' }} variant="h4">
-        Registrácia
+    <Container
+      component="main"
+      maxWidth="sm"
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        bgcolor: 'none',
+        minHeight: '100vh',
+        py: 4,
+        overflowX: 'hidden'
+      }}
+    >
+      <Typography align="center" sx={{ mt: 2 }} variant="h6" color="text.secondary">
+        {userType === 'student' ? 'Registrácia študenta' : 'Registrácia učiteľa'}
       </Typography>
-      <Card sx={{ mt: '5%', mb: '20%', p: 2 }}>
+      <Card sx={{ mt: 2, mb: 4, p: 2, minHeight: 'inherit', width: '100%', maxWidth: '750px' }}>
         {/* Toggle between Student and Teacher */}
         <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
           <ToggleButtonGroup
@@ -105,27 +119,40 @@ const AuthRegister = () => {
           </ToggleButtonGroup>
         </Box>
 
-        <Box component="form" onSubmit={handleSubmit}>
-          <TextField
-            variant="outlined"
-            label="Meno"
-            name="name"
-            id="name"
-            autoComplete="given-name"
-            fullWidth
-            required
-            sx={{ mb: 2 }}
-          />
-          <TextField
-            variant="outlined"
-            label="Priezvisko"
-            name="surname"
-            id="surname"
-            autoComplete="family-name"
-            fullWidth
-            required
-            sx={{ mb: 2 }}
-          />
+        <Box
+          component="form"
+          onSubmit={handleSubmit}
+          sx={{ mt: 1, paddingBlock: 2, paddingInline: 1 }}
+        >
+          <Typography component="h1" variant="h4" sx={{ mb: 3 }}>
+            Registrácia
+          </Typography>
+
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                variant="outlined"
+                label="Meno"
+                name="name"
+                id="name"
+                autoComplete="given-name"
+                fullWidth
+                required
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                variant="outlined"
+                label="Priezvisko"
+                name="surname"
+                id="surname"
+                autoComplete="family-name"
+                fullWidth
+                required
+              />
+            </Grid>
+          </Grid>
+
           <TextField
             variant="outlined"
             label="Email"
@@ -139,32 +166,34 @@ const AuthRegister = () => {
                 ? 'Email musí končiť @stud.uniza.sk'
                 : 'Email musí končiť @uniza.sk'
             }
-            sx={{ mb: 2 }}
+            sx={{ mt: 2 }}
           />
 
           {/* Student-specific fields */}
           {userType === 'student' && (
-            <>
-              <TextField
-                variant="outlined"
-                label="Skupina"
-                name="groupNumber"
-                id="groupNumber"
-                fullWidth
-                required
-                sx={{ mb: 2 }}
-              />
-              <TextField
-                variant="outlined"
-                label="Študentské číslo"
-                name="studentNumber"
-                id="studentNumber"
-                type="number"
-                fullWidth
-                required
-                sx={{ mb: 2 }}
-              />
-            </>
+            <Grid container spacing={2} sx={{ mt: 0 }}>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  variant="outlined"
+                  label="Skupina"
+                  name="groupNumber"
+                  id="groupNumber"
+                  fullWidth
+                  required
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  variant="outlined"
+                  label="Študentské číslo"
+                  name="studentNumber"
+                  id="studentNumber"
+                  type="number"
+                  fullWidth
+                  required
+                />
+              </Grid>
+            </Grid>
           )}
 
           <TextField
@@ -177,7 +206,7 @@ const AuthRegister = () => {
             label="Heslo"
             fullWidth
             helperText="Heslo musí mať aspoň 6 znakov, jedno veľké písmeno a jedno číslo"
-            sx={{ mb: 2 }}
+            sx={{ mt: 2 }}
           />
           <TextField
             required
@@ -188,15 +217,15 @@ const AuthRegister = () => {
             variant="outlined"
             label="Potvrďte heslo"
             fullWidth
-            sx={{ mb: 2 }}
+            sx={{ mt: 2 }}
           />
           {error && (
-            <Typography color="error" sx={{ mb: 2 }}>
+            <Typography color="error" sx={{ mt: 2 }}>
               {error}
             </Typography>
           )}
           {successMessage && (
-            <Typography color="success.main" sx={{ mb: 2, textAlign: 'center' }}>
+            <Typography color="success.main" sx={{ mt: 2, textAlign: 'center' }}>
               {successMessage}
             </Typography>
           )}
@@ -205,12 +234,12 @@ const AuthRegister = () => {
             type="submit"
             variant="contained"
             fullWidth
-            sx={{ mt: 2 }}
+            sx={{ mt: 4 }}
             disabled={!!successMessage}
           >
             Registrovať sa
           </LoadingButton>
-          <Box sx={{ mt: 2, textAlign: 'center' }}>
+          <Box sx={{ mt: 4, textAlign: 'center' }}>
             <Link component={RouterLink} to="/auth/login" variant="body2">
               Máte už účet? Prihláste sa
             </Link>

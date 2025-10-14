@@ -33,7 +33,7 @@ import {
 } from '@mui/material';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import CreateQuestionModal from './components/CreateQuestionModal';
@@ -92,11 +92,54 @@ const Tests = () => {
   );
 
   // Extract tests from response (backend returns { tests: [...] })
-  const tests = data?.tests || [];
+  const tests = useMemo(() => data?.tests || [], [data?.tests]);
 
   const { data: modules = [] } = useGetModulsBySubjectQuery(subjectId, {
     skip: !subjectId
   });
+
+  // Auto-publish/unpublish tests based on dates
+  useEffect(() => {
+    if (!tests || tests.length === 0 || !isTeacher) return;
+
+    const now = new Date();
+    let needsRefetch = false;
+
+    const checkAndUpdateTests = async () => {
+      for (const test of tests) {
+        const startDate = new Date(test.date_start);
+        const endDate = new Date(test.date_end);
+
+        // Test should be published if current time is between start and end date
+        const shouldBePublished = now >= startDate && now <= endDate;
+
+        // If publication status doesn't match what it should be, update it
+        if (test.is_published !== shouldBePublished) {
+          try {
+            await togglePublication({
+              id: test._id,
+              is_published: shouldBePublished
+            }).unwrap();
+            needsRefetch = true;
+          } catch (error) {
+            console.error('Error auto-updating test publication:', error);
+          }
+        }
+      }
+
+      // Refetch all tests if any were updated
+      if (needsRefetch) {
+        refetch();
+      }
+    };
+
+    checkAndUpdateTests();
+
+    // Set up interval to check every minute
+    const interval = setInterval(checkAndUpdateTests, 60000); // Check every minute
+
+    return () => clearInterval(interval);
+  }, [tests, isTeacher, togglePublication, refetch]);
 
   const resetForm = useCallback(() => {
     setFormData({

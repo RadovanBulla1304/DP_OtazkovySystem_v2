@@ -56,15 +56,26 @@ export const AuthPage = () => {
   };
 
   return (
-    <Container component="main" maxWidth="sm">
-      <Typography align="center" sx={{ mt: '10%' }} variant="h4">
-        PMI template
-      </Typography>
+    <Container
+      component="main"
+      maxWidth="sm"
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        bgcolor: 'none'
+      }}
+    >
       <Typography align="center" sx={{ mt: 2 }} variant="h6" color="text.secondary">
         Prihláste sa pomocou svojho emailu
       </Typography>
       <Card sx={{ mt: '10%', mb: '20%', p: 2 }}>
-        <Box component="form" onSubmit={handleSubmit}>
+        <Box
+          component="form"
+          onSubmit={handleSubmit}
+          sx={{ mt: 1, width: '600px', paddingBlock: 2, paddingInline: 1 }}
+        >
           <Typography component="h1" variant="h4" sx={{ mb: 2 }}>
             Prihlásenie
           </Typography>

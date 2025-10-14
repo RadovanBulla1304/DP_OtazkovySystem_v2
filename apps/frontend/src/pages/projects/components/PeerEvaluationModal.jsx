@@ -27,6 +27,7 @@ const PeerEvaluationModal = ({ open, onClose, subjectId }) => {
   const [editingCell, setEditingCell] = useState(null);
 
   const currentUser = authService.getUserFromStorage();
+  const isTeacher = currentUser?.isTeacher || false;
 
   const {
     data: ratingsData,
@@ -137,9 +138,33 @@ const PeerEvaluationModal = ({ open, onClose, subjectId }) => {
     return count > 0 ? (sum / count).toFixed(1) : '0.0';
   };
 
+  // Get average rating for a student's own project (excluding their own rating)
+  const getOwnProjectAverage = (studentId, projectId) => {
+    let sum = 0;
+    let count = 0;
+    students.forEach((student) => {
+      // Skip the student's own rating
+      if (student._id === studentId) {
+        return;
+      }
+      const key = `${student._id}-${projectId}`;
+      const value = ratings[key];
+      if (value !== undefined && value !== '') {
+        sum += Number(value);
+        count++;
+      }
+    });
+    return count > 0 ? (sum / count).toFixed(1) : '-';
+  };
+
   const isOwnProject = (studentProjectId, projectId) => {
     return studentProjectId === projectId;
   };
+
+  // Filter students based on role
+  const visibleStudents = isTeacher
+    ? students
+    : students.filter((student) => student._id === currentUser?._id);
 
   if (isLoading) {
     return (
@@ -191,7 +216,7 @@ const PeerEvaluationModal = ({ open, onClose, subjectId }) => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {students.map((student) => (
+              {visibleStudents.map((student) => (
                 <TableRow key={student._id} hover>
                   <TableCell
                     sx={{
@@ -247,8 +272,8 @@ const PeerEvaluationModal = ({ open, onClose, subjectId }) => {
                         }
                       >
                         {isOwn ? (
-                          <Typography variant="body2" color="textSecondary">
-                            -
+                          <Typography variant="body2" color="textSecondary" fontWeight="bold">
+                            {getOwnProjectAverage(student._id, project._id)}
                           </Typography>
                         ) : isEditing ? (
                           <TextField
@@ -276,37 +301,41 @@ const PeerEvaluationModal = ({ open, onClose, subjectId }) => {
                   })}
                 </TableRow>
               ))}
-              {/* Average row */}
-              <TableRow sx={{ backgroundColor: '#f0f0f0' }}>
-                <TableCell
-                  sx={{
-                    fontWeight: 'bold',
-                    position: 'sticky',
-                    left: 0,
-                    backgroundColor: '#f0f0f0',
-                    zIndex: 2
-                  }}
-                >
-                  <Typography variant="body2" fontWeight="bold">
-                    Priemer
-                  </Typography>
-                </TableCell>
-                {projects.map((project) => (
-                  <TableCell key={project._id} align="center">
+              {/* Average row - only visible to teachers */}
+              {isTeacher && (
+                <TableRow sx={{ backgroundColor: '#f0f0f0' }}>
+                  <TableCell
+                    sx={{
+                      fontWeight: 'bold',
+                      position: 'sticky',
+                      left: 0,
+                      backgroundColor: '#f0f0f0',
+                      zIndex: 2
+                    }}
+                  >
                     <Typography variant="body2" fontWeight="bold">
-                      {getColumnAverage(project._id)}
+                      Priemer
                     </Typography>
                   </TableCell>
-                ))}
-              </TableRow>
+                  {projects.map((project) => (
+                    <TableCell key={project._id} align="center">
+                      <Typography variant="body2" fontWeight="bold">
+                        {getColumnAverage(project._id)}
+                      </Typography>
+                    </TableCell>
+                  ))}
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </TableContainer>
 
-        {students.length === 0 && (
+        {visibleStudents.length === 0 && (
           <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
             <Typography color="textSecondary">
-              Žiadni študenti nie sú priradení k projektom.
+              {isTeacher
+                ? 'Žiadni študenti nie sú priradení k projektom.'
+                : 'Nie ste priradený k žiadnemu projektu.'}
             </Typography>
           </Box>
         )}

@@ -2,6 +2,8 @@
 bugy
 //week2 - 0/2 bodov nerefreshuje
 
+
+ak uzivatel nema priradeny predmet a priradime mu projekt je problem(vidi vsetky projekty)
 pri uprave otazky v week3 pridat toast uspesny/neuspesny
 v week2 na pravej strane dahboaardu sa mi neloadli otazky -> toto kuknut este 
 -------------------------------------------

@@ -1,4 +1,5 @@
 import { useCurrentSubjectId } from '@app/hooks/useCurrentSubjectId';
+import * as authService from '@app/pages/auth/authService';
 import {
   useGetForumQuestionsQuery,
   useGetForumTagsQuery,
@@ -33,8 +34,11 @@ const Forum = () => {
     search: '',
     tags: [], // Changed to array for visual selector
     sortBy: 'likes', // Default to likes sorting as requested
-    createdByModel: '' // Filter by author type: '', 'User', or 'Teacher'
+    createdByModel: '' // Filter by author type: '', 'User', 'Teacher', or 'my'
   });
+
+  // Get current user for "Moje" filter
+  const currentUser = authService.getUserFromStorage();
 
   // Build query params - keep empty string for sortBy, remove undefined/empty for others
   const rawParams = {
@@ -44,7 +48,10 @@ const Forum = () => {
     search: filters.search || undefined,
     tags: filters.tags.length > 0 ? filters.tags.join(',') : undefined,
     sortBy: filters.sortBy,
-    createdByModel: filters.createdByModel || undefined
+    // If "my" is selected, pass the current user's ID as createdBy
+    createdByModel:
+      filters.createdByModel === 'my' ? undefined : filters.createdByModel || undefined,
+    createdBy: filters.createdByModel === 'my' ? currentUser?._id : undefined
   };
 
   // Remove undefined values but keep empty strings for sortBy
@@ -171,6 +178,7 @@ const Forum = () => {
               label="Autor"
             >
               <MenuItem value="">Všetci</MenuItem>
+              <MenuItem value="my">Moje</MenuItem>
               <MenuItem value="User">Anonymní používatelia</MenuItem>
               <MenuItem value="Teacher">Učitelia</MenuItem>
             </Select>

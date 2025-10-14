@@ -29,6 +29,7 @@ const AllUsersQuestions = () => {
   const [selectedModuleId, setSelectedModuleId] = useState('all');
   const [teacherValidationFilter, setTeacherValidationFilter] = useState('all'); // 'all', 'validated', 'not-validated'
   const [createdByFilter, setCreatedByFilter] = useState('all'); // 'all', 'student', 'teacher'
+  const [selectedYear, setSelectedYear] = useState('all'); // Year filter
 
   // Teacher validation modal state
   const [validationModalOpen, setValidationModalOpen] = useState(false);
@@ -119,6 +120,21 @@ const AllUsersQuestions = () => {
     filteredQuestions = filteredQuestions.filter((q) => q.validated_by_teacher !== true);
   }
 
+  // Filter by year
+  if (selectedYear !== 'all') {
+    filteredQuestions = filteredQuestions.filter((q) => {
+      const questionYear = new Date(q.createdAt).getFullYear();
+      return questionYear === parseInt(selectedYear);
+    });
+  }
+
+  // Get available years from questions for the year filter
+  const availableYears = Array.from(
+    new Set(
+      questions.map((q) => new Date(q.createdAt).getFullYear()).filter((year) => !isNaN(year))
+    )
+  ).sort((a, b) => b - a); // Sort descending (newest first)
+
   // Get questions that need teacher validation for the floating button
 
   if (questionsError) {
@@ -194,6 +210,25 @@ const AllUsersQuestions = () => {
                 </Select>
               </FormControl>
             </Grid>
+
+            <Grid item xs={12} md={4}>
+              <FormControl fullWidth>
+                <InputLabel>Rok vytvorenia</InputLabel>
+                <Select
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(e.target.value)}
+                  label="Rok vytvorenia"
+                  disabled={availableYears.length === 0}
+                >
+                  <MenuItem value="all">Všetky roky</MenuItem>
+                  {availableYears.map((year) => (
+                    <MenuItem key={year} value={year.toString()}>
+                      {year}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
           </Grid>
         </CardContent>
       </Card>
@@ -233,6 +268,9 @@ const AllUsersQuestions = () => {
                 size="small"
                 color={teacherValidationFilter === 'validated' ? 'primary' : 'warning'}
               />
+            )}
+            {selectedYear !== 'all' && (
+              <Chip label={`Rok: ${selectedYear}`} size="small" color="secondary" />
             )}
           </Box>
 

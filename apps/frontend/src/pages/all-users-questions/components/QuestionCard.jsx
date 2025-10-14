@@ -69,7 +69,7 @@ const QuestionCard = ({ question, isTeacher, onValidateClick }) => {
       <Box
         sx={{
           p: 1.5,
-          bgcolor: 'grey.50',
+
           borderRadius: 1,
           mb: 1
         }}

@@ -17,6 +17,16 @@ const getTheme = (mode) => createTheme({
         })
     },
     components: {
+        MuiCssBaseline: {
+            styleOverrides: {
+                body: {
+                    overflowX: 'hidden'
+                },
+                html: {
+                    overflowX: 'hidden'
+                }
+            }
+        },
         MuiButton: {
             styleOverrides: {
                 outlined: {

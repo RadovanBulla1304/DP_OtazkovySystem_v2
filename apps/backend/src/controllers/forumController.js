@@ -149,7 +149,7 @@ const toValidObjectIdArray = (items) => {
 // @access Private
 const getForumQuestions = async (req, res) => {
     try {
-        const { page = 1, limit = 10, modul, tags, search, sortBy = 'likes', createdByModel } = req.query
+        const { page = 1, limit = 10, modul, tags, search, sortBy = 'likes', createdByModel, createdBy } = req.query
         const user_id = req.user?.user_id
 
         if (!user_id) {
@@ -186,6 +186,12 @@ const getForumQuestions = async (req, res) => {
         if (createdByModel && (createdByModel === 'User' || createdByModel === 'Teacher')) {
             filter.createdByModel = createdByModel
             console.log('Filtering by createdByModel:', createdByModel)
+        }
+
+        // Filter by specific author ID (for "My questions")
+        if (createdBy) {
+            filter.createdBy = createdBy
+            console.log('Filtering by createdBy:', createdBy)
         }
 
         console.log('Final filter:', JSON.stringify(filter))

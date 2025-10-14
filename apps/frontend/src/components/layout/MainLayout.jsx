@@ -171,7 +171,8 @@ const MainLayout = ({ children }) => {
 
   DrawerContent.propTypes = {
     drawerCollapsed: PropTypes.bool.isRequired,
-    mode: PropTypes.string.isRequired
+    mode: PropTypes.string.isRequired,
+    adminOptions: PropTypes.array.isRequired
   };
 
   const handleDrawerTransitionEnd = () => {
@@ -204,14 +205,7 @@ const MainLayout = ({ children }) => {
   };
 
   let drawerOption = [];
-
-  if (user?.isAdmin || teacher) {
-    drawerOption.push(
-      { isHeader: true, title: 'Správca' },
-      { title: 'Používatelia', navTo: '/admin/users', icon: <GroupIcon /> },
-      { title: 'Predmety', navTo: '/subjects', icon: <SchoolIcon /> }
-    );
-  }
+  let adminOptions = [];
 
   if (!user?.isAdmin && !teacher) {
     drawerOption = drawerOption.concat([
@@ -243,6 +237,15 @@ const MainLayout = ({ children }) => {
     });
   }
   drawerOption = drawerOption.concat([{ title: 'Testy', navTo: '/tests', icon: <AvTimerIcon /> }]);
+
+  // Admin section - will be placed at the bottom
+  if (user?.isAdmin || teacher) {
+    adminOptions.push(
+      { isHeader: true, title: 'Správca' },
+      { title: 'Používatelia', navTo: '/admin/users', icon: <GroupIcon /> },
+      { title: 'Predmety', navTo: '/subjects', icon: <SchoolIcon /> }
+    );
+  }
 
   const currentDrawerWidth = drawerCollapsed ? collapsedDrawerWidth : drawerWidth;
 
@@ -335,7 +338,7 @@ const MainLayout = ({ children }) => {
             }
           }}
         >
-          <DrawerContent drawerCollapsed={false} mode={mode} />
+          <DrawerContent drawerCollapsed={false} mode={mode} adminOptions={adminOptions} />
         </SmoothDrawer>
         <SmoothDrawer
           variant="permanent"
@@ -347,7 +350,11 @@ const MainLayout = ({ children }) => {
           }}
           open
         >
-          <DrawerContent drawerCollapsed={drawerCollapsed} mode={mode} />
+          <DrawerContent
+            drawerCollapsed={drawerCollapsed}
+            mode={mode}
+            adminOptions={adminOptions}
+          />
         </SmoothDrawer>
       </Box>
       <SmoothBox
@@ -368,7 +375,7 @@ const MainLayout = ({ children }) => {
     </Box>
   );
 
-  function DrawerContent({ drawerCollapsed, mode }) {
+  function DrawerContent({ drawerCollapsed, mode, adminOptions }) {
     // Select logos based on theme mode
     const currentLogoExpanded = mode === 'dark' ? logoExpandedWhite : logoExpanded;
     const currentLogoCollapsed = mode === 'dark' ? logoCollapsedWhite : logoCollapsed;
@@ -507,6 +514,60 @@ const MainLayout = ({ children }) => {
               );
             })}
           </List>
+
+          {/* Admin section at the bottom */}
+          {adminOptions.length > 0 && (
+            <List component="nav" sx={{ overflow: 'hidden', mt: 'auto' }}>
+              {adminOptions.map((item, index) => {
+                if (item.isHeader) {
+                  return (
+                    <React.Fragment key={`admin-header-${index}`}>
+                      {!drawerCollapsed && (
+                        <SectionHeader title={item.title} collapsed={drawerCollapsed} />
+                      )}
+                    </React.Fragment>
+                  );
+                }
+
+                return (
+                  <ListItem key={item.title} disablePadding sx={{ overflow: 'hidden' }}>
+                    <Tooltip title={drawerCollapsed ? item.title : ''} placement="right">
+                      <NavItem
+                        component={NavLink}
+                        to={item.navTo}
+                        sx={{
+                          pl: drawerCollapsed ? '20px' : '16px',
+                          pr: drawerCollapsed ? '20px' : '16px'
+                        }}
+                      >
+                        <ListItemIcon
+                          sx={{
+                            minWidth: drawerCollapsed ? 'unset' : '56px',
+                            justifyContent: 'center',
+                            transition: `min-width ${animationDuration} ${customEasing}`
+                          }}
+                        >
+                          {item.icon}
+                        </ListItemIcon>
+                        {!drawerCollapsed && (
+                          <ListItemText
+                            primary={item.title}
+                            sx={{
+                              transition: `opacity ${animationDuration} ${customEasing}`,
+                              opacity: drawerCollapsed ? 0 : 1,
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis'
+                            }}
+                          />
+                        )}
+                      </NavItem>
+                    </Tooltip>
+                  </ListItem>
+                );
+              })}
+            </List>
+          )}
 
           {/* Theme toggle button at the bottom */}
           <Box

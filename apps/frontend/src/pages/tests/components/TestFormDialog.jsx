@@ -7,8 +7,6 @@ import {
   Alert,
   Box,
   Button,
-  Card,
-  CardContent,
   Chip,
   Dialog,
   DialogActions,
@@ -17,9 +15,6 @@ import {
   FormControl,
   Grid,
   InputLabel,
-  List,
-  ListItem,
-  ListItemText,
   MenuItem,
   OutlinedInput,
   Paper,
@@ -198,139 +193,111 @@ const TestFormDialog = ({
           </Grid>
 
           <Grid item xs={12}>
-            {/* Show count of available questions */}
+            {/* Show statistics of available questions */}
             {formData.selected_modules.length > 0 && (
-              <Box
-                sx={{
-                  mt: 2,
-                  p: 2,
-                  bgcolor: 'background.paper',
-                  borderRadius: 1,
-                  border: '1px solid',
-                  borderColor: 'divider'
-                }}
-              >
-                <Typography variant="body2" color="text.secondary">
-                  {validatedQuestionsLoading
-                    ? 'Načítavam otázky...'
-                    : `Dostupných validovaných otázok: ${availableQuestionsCount}`}
-                </Typography>
-                {availableQuestionsCount < formData.total_questions &&
-                  availableQuestionsCount > 0 && (
-                    <Alert severity="warning" sx={{ mt: 1 }}>
-                      Nie je dosť validovaných otázok pre tento test. Požadované:{' '}
-                      {formData.total_questions}, Dostupné: {availableQuestionsCount}
-                    </Alert>
-                  )}
-                {availableQuestionsCount === 0 && !validatedQuestionsLoading && (
-                  <Alert severity="error" sx={{ mt: 1 }}>
-                    Žiadne validované otázky v vybraných moduloch!
-                  </Alert>
-                )}
-              </Box>
-            )}
-
-            {/* Show list of validated questions from selected modules */}
-            {formData.selected_modules.length > 0 && validatedQuestions.length > 0 && (
               <Box sx={{ mt: 2 }}>
-                <Typography variant="subtitle2" gutterBottom>
-                  Validované otázky z vybraných modulov ({validatedQuestions.length}):
-                </Typography>
-                <Paper sx={{ maxHeight: 500, overflow: 'auto', p: 2 }}>
-                  <Grid container spacing={2}>
-                    {validatedQuestions.map((q) => (
-                      <Grid item xs={12} sm={6} md={4} key={q._id}>
-                        <Card
-                          sx={{
-                            height: '100%',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            border: '1px solid',
-                            borderColor: 'divider'
-                          }}
-                        >
-                          <CardContent sx={{ flexGrow: 1, p: 2 }}>
-                            <Typography
-                              variant="subtitle2"
-                              gutterBottom
-                              sx={{
-                                fontWeight: 'bold',
-                                mb: 1.5,
-                                fontSize: '0.875rem',
-                                lineHeight: 1.3
-                              }}
-                            >
-                              {q.text || q.question_text}
+                <Paper sx={{ p: 2, pt: 0, bgcolor: 'background.paper' }}>
+                  {validatedQuestionsLoading ? (
+                    <Typography variant="body2" color="text.secondary">
+                      Načítavam otázky...
+                    </Typography>
+                  ) : (
+                    <>
+                      <Box sx={{ mb: 2 }}>
+                        <Typography variant="h4" color="primary" fontWeight="bold">
+                          {availableQuestionsCount}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          Celkový počet dostupných otázok
+                        </Typography>
+                      </Box>
+
+                      {availableQuestionsCount < formData.total_questions &&
+                        availableQuestionsCount > 0 && (
+                          <Alert severity="warning" sx={{ mb: 2 }}>
+                            Nie je dosť validovaných otázok pre tento test. Požadované:{' '}
+                            {formData.total_questions}, Dostupné: {availableQuestionsCount}
+                          </Alert>
+                        )}
+
+                      {availableQuestionsCount === 0 && (
+                        <Alert severity="error" sx={{ mb: 2 }}>
+                          Žiadne validované otázky v vybraných moduloch!
+                        </Alert>
+                      )}
+
+                      {validatedQuestions.length > 0 && (
+                        <>
+                          {/* Questions by module */}
+                          <Box sx={{ mb: 2 }}>
+                            <Typography variant="subtitle2" gutterBottom fontWeight="bold">
+                              Rozdelenie podľa modulov:
                             </Typography>
-
-                            <Typography
-                              variant="caption"
-                              color="text.secondary"
-                              sx={{ mb: 1, display: 'block' }}
-                            >
-                              Možnosti odpovede:
-                            </Typography>
-
-                            <List dense sx={{ py: 0 }}>
-                              {q.options &&
-                                Object.entries(q.options).map(([key, value]) => (
-                                  <ListItem key={key} sx={{ py: 0.25, px: 0 }}>
-                                    <ListItemText
-                                      primary={
-                                        <Box display="flex" alignItems="center" gap={0.5}>
-                                          <Chip
-                                            label={key.toUpperCase()}
-                                            size="small"
-                                            color={q.correct === key ? 'success' : 'default'}
-                                            sx={{
-                                              minWidth: 24,
-                                              height: 18,
-                                              fontSize: '0.65rem',
-                                              '& .MuiChip-label': { px: 0.5 }
-                                            }}
-                                          />
-                                          <Typography
-                                            variant="caption"
-                                            sx={{
-                                              fontWeight: q.correct === key ? 'bold' : 'normal',
-                                              fontSize: '0.75rem'
-                                            }}
-                                          >
-                                            {value}
-                                          </Typography>
-                                        </Box>
-                                      }
-                                    />
-                                  </ListItem>
-                                ))}
-                            </List>
-
-                            <Box
-                              sx={{
-                                mt: 1,
-                                pt: 1,
-                                borderTop: '1px solid',
-                                borderColor: 'divider'
-                              }}
-                            >
-                              <Typography variant="caption" color="text.secondary" display="block">
-                                <strong>Modul:</strong> {q.modul?.name || q.modul?.title || 'N/A'}
-                              </Typography>
+                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+                              {(() => {
+                                const byModule = {};
+                                validatedQuestions.forEach((q) => {
+                                  const moduleName =
+                                    q.modul?.name || q.modul?.title || 'Neznámy modul';
+                                  byModule[moduleName] = (byModule[moduleName] || 0) + 1;
+                                });
+                                return Object.entries(byModule).map(([moduleName, count]) => (
+                                  <Chip
+                                    key={moduleName}
+                                    label={`${moduleName}: ${count}`}
+                                    color="primary"
+                                    variant="outlined"
+                                    size="small"
+                                  />
+                                ));
+                              })()}
                             </Box>
-                          </CardContent>
-                        </Card>
-                      </Grid>
-                    ))}
-                  </Grid>
+                          </Box>
+
+                          {/* Questions by year */}
+                          <Box sx={{ mb: 2 }}>
+                            <Typography variant="subtitle2" gutterBottom fontWeight="bold">
+                              Rozdelenie podľa roku vytvorenia:
+                            </Typography>
+                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+                              {(() => {
+                                const byYear = {};
+                                validatedQuestions.forEach((q) => {
+                                  if (q.createdAt) {
+                                    const year = new Date(q.createdAt).getFullYear();
+                                    byYear[year] = (byYear[year] || 0) + 1;
+                                  }
+                                });
+                                return Object.entries(byYear)
+                                  .sort(([a], [b]) => b - a)
+                                  .map(([year, count]) => (
+                                    <Chip
+                                      key={year}
+                                      label={`${year}: ${count}`}
+                                      color="secondary"
+                                      variant="outlined"
+                                      size="small"
+                                    />
+                                  ));
+                              })()}
+                            </Box>
+                          </Box>
+                        </>
+                      )}
+                    </>
+                  )}
                 </Paper>
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{ mt: 1, display: 'block' }}
-                >
-                  Pri spustení testu bude každému študentovi náhodne vybraných{' '}
-                  {formData.total_questions} otázok z týchto validovaných otázok.
-                </Typography>
+
+                {availableQuestionsCount > 0 && (
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ mt: 1, display: 'block' }}
+                  >
+                    Pri spustení testu bude každému študentovi náhodne vybraných{' '}
+                    {formData.total_questions} otázok z týchto validovaných otázok.
+                  </Typography>
+                )}
               </Box>
             )}
 

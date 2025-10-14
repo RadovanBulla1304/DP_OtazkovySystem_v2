@@ -74,7 +74,7 @@ const ValidateByTeacherModal = ({ open, onClose, question, onSubmit, isSubmittin
               <Typography variant="subtitle1" gutterBottom>
                 Otázka:
               </Typography>
-              <Paper elevation={1} sx={{ p: 2, bgcolor: 'grey.50' }}>
+              <Paper elevation={1} sx={{ p: 2 }}>
                 <Typography variant="body1" sx={{ mb: 2 }}>
                   {question.text}
                 </Typography>
