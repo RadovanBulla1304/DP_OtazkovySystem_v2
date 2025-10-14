@@ -1,6 +1,8 @@
 -------------------------------------------
 bugy
+//week2 - 0/2 bodov nerefreshuje
 
+pri uprave otazky v week3 pridat toast uspesny/neuspesny
 v week2 na pravej strane dahboaardu sa mi neloadli otazky -> toto kuknut este 
 -------------------------------------------
 

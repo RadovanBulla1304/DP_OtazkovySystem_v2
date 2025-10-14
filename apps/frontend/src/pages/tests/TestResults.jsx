@@ -69,7 +69,7 @@ const TestResults = () => {
           </Box>
           <Box>
             <Chip
-              label={testAttempt.passed ? 'PASSED' : 'FAILED'}
+              label={testAttempt.passed ? 'ÚSPEŠNÝ' : 'NEÚSPEŠNÝ'}
               color={testAttempt.passed ? 'success' : 'error'}
               size="large"
               sx={{ fontSize: '1.2rem', py: 3 }}
