@@ -1,6 +1,9 @@
+const mongoose = require("mongoose");
 const { body, validationResult, matchedData } = require("express-validator");
 const { throwError, errorFormatter } = require("../util/universal");
 
+
+const User = require("../models/user");
 const Teacher = require("../models/teacher");
 const { validate, validated } = require("../util/validation");
 
@@ -21,3 +24,32 @@ exports.meTeacher = async (req, res) => {
         res.status(500).json({ message: 'Server error', error: err.message });
     }
 };
+exports.getAllUsersAssignedToSubject = [
+    async (req, res) => {
+        try {
+            const { subjectId } = req.params;
+            console.log('Received subjectId:', subjectId);
+            if (!subjectId) {
+                return res.status(400).send({ message: 'Subject ID is required' });
+            }
+
+            const users = await User.find(
+                {
+                    email: {
+                        $nin: ["superAdmin@uniza.sk", "admin@admin.com"],
+                    },
+                    assignedSubjects: new mongoose.Types.ObjectId(subjectId)
+                },
+                {
+                    password: 0,
+                    salt: 0,
+                    __v: 0,
+                }
+            );
+            console.log('Fetched users:', users);
+            res.status(200).send(users);
+        } catch (err) {
+            throwError(err.message, 500);
+        }
+    },
+];

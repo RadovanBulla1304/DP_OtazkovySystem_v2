@@ -36,6 +36,11 @@ const ProjectSchema = new mongoose.Schema(
             type: Number,
             default: 5,
         },
+        max_points: {
+            type: Number,
+            required: true,
+            min: 1,
+        },
     },
     {
         timestamps: true,

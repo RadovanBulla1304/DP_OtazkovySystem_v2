@@ -16,6 +16,7 @@ const createProject = [
                 name: data.name,
                 description: data.description || "",
                 max_members: data.max_members || 5,
+                max_points: data.max_points,
                 subject: data.subject || null,
                 createdBy: teacherId,
                 assigned_users: []
@@ -63,6 +64,7 @@ const updateProject = [
             if (data.name !== undefined) project.name = data.name;
             if (data.description !== undefined) project.description = data.description;
             if (data.max_members !== undefined) project.max_members = data.max_members;
+            if (data.max_points !== undefined) project.max_points = data.max_points;
             if (data.subject !== undefined) project.subject = data.subject;
             if (data.status !== undefined) project.status = data.status;
             if (data.due_date !== undefined) project.due_date = data.due_date;
@@ -359,6 +361,22 @@ const saveProjectRating = async (req, res) => {
             return res.status(404).json({
                 success: false,
                 message: "Rated project not found"
+            });
+        }
+
+        // Validate rating does not exceed max_points
+        if (rating > ratedProject.max_points) {
+            return res.status(400).json({
+                success: false,
+                message: `Rating cannot exceed maximum points (${ratedProject.max_points}) for this project`
+            });
+        }
+
+        // Validate rating is not negative
+        if (rating < 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Rating cannot be negative"
             });
         }
 

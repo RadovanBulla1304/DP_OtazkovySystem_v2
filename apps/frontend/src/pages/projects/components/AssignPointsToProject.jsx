@@ -28,6 +28,14 @@ const AssignPointsToProject = ({ open, onClose, project, onSuccess }) => {
       return;
     }
 
+    // Validate against max_points
+    if (project?.max_points && pointsValue > project.max_points) {
+      toast.error(
+        `Body nemôžu presiahnuť maximálny počet bodov (${project.max_points}) pre tento projekt`
+      );
+      return;
+    }
+
     if (!project?.assigned_users || project.assigned_users.length === 0) {
       toast.error('K tomuto projektu nie sú priradení žiadni používatelia');
       return;
@@ -95,6 +103,9 @@ const AssignPointsToProject = ({ open, onClose, project, onSuccess }) => {
               <Typography variant="body2" color="text.secondary">
                 Priradení používatelia: {project.assigned_users?.length || 0}
               </Typography>
+              <Typography variant="body2" color="primary" fontWeight="bold" sx={{ mt: 1 }}>
+                Maximálny počet bodov: {project.max_points || 'N/A'}
+              </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
                 Všetci {project.assigned_users?.length || 0} používateľ(ia) dostanú rovnaký počet
                 bodov za tento projekt.
@@ -109,9 +120,9 @@ const AssignPointsToProject = ({ open, onClose, project, onSuccess }) => {
             required
             value={points}
             onChange={(e) => setPoints(e.target.value)}
-            inputProps={{ min: 1, step: 1 }}
+            inputProps={{ min: 1, max: project?.max_points, step: 1 }}
             disabled={isLoading}
-            helperText="Zadajte počet bodov, ktoré chcete prideliť každému používateľovi"
+            helperText={`Zadajte počet bodov (max ${project?.max_points || 'N/A'}), ktoré chcete prideliť každému používateľovi`}
           />
         </Box>
       </DialogContent>

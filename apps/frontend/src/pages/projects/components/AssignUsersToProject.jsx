@@ -1,4 +1,4 @@
-import { useAssignUsersToProjectMutation, useGetUsersListQuery } from '@app/redux/api';
+import { useAssignUsersToProjectMutation, useGetUsersAssignedToSubjectQuery } from '@app/redux/api';
 import {
   Box,
   Button,
@@ -10,17 +10,26 @@ import {
   Typography
 } from '@mui/material';
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
+import { skipToken } from '@reduxjs/toolkit/query';
 import PropTypes from 'prop-types';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
+import { useCurrentSubjectId } from '../../../hooks/useCurrentSubjectId';
 
 const AssignUsersToProject = ({ open, onClose, projectId, onSuccess }) => {
   const [selectedUsers, setSelectedUsers] = useState([]);
 
-  const { data: usersData, isLoading: isUsersLoading } = useGetUsersListQuery();
+  // Get current subjectId from custom hook
+  const subjectId = useCurrentSubjectId();
+  console.log('Current subjectId:', subjectId);
+  // Fetch users assigned to the subject
+  const { data: usersData, isLoading: isUsersLoading } = useGetUsersAssignedToSubjectQuery(
+    subjectId ? { subjectId } : skipToken
+  );
   const [assignUsers, { isLoading: isAssigning }] = useAssignUsersToProjectMutation();
 
   const users = usersData || [];
+  console.log('Users assigned to subject:', users);
 
   // Define columns for the DataGrid
   const columns = [
@@ -57,6 +66,9 @@ const AssignUsersToProject = ({ open, onClose, projectId, onSuccess }) => {
     onClose();
   };
 
+  // Show loading spinner if subject or users are loading
+  const isLoading = !subjectId || isUsersLoading;
+
   return (
     <Dialog open={open} onClose={handleCancel} maxWidth="lg" fullWidth>
       <DialogTitle>
@@ -70,29 +82,34 @@ const AssignUsersToProject = ({ open, onClose, projectId, onSuccess }) => {
         </Box>
       </DialogTitle>
       <DialogContent dividers sx={{ height: 500, p: 2 }}>
-        <DataGrid
-          loading={isUsersLoading}
-          rows={users}
-          columns={columns}
-          getRowId={(row) => row._id}
-          pageSizeOptions={[10, 20, 50]}
-          initialState={{
-            density: 'compact',
-            pagination: {
-              paginationModel: {
-                pageSize: 10
+        {isLoading ? (
+          <Box display="flex" justifyContent="center" alignItems="center" height="100%">
+            <CircularProgress />
+          </Box>
+        ) : (
+          <DataGrid
+            rows={users}
+            columns={columns}
+            getRowId={(row) => row._id}
+            pageSizeOptions={[10, 20, 50]}
+            initialState={{
+              density: 'compact',
+              pagination: {
+                paginationModel: {
+                  pageSize: 10
+                }
               }
-            }
-          }}
-          checkboxSelection
-          isRowSelectable={() => true}
-          onRowSelectionModelChange={(ids) => setSelectedUsers(ids)}
-          rowSelectionModel={selectedUsers}
-          slots={{ toolbar: GridToolbar }}
-          slotProps={{ toolbar: { showQuickFilter: true } }}
-          ignoreDiacritics
-          disableRowSelectionOnClick
-        />
+            }}
+            checkboxSelection
+            isRowSelectable={() => true}
+            onRowSelectionModelChange={(ids) => setSelectedUsers(ids)}
+            rowSelectionModel={selectedUsers}
+            slots={{ toolbar: GridToolbar }}
+            slotProps={{ toolbar: { showQuickFilter: true } }}
+            ignoreDiacritics
+            disableRowSelectionOnClick
+          />
+        )}
       </DialogContent>
       <DialogActions>
         <Button onClick={handleCancel} disabled={isAssigning} variant="outlined" color="error">

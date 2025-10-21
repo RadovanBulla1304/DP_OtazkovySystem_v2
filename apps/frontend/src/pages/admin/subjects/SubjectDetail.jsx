@@ -2,6 +2,7 @@ import {
   useDeleteAllModulsBySubjectMutation,
   useDeleteModulMutation,
   useDeleteSubjectMutation,
+  useGetAllTeachersQuery,
   useGetModulsBySubjectQuery,
   useGetSubjectByIdQuery,
   useGetUsersListQuery,
@@ -10,6 +11,7 @@ import {
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
+import PeopleIcon from '@mui/icons-material/People';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import {
   Box,
@@ -17,6 +19,7 @@ import {
   Button,
   Card,
   CardContent,
+  Chip,
   CircularProgress,
   Divider,
   Grid,
@@ -32,6 +35,7 @@ import { useMemo, useState } from 'react';
 import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import AddModulModal from './components/AddModulModal';
+import AssignTeachersToSubject from './components/AssignTeachersToSubject';
 import AssignUsersFromCSVModal from './components/AssignUsersFromCSVModal';
 import DeleteModulDialog from './components/DeleteModulDialog';
 import DeleteSubjectDialog from './components/DeleteSubjectDialog';
@@ -55,6 +59,7 @@ const SubjectDetail = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isManageTeachersOpen, setIsManageTeachersOpen] = useState(false);
 
   const [editModulModalOpen, setEditModulModalOpen] = useState(false);
   const [modulToEdit, setModulToEdit] = useState(null);
@@ -80,6 +85,9 @@ const SubjectDetail = () => {
     isError: isSubjectError,
     refetch: refetchSubject
   } = useGetSubjectByIdQuery(subjectId);
+
+  // Fetch teachers
+  const { data: allTeachers = [] } = useGetAllTeachersQuery();
 
   // Fetch modules for this subject
   const {
@@ -347,7 +355,7 @@ const SubjectDetail = () => {
   }
 
   return (
-    <Box sx={{ padding: '20px' }}>
+    <Box sx={{ paddingBlock: '24px' }}>
       {/* Breadcrumbs navigation */}
       <Breadcrumbs
         separator={<NavigateNextIcon fontSize="small" />}
@@ -376,6 +384,11 @@ const SubjectDetail = () => {
             </Typography>
 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Tooltip title="Spravovať učiteľov">
+                <IconButton color="primary" onClick={() => setIsManageTeachersOpen(true)}>
+                  <PeopleIcon />
+                </IconButton>
+              </Tooltip>
               <Tooltip title="Priradiť používateľov z CSV">
                 <IconButton onClick={handleOpenCSVModal}>
                   <UploadFileIcon />
@@ -412,6 +425,39 @@ const SubjectDetail = () => {
               <Typography variant="body2" color="text.secondary">
                 Počet priradených používateľov: {subject.assigned_students?.length || 0}
               </Typography>
+            </Grid>
+
+            {/* Assigned Teachers Section */}
+            <Grid item xs={12}>
+              <Divider sx={{ my: 2 }} />
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+                <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                  Priradení učitelia:
+                </Typography>
+                {subject.assigned_teachers && subject.assigned_teachers.length > 0 ? (
+                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                    {subject.assigned_teachers.map((teacher) => {
+                      const teacherData =
+                        typeof teacher === 'string'
+                          ? allTeachers.find((t) => t._id === teacher)
+                          : teacher;
+
+                      return teacherData ? (
+                        <Chip
+                          key={teacherData._id}
+                          label={`${teacherData.name} ${teacherData.surname}`}
+                          color="primary"
+                          variant="outlined"
+                        />
+                      ) : null;
+                    })}
+                  </Box>
+                ) : (
+                  <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                    Žiadni učitelia nie sú priradení
+                  </Typography>
+                )}
+              </Box>
             </Grid>
           </Grid>
         </CardContent>
@@ -552,6 +598,15 @@ const SubjectDetail = () => {
         onClose={handleCloseUnassignDialog}
         onConfirm={handleConfirmUnassignUsers}
       />
+
+      {/* Manage Teachers Modal */}
+      {subject && (
+        <AssignTeachersToSubject
+          open={isManageTeachersOpen}
+          onClose={() => setIsManageTeachersOpen(false)}
+          subject={subject}
+        />
+      )}
     </Box>
   );
 };

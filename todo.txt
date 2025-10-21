@@ -2,16 +2,11 @@
 -------------------------------------------
 todo
 
-pri vytvarani projektu nastavit max pocet bodov
-ucitel nebude vidiet vsetky predmety, ked sa registrejume ako novy ucitel najprv nevidim ziadne predmety. ked vytvorim predmet 
-    -> mozem priradit, dalsieho ucitela tomuto predmetu. Treba vytvorit admina ktory uvidi vsetky predmety 
-    -> admin nech vidi tabulku na x-ovej predmety , na y-ovej ucitelia
     -> ucitela vie odstranit len admin 
     -> studenti budu premazavany na konci kazdeho roka
     -> predmet existuje aj ak nema ziadneho ucitela
 student je pridany k predmetu len 1 rok..  hranica 1.9. -> po jednom roku potrebujeme odstranit priradenie predmetu ale nechat jeho data 
  -> na najblizsie 3 roky (schvaleen otazky a posty vo fore su navzdy tie sa nevymazavaju)
-
 
 pri delete : 
 studenta -> zachovat (schvalene otazky, prispevky vo fore)
@@ -51,3 +46,8 @@ opravene
 //ked vytvaram novy test netreab zobrazit vsetky otazky. staci nejake statistiky. z akych rkov z akych modulov atd..
 //vsetky toasty po slovensky 
 //darkmode -> uz skoro spraveny . disable pri login a registracii, taktiez pri userpointsmodal, pri vsetkych otazkach co validuje ucitel
+//pri vytvarani projektu nastavit max pocet bodov
+//ucitel nebude vidiet vsetky predmety, ked sa registrejume ako novy ucitel najprv nevidim ziadne predmety. ked vytvorim predmet 
+    -> mozem priradit, dalsieho ucitela tomuto predmetu. Treba vytvorit admina ktory uvidi vsetky predmety 
+//refresh ked pridam ucitela k predmetu
+    -> admin nech vidi tabulku na x-ovej predmety , na y-ovej ucitelia

@@ -3,13 +3,16 @@ import {
   useDeleteSubjectMutation,
   useGetAllSubjectsQuery
 } from '@app/redux/api';
-import { Add } from '@mui/icons-material';
+import { Add, Assignment } from '@mui/icons-material';
 import { Box, Button, CircularProgress, Grid, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import * as authService from '../../auth/authService';
 import AddModulModal from './components/AddModulModal';
 import AddSubjectModal from './components/AddSubjectModal';
+import AssignTeachersToSubject from './components/AssignTeachersToSubject';
+import BulkAssignTeachers from './components/BulkAssignTeachers';
 import DeleteSubjectDialog from './components/DeleteSubjectDialog';
 import SubjectCard from './components/SubjectCard';
 
@@ -21,11 +24,18 @@ const Subjects = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
+  // Get current teacher to check if admin
+  const currentTeacher = authService.getUserFromStorage();
+  const isAdmin = currentTeacher?.isAdmin || false;
+
   const [isSubjectModalOpen, setIsSubjectModalOpen] = useState(false);
   const [isModulModalOpen, setIsModulModalOpen] = useState(false);
   const [selectedSubjectId, setSelectedSubjectId] = useState(null);
   const [subjectToDelete, setSubjectToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isManageTeachersOpen, setIsManageTeachersOpen] = useState(false);
+  const [subjectForTeachers, setSubjectForTeachers] = useState(null);
+  const [isBulkAssignOpen, setIsBulkAssignOpen] = useState(false);
 
   // Check if we need to refresh the data (e.g., coming back from subject detail after deletion)
   useEffect(() => {
@@ -71,6 +81,16 @@ const Subjects = () => {
 
   const handleCardClick = (subjectId) => {
     navigate(`/subjects/${subjectId}`);
+  };
+
+  const handleManageTeachers = (subject) => {
+    setSubjectForTeachers(subject);
+    setIsManageTeachersOpen(true);
+  };
+
+  const handleCloseManageTeachers = () => {
+    setIsManageTeachersOpen(false);
+    setSubjectForTeachers(null);
   };
 
   // const handleEdit = (e, subjectId) => {
@@ -134,15 +154,28 @@ const Subjects = () => {
     <Box sx={{ pt: 3, pb: 3 }}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
         <Typography variant="h4">Predmety</Typography>
-        <Button
-          startIcon={<Add />}
-          size="medium"
-          variant="contained"
-          color="primary"
-          onClick={handleOpenSubjectModal}
-        >
-          Nový predmet
-        </Button>
+        <Box display="flex" gap={2}>
+          {isAdmin && (
+            <Button
+              startIcon={<Assignment />}
+              size="medium"
+              variant="outlined"
+              color="primary"
+              onClick={() => setIsBulkAssignOpen(true)}
+            >
+              Priradenie učiteľov
+            </Button>
+          )}
+          <Button
+            startIcon={<Add />}
+            size="medium"
+            variant="contained"
+            color="primary"
+            onClick={handleOpenSubjectModal}
+          >
+            Nový predmet
+          </Button>
+        </Box>
       </Box>
 
       <AddSubjectModal
@@ -168,11 +201,30 @@ const Subjects = () => {
                 console.log('Delete button clicked for subject:', subject.name);
                 setSubjectToDelete(subject);
               }}
+              onManageTeachersClick={handleManageTeachers}
               isDeleting={isDeleting}
             />
           </Grid>
         ))}
       </Grid>
+
+      {/* Manage Teachers Modal */}
+      {subjectForTeachers && (
+        <AssignTeachersToSubject
+          open={isManageTeachersOpen}
+          onClose={handleCloseManageTeachers}
+          subject={subjectForTeachers}
+        />
+      )}
+
+      {/* Bulk Assign Teachers Modal */}
+      {isAdmin && (
+        <BulkAssignTeachers
+          open={isBulkAssignOpen}
+          onClose={() => setIsBulkAssignOpen(false)}
+          subjects={subjects || []}
+        />
+      )}
 
       {/* Confirmation Dialog for Delete Subject */}
       <DeleteSubjectDialog

@@ -23,6 +23,12 @@ const createProjectSchema = Joi.object({
         'number.integer': 'Maximálny počet členov musí byť celé číslo',
         'number.min': 'Minimálny počet členov je 1'
     }),
+    max_points: Joi.number().integer().min(1).required().messages({
+        'number.base': 'Maximálny počet bodov musí byť číslo',
+        'number.integer': 'Maximálny počet bodov musí byť celé číslo',
+        'number.min': 'Minimálny počet bodov je 1',
+        'any.required': 'Maximálny počet bodov je povinný'
+    }),
 });
 
 const updateProjectSchema = Joi.object({
@@ -47,6 +53,11 @@ const updateProjectSchema = Joi.object({
         'number.base': 'Maximálny počet členov musí byť číslo',
         'number.integer': 'Maximálny počet členov musí byť celé číslo',
         'number.min': 'Minimálny počet členov je 1'
+    }),
+    max_points: Joi.number().integer().min(1).messages({
+        'number.base': 'Maximálny počet bodov musí byť číslo',
+        'number.integer': 'Maximálny počet bodov musí byť celé číslo',
+        'number.min': 'Minimálny počet bodov je 1'
     }),
 });
 

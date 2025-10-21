@@ -270,6 +270,10 @@ const Projects = () => {
                     Študenti: {project.assigned_users?.length || 0} / {project.max_members}
                   </Typography>
 
+                  <Typography variant="body2" color="text.secondary">
+                    Max body: {project.max_points || 'N/A'}
+                  </Typography>
+
                   {project.assigned_users && project.assigned_users.length > 0 && (
                     <Box sx={{ mt: 1, mb: 1 }}>
                       {project.assigned_users.map((user, index) => (

@@ -68,11 +68,17 @@ const PeerEvaluationModal = ({ open, onClose, subjectId }) => {
     setEditingCell(`${studentId}-${projectId}`);
   };
 
-  const handleCellChange = (studentId, projectId, value) => {
+  const handleCellChange = (studentId, projectId, value, maxPoints) => {
     const numValue = value === '' ? '' : Number(value);
 
     // Only allow positive numbers
     if (numValue !== '' && (isNaN(numValue) || numValue < 0)) {
+      return;
+    }
+
+    // Validate against max_points
+    if (numValue !== '' && maxPoints && numValue > maxPoints) {
+      toast.warning(`Hodnotenie nemôže presiahnuť ${maxPoints} bodov`);
       return;
     }
 
@@ -210,7 +216,14 @@ const PeerEvaluationModal = ({ open, onClose, subjectId }) => {
                       minWidth: 120
                     }}
                   >
-                    {project.name}
+                    <Box>
+                      <Typography variant="body2" fontWeight="bold">
+                        {project.name}
+                      </Typography>
+                      <Typography variant="caption" sx={{ opacity: 0.9 }}>
+                        Max: {project.max_points || 'N/A'} bodov
+                      </Typography>
+                    </Box>
                   </TableCell>
                 ))}
               </TableRow>
@@ -281,7 +294,12 @@ const PeerEvaluationModal = ({ open, onClose, subjectId }) => {
                             type="number"
                             value={value}
                             onChange={(e) =>
-                              handleCellChange(student._id, project._id, e.target.value)
+                              handleCellChange(
+                                student._id,
+                                project._id,
+                                e.target.value,
+                                project.max_points
+                              )
                             }
                             onBlur={() =>
                               handleCellBlur(student._id, project._id, student.projectId)
@@ -289,9 +307,14 @@ const PeerEvaluationModal = ({ open, onClose, subjectId }) => {
                             onKeyDown={(e) =>
                               handleKeyDown(e, student._id, project._id, student.projectId)
                             }
-                            inputProps={{ min: 0, style: { textAlign: 'center' } }}
+                            inputProps={{
+                              min: 0,
+                              max: project.max_points,
+                              step: 0.1,
+                              style: { textAlign: 'center' }
+                            }}
                             size="small"
-                            sx={{ width: '100%' }}
+                            sx={{ width: '80px' }}
                           />
                         ) : (
                           <Typography variant="body2">{value || '-'}</Typography>

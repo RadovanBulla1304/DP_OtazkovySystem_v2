@@ -107,11 +107,16 @@ export const api = createApi({
       invalidatesTags: ['Users', 'Subjects']
     }),
     getUsersList: builder.query({
-      query: () => ({
-        url: '/admin/getAllUsers',
-        method: 'GET'
-      }),
-      providesTags: ['Users']
+      query: ({ subjectId } = {}) => {
+        const params = new URLSearchParams();
+        if (subjectId) params.append('subjectId', subjectId);
+
+        return {
+          url: `/admin/getAllUsers?${params.toString()}`,
+          method: 'GET',
+        };
+      },
+      providesTags: ['Users'],
     }),
     // SUBJECTS
     createSubject: builder.mutation({
@@ -121,12 +126,19 @@ export const api = createApi({
         body: data
       })
     }),
+    getUsersAssignedToSubject: builder.query({
+      query: ({ subjectId }) => ({
+        url: `/teacher/getAllUsersAssignedToSubject/${subjectId}`,
+        method: 'GET',
+      }),
+      providesTags: ['Users'],
+    }),
     getAllSubjects: builder.query({
       query: () => ({
         url: '/subject',
-        method: 'GET',
-        providesTags: ['Subjects'],
-      })
+        method: 'GET'
+      }),
+      providesTags: ['Subjects']
     }),
     editSubject: builder.mutation({
       query: (data) => ({
@@ -167,6 +179,29 @@ export const api = createApi({
         body: data
       }),
       invalidatesTags: ['Users', 'Subjects']
+    }),
+    assignTeacherToSubject: builder.mutation({
+      query: (data) => ({
+        url: '/subject/assign-teacher',
+        method: 'POST',
+        body: data
+      }),
+      invalidatesTags: ['Subjects', 'Teachers']
+    }),
+    unassignTeacherFromSubject: builder.mutation({
+      query: (data) => ({
+        url: '/subject/unassign-teacher',
+        method: 'POST',
+        body: data
+      }),
+      invalidatesTags: ['Subjects', 'Teachers']
+    }),
+    getTeacherSubjects: builder.query({
+      query: () => ({
+        url: '/subject/teacher/subjects',
+        method: 'GET'
+      }),
+      providesTags: ['Subjects']
     }),
     // MODULES
     createModul: builder.mutation({
@@ -1043,11 +1078,14 @@ export const api = createApi({
       },
       providesTags: ['ProjectRatings']
     }),
+
+
   })
 });
 
 export const {
   // USERS / TEACHERS
+  useGetUsersAssignedToSubjectQuery,
   useGetUserMeQuery,
   useLazyGetUserMeQuery,
   useGetTeacherMeQuery,
@@ -1071,6 +1109,9 @@ export const {
   useGetSubjectByIdQuery,
   useAsignUserToSubjectMutation,
   useUnasignUserFromSubjectMutation,
+  useAssignTeacherToSubjectMutation,
+  useUnassignTeacherFromSubjectMutation,
+  useGetTeacherSubjectsQuery,
   // MODULS
   useCreateModulMutation,
   useGetAllModulsQuery,

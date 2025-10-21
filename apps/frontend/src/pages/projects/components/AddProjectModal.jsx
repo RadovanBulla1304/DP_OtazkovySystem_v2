@@ -22,7 +22,8 @@ const AddProjectModal = ({ open, onClose, onSuccess }) => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    max_members: 5
+    max_members: 5,
+    max_points: 15
   });
   const [errors, setErrors] = useState({});
   const [createdProjectId, setCreatedProjectId] = useState(null);
@@ -72,6 +73,7 @@ const AddProjectModal = ({ open, onClose, onSuccess }) => {
     if (!currentSubjectId) return false;
     if (!formData.name.trim()) return false;
     if (!formData.max_members || formData.max_members < 1) return false;
+    if (!formData.max_points || formData.max_points < 1) return false;
 
     // Validate with schema without setting errors
     const validationData = {
@@ -100,13 +102,14 @@ const AddProjectModal = ({ open, onClose, onSuccess }) => {
         name: formData.name.trim(),
         description: formData.description.trim(),
         max_members: formData.max_members || 5,
+        max_points: formData.max_points || 10,
         subject: currentSubjectId
       };
 
       const result = await createProject(projectData).unwrap();
       toast.success('Projekt bol úspešne vytvorený');
       setCreatedProjectId(result.data._id);
-      setFormData({ name: '', description: '', max_members: 5 });
+      setFormData({ name: '', description: '', max_members: 5, max_points: 10 });
       setErrors({});
       if (onSuccess) onSuccess();
       onClose();
@@ -116,7 +119,7 @@ const AddProjectModal = ({ open, onClose, onSuccess }) => {
   };
 
   const handleCancel = () => {
-    setFormData({ name: '', description: '', max_members: 5 });
+    setFormData({ name: '', description: '', max_members: 5, max_points: 10 });
     setErrors({});
     setCreatedProjectId(null);
     onClose();
@@ -164,6 +167,22 @@ const AddProjectModal = ({ open, onClose, onSuccess }) => {
                 onChange={(e) => handleChange('max_members', parseInt(e.target.value) || 5)}
                 error={!!errors.max_members}
                 helperText={errors.max_members}
+                inputProps={{ min: 1 }}
+                disabled={isLoading}
+              />
+
+              <TextField
+                label="Maximálny počet bodov"
+                type="number"
+                fullWidth
+                required
+                value={formData.max_points}
+                onChange={(e) => handleChange('max_points', parseInt(e.target.value) || 10)}
+                error={!!errors.max_points}
+                helperText={
+                  errors.max_points ||
+                  'Maximálny počet bodov, ktoré študenti môžu udeliť pri hodnotení'
+                }
                 inputProps={{ min: 1 }}
                 disabled={isLoading}
               />
