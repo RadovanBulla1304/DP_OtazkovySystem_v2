@@ -137,8 +137,13 @@ const MainLayout = ({ children }) => {
   const matched = useMediaQuery('(min-width:900px)');
   const navigate = useNavigate();
   const { mode, toggleThemeMode } = React.useContext(ThemeModeContext);
-  const { data: user } = useGetUserMeQuery();
-  const { data: teacher } = useGetTeacherMeQuery();
+
+  // First try to fetch user, only fetch teacher if user query fails or returns null
+  const { data: user, isError: isUserError } = useGetUserMeQuery();
+  const { data: teacher } = useGetTeacherMeQuery(undefined, {
+    skip: !!user || !isUserError
+  });
+
   const [drawerCollapsed, setDrawerCollapsed] = React.useState(false);
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [isClosing, setIsClosing] = React.useState(false);
