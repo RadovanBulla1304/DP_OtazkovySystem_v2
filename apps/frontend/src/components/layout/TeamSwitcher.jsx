@@ -16,7 +16,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 
 import * as authService from '@app/pages/auth/authService';
-import { useGetAllSubjectsQuery } from '@app/redux/api'; // adjust path
+import { useGetAllSubjectsAssignedToUserQuery, useGetAllSubjectsQuery } from '@app/redux/api'; // adjust path
 import { styled } from '@mui/material/styles';
 import AddSubjectModal from '../../pages/admin/subjects/components/AddSubjectModal';
 
@@ -52,19 +52,36 @@ const CollapsedAvatar = styled(Avatar)(({ theme }) => ({
 }));
 
 const TeamSwitcher = ({ collapsed = false }) => {
-  const { data: allSubjects = [], isLoading, refetch } = useGetAllSubjectsQuery();
   const user = authService.getUserFromStorage();
+
+  // Conditionally fetch subjects based on user role
+  const isTeacherOrAdmin = user?.isTeacher || user?.isAdmin;
+
+  const {
+    data: allSubjects = [],
+    isLoading: isLoadingAll,
+    refetch: refetchAll
+  } = useGetAllSubjectsQuery(undefined, {
+    skip: !isTeacherOrAdmin
+  });
+
+  const {
+    data: allSubjectsAssignedToUser = [],
+    isLoading: isLoadingAssigned,
+    refetch: refetchAssigned
+  } = useGetAllSubjectsAssignedToUserQuery(user._id, {
+    skip: isTeacherOrAdmin
+  });
+
   const [currentSubject, setCurrentSubject] = React.useState(null);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [modalOpen, setModalOpen] = React.useState(false);
   const open = Boolean(anchorEl);
 
-  // Filter subjects based on user assignment
-  // Teachers see all subjects, students see only assigned subjects
-  const subjects = React.useMemo(() => {
-    if (user?.isTeacher || user?.isAdmin) return allSubjects;
-    return allSubjects.filter((subj) => subj.assigned_students?.includes(user?._id));
-  }, [allSubjects, user]);
+  // Use the appropriate subjects and loading state based on user role
+  const subjects = isTeacherOrAdmin ? allSubjects : allSubjectsAssignedToUser;
+  const isLoading = isTeacherOrAdmin ? isLoadingAll : isLoadingAssigned;
+  const refetch = isTeacherOrAdmin ? refetchAll : refetchAssigned;
 
   React.useEffect(() => {
     const id = localStorage.getItem('currentSubjectId');

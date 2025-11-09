@@ -50,7 +50,7 @@ exports.getAllSubjects = [
             const teacher = await Teacher.findById(teacherId);
 
             if (!teacher) {
-                return res.status(404).json({ message: "Teacher not found" });
+                return res.status(404).json({ message: "Teacher not founddddd" });
             }
 
             let subjects;
@@ -66,6 +66,34 @@ exports.getAllSubjects = [
                     { __v: 0 }
                 ).populate('assigned_teachers', 'name surname email');
             }
+
+            res.status(200).json(subjects);
+        } catch (err) {
+            throwError(`Error fetching subjects: ${err.message}`, 500);
+        }
+    },
+];
+
+
+// TODO : Optimalizovat
+exports.getAllSubjectsAssignedToUser = [
+    async (req, res) => {
+        try {
+            const userId = req.user.user_id;
+            const user = await User.findById(userId);
+
+            if (!user) {
+                return res.status(404).json({ message: "User not found" });
+            }
+
+            let subjects;
+
+            // If not admin, show only subjects where teacher is assigned
+            subjects = await Subject.find(
+                { assigned_students: userId },
+                { __v: 0 }
+            ).populate('assigned_students', 'name surname email');
+
 
             res.status(200).json(subjects);
         } catch (err) {

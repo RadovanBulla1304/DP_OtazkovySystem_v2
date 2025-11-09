@@ -140,6 +140,13 @@ export const api = createApi({
       }),
       providesTags: ['Subjects']
     }),
+    getAllSubjectsAssignedToUser: builder.query({
+      query: (userId) => ({
+        url: `/subject/${userId}`,
+        method: 'GET'
+      }),
+      providesTags: ['Subjects']
+    }),
     editSubject: builder.mutation({
       query: (data) => ({
         url: `/subject/${data.subjectId}`,
@@ -1104,6 +1111,7 @@ export const {
   // SUBJECTS
   useCreateSubjectMutation,
   useGetAllSubjectsQuery,
+  useGetAllSubjectsAssignedToUserQuery,
   useEditSubjectMutation,
   useDeleteSubjectMutation,
   useGetSubjectByIdQuery,

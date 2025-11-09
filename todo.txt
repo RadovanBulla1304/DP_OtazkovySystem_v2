@@ -1,7 +1,6 @@
 
 -------------------------------------------
 todo
-
     -> ucitela vie odstranit len admin 
     -> studenti budu premazavany na konci kazdeho roka
     -> predmet existuje aj ak nema ziadneho ucitela
