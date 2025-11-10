@@ -14,6 +14,7 @@ import {
 } from '@mui/material';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { sk } from 'date-fns/locale';
 import PropTypes from 'prop-types';
 import { useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -133,7 +134,7 @@ const AddModulModal = ({ open, onClose, subjectId, onSuccess }) => {
 
             {/* week_number is computed automatically and not set manually */}
 
-            <LocalizationProvider dateAdapter={AdapterDateFns}>
+            <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={sk}>
               <Controller
                 name="date_start"
                 control={control}
@@ -143,6 +144,7 @@ const AddModulModal = ({ open, onClose, subjectId, onSuccess }) => {
                     value={field.value}
                     onChange={(date) => field.onChange(date)}
                     disabled={isLoading}
+                    format="dd/MM/yyyy"
                     slotProps={{
                       textField: {
                         fullWidth: true,
@@ -164,7 +166,10 @@ const AddModulModal = ({ open, onClose, subjectId, onSuccess }) => {
                       size="small"
                       onClick={() => {
                         const newEnd = new Date(startDate);
-                        newEnd.setDate(newEnd.getDate() + 7 * weeks - 1);
+                        // Calculate end date: add (weeks * 7 - 1) days to get the last day of the period
+                        // Then set time to 23:59:59.999 to include the entire last day
+                        newEnd.setDate(newEnd.getDate() + (weeks * 7 - 1));
+                        newEnd.setHours(23, 59, 59, 999);
                         setValue('date_end', newEnd);
                       }}
                     >
@@ -184,6 +189,7 @@ const AddModulModal = ({ open, onClose, subjectId, onSuccess }) => {
                     onChange={(date) => field.onChange(date)}
                     disabled={isLoading || !startDate}
                     minDate={startDate || undefined}
+                    format="dd/MM/yyyy"
                     slotProps={{
                       textField: {
                         fullWidth: true,
