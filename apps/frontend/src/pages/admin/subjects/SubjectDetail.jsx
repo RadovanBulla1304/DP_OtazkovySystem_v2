@@ -441,31 +441,74 @@ const SubjectDetail = () => {
             {/* Assigned Teachers Section */}
             <Grid item xs={12}>
               <Divider sx={{ my: 2 }} />
+              
+              {/* Creator Teacher */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap', mb: 2 }}>
+                <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                  Vytvorené učiteľom:
+                </Typography>
+                {subject.createdBy && subject.assigned_teachers ? (
+                  (() => {
+                    const creatorData =
+                      typeof subject.createdBy === 'string'
+                        ? allTeachers.find((t) => t._id === subject.createdBy)
+                        : subject.createdBy;
+                    return creatorData ? (
+                      <Chip
+                        key={creatorData._id}
+                        label={`${creatorData.name} ${creatorData.surname}`}
+                        color="secondary"
+                        variant="filled"
+                      />
+                    ) : (
+                      <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                        Neznámy
+                      </Typography>
+                    );
+                  })()
+                ) : (
+                  <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                    Neznámy
+                  </Typography>
+                )}
+              </Box>
+
+              {/* Assigned Teachers */}
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
                 <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
                   Priradení učitelia:
                 </Typography>
                 {subject.assigned_teachers && subject.assigned_teachers.length > 0 ? (
                   <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                    {subject.assigned_teachers.map((teacher) => {
-                      const teacherData =
-                        typeof teacher === 'string'
-                          ? allTeachers.find((t) => t._id === teacher)
-                          : teacher;
+                    {subject.assigned_teachers
+                      .filter((teacher) => {
+                        const teacherId = typeof teacher === 'string' ? teacher : teacher._id;
+                        return teacherId !== subject.createdBy;
+                      })
+                      .map((teacher) => {
+                        const teacherData =
+                          typeof teacher === 'string'
+                            ? allTeachers.find((t) => t._id === teacher)
+                            : teacher;
 
-                      return teacherData ? (
-                        <Chip
-                          key={teacherData._id}
-                          label={`${teacherData.name} ${teacherData.surname}`}
-                          color="primary"
-                          variant="outlined"
-                        />
-                      ) : null;
-                    })}
+                        return teacherData ? (
+                          <Chip
+                            key={teacherData._id}
+                            label={`${teacherData.name} ${teacherData.surname}`}
+                            color="primary"
+                            variant="outlined"
+                          />
+                        ) : null;
+                      })}
                   </Box>
-                ) : (
+                ) : null}
+                {(!subject.assigned_teachers ||
+                  subject.assigned_teachers.filter((teacher) => {
+                    const teacherId = typeof teacher === 'string' ? teacher : teacher._id;
+                    return teacherId !== subject.createdBy;
+                  }).length === 0) && (
                   <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
-                    Žiadni učitelia nie sú priradení
+                    Žiadni ďalší učitelia
                   </Typography>
                 )}
               </Box>
