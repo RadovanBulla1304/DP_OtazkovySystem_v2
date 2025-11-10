@@ -3,6 +3,7 @@ import {
   useDeleteProjectMutation,
   useGetAllProjectsQuery,
   useGetTeacherMeQuery,
+  useGetUserMeQuery,
   useGetUserProjectsQuery
 } from '@app/redux/api';
 import {
@@ -36,8 +37,11 @@ import AssignUsersToProject from './components/AssignUsersToProject';
 import PeerEvaluationModal from './components/PeerEvaluationModal';
 
 const Projects = () => {
-  // Check if user is a teacher
-  const { data: teacher } = useGetTeacherMeQuery();
+  // Check if user is a teacher - first try user, then teacher
+  const { data: user, isError: isUserError } = useGetUserMeQuery();
+  const { data: teacher } = useGetTeacherMeQuery(undefined, {
+    skip: !!user || !isUserError
+  });
   const isTeacher = !!teacher;
   const currentSubjectId = useCurrentSubjectId();
 

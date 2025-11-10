@@ -18,6 +18,10 @@ const createSubject = Joi.object({
     description: Joi.string().allow('').optional().messages({
         'string.base': 'Popis musí byť text'
     }),
+    createdBy: objectId.required().messages({
+        'string.empty': 'ID vytvoriteľa je povinné',
+        'any.required': 'ID vytvoriteľa je povinné'
+    }),
     assigned_teachers: Joi.array().items(objectId).optional().messages({
         'array.base': 'Učitelia musia byť pole'
     }),

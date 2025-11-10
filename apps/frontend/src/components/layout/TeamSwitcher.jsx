@@ -16,7 +16,13 @@ import PropTypes from 'prop-types';
 import React from 'react';
 
 import * as authService from '@app/pages/auth/authService';
-import { useGetAllSubjectsAssignedToUserQuery, useGetAllSubjectsQuery } from '@app/redux/api'; // adjust path
+import {
+  useGetAllSubjectsAssignedToUserQuery,
+  useGetAllSubjectsQuery,
+  useGetTeacherMeQuery,
+  useGetTeacherSubjectsQuery,
+  useGetUserMeQuery
+} from '@app/redux/api';
 import { styled } from '@mui/material/styles';
 import AddSubjectModal from '../../pages/admin/subjects/components/AddSubjectModal';
 
@@ -54,48 +60,81 @@ const CollapsedAvatar = styled(Avatar)(({ theme }) => ({
 const TeamSwitcher = ({ collapsed = false }) => {
   const user = authService.getUserFromStorage();
 
-  // Conditionally fetch subjects based on user role
-  const isTeacherOrAdmin = user?.isTeacher || user?.isAdmin;
+  // Fetch user and teacher data
+  const { data: userData, isLoading: isUserLoading } = useGetUserMeQuery();
+  const { data: teacherData } = useGetTeacherMeQuery(undefined, {
+    skip: !!userData || isUserLoading
+  });
 
+  const isAdmin = teacherData?.isAdmin || userData?.isAdmin;
+  const isTeacher = !!teacherData && !teacherData.isAdmin;
+  const isUser = !!userData && !userData.isAdmin;
+
+  // Conditionally fetch subjects based on role
   const {
     data: allSubjects = [],
     isLoading: isLoadingAll,
     refetch: refetchAll
   } = useGetAllSubjectsQuery(undefined, {
-    skip: !isTeacherOrAdmin
+    skip: !isAdmin
+  });
+
+  const {
+    data: teacherSubjects = [],
+    isLoading: isLoadingTeacher,
+    refetch: refetchTeacher
+  } = useGetTeacherSubjectsQuery(undefined, {
+    skip: !isTeacher
   });
 
   const {
     data: allSubjectsAssignedToUser = [],
     isLoading: isLoadingAssigned,
     refetch: refetchAssigned
-  } = useGetAllSubjectsAssignedToUserQuery(user._id, {
-    skip: isTeacherOrAdmin
+  } = useGetAllSubjectsAssignedToUserQuery(user?._id, {
+    skip: !isUser || !user?._id
   });
 
-  const [currentSubject, setCurrentSubject] = React.useState(null);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [modalOpen, setModalOpen] = React.useState(false);
   const open = Boolean(anchorEl);
 
-  // Use the appropriate subjects and loading state based on user role
-  const subjects = isTeacherOrAdmin ? allSubjects : allSubjectsAssignedToUser;
-  const isLoading = isTeacherOrAdmin ? isLoadingAll : isLoadingAssigned;
-  const refetch = isTeacherOrAdmin ? refetchAll : refetchAssigned;
+  // Use appropriate subjects array based on role
+  const subjects = React.useMemo(() => {
+    if (isAdmin) return allSubjects;
+    if (isTeacher) return teacherSubjects;
+    if (isUser) return allSubjectsAssignedToUser;
+    return [];
+  }, [isAdmin, isTeacher, isUser, allSubjects, teacherSubjects, allSubjectsAssignedToUser]);
 
-  React.useEffect(() => {
-    const id = localStorage.getItem('currentSubjectId');
-    if (id && subjects.length > 0) {
-      const found = subjects.find((s) => s.id === id);
-      if (found) {
-        setCurrentSubject(found);
-        return;
-      }
+  const isLoading = isAdmin ? isLoadingAll : isTeacher ? isLoadingTeacher : isLoadingAssigned;
+  const refetch = isAdmin ? refetchAll : isTeacher ? refetchTeacher : refetchAssigned;
+
+  // Get the current subject ID from localStorage using useSyncExternalStore
+  const currentSubjectId = React.useSyncExternalStore(
+    (cb) => {
+      window.addEventListener('subjectChanged', cb);
+      return () => window.removeEventListener('subjectChanged', cb);
+    },
+    () => localStorage.getItem('currentSubjectId'),
+    () => localStorage.getItem('currentSubjectId')
+  );
+
+  // Compute current subject from subjects array and current ID
+  const currentSubject = React.useMemo(() => {
+    if (!currentSubjectId || subjects.length === 0) {
+      return subjects[0] || null;
     }
-    // If not found, default to first subject
-    if (subjects.length > 0) {
-      setCurrentSubject(subjects[0]);
+    const found = subjects.find((s) => s.id === currentSubjectId);
+    return found || subjects[0] || null;
+  }, [currentSubjectId, subjects]);
+
+  // Initialize subject ID in localStorage if not set
+  React.useEffect(() => {
+    const storedId = localStorage.getItem('currentSubjectId');
+    if (!storedId && subjects.length > 0) {
       localStorage.setItem('currentSubjectId', subjects[0].id);
+      window.dispatchEvent(new Event('subjectChanged'));
     }
   }, [subjects]);
 
@@ -108,9 +147,8 @@ const TeamSwitcher = ({ collapsed = false }) => {
   };
 
   const handleSubjectSelect = (subject) => {
-    setCurrentSubject(subject);
     localStorage.setItem('currentSubjectId', subject.id);
-    window.dispatchEvent(new Event('subjectChanged')); // <-- add this line
+    window.dispatchEvent(new Event('subjectChanged'));
     handleClose();
   };
 
@@ -120,9 +158,8 @@ const TeamSwitcher = ({ collapsed = false }) => {
   };
 
   const handleSubjectCreated = (newSubject) => {
-    setCurrentSubject(newSubject);
     localStorage.setItem('currentSubjectId', newSubject.id);
-    window.dispatchEvent(new Event('subjectChanged')); // <-- add this line
+    window.dispatchEvent(new Event('subjectChanged'));
     refetch();
     setModalOpen(false);
   };
@@ -169,10 +206,8 @@ const TeamSwitcher = ({ collapsed = false }) => {
                 ))
               )}
 
-              {(user?.isAdmin || user?.isTeacher) && subjects.length > 0 && (
-                <Divider sx={{ my: 1 }} />
-              )}
-              {(user?.isAdmin || user?.isTeacher) && (
+              {(isAdmin || isTeacher) && subjects.length > 0 && <Divider sx={{ my: 1 }} />}
+              {(isAdmin || isTeacher) && (
                 <ListItemButton
                   onClick={handleAddSubject}
                   sx={{ '&:hover': { cursor: 'pointer' } }}
@@ -246,10 +281,8 @@ const TeamSwitcher = ({ collapsed = false }) => {
               ))
             )}
 
-            {(user?.isAdmin || user?.isTeacher) && subjects.length > 0 && (
-              <Divider sx={{ my: 1 }} />
-            )}
-            {(user?.isAdmin || user?.isTeacher) && (
+            {(isAdmin || isTeacher) && subjects.length > 0 && <Divider sx={{ my: 1 }} />}
+            {(isAdmin || isTeacher) && (
               <ListItemButton onClick={handleAddSubject} sx={{ '&:hover': { cursor: 'pointer' } }}>
                 <AddIcon fontSize="small" sx={{ mr: 1 }} />
                 <ListItemText primary="Pridať predmet" />

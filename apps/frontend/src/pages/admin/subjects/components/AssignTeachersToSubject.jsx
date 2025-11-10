@@ -112,7 +112,11 @@ const AssignTeachersToSubject = ({ open, onClose, subject }) => {
               {subject.assigned_teachers
                 .filter((teacher) => {
                   const teacherId = typeof teacher === 'string' ? teacher : teacher._id;
-                  return !optimisticRemovedTeachers.includes(teacherId);
+                  // Filter out optimistically removed teachers and the creator
+                  return (
+                    !optimisticRemovedTeachers.includes(teacherId) &&
+                    teacherId !== subject.createdBy
+                  );
                 })
                 .map((teacher) => {
                   const teacherData =
@@ -206,6 +210,7 @@ AssignTeachersToSubject.propTypes = {
   subject: PropTypes.shape({
     _id: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
+    createdBy: PropTypes.string,
     assigned_teachers: PropTypes.arrayOf(
       PropTypes.oneOfType([
         PropTypes.string,

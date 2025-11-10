@@ -142,7 +142,7 @@ export const api = createApi({
     }),
     getAllSubjectsAssignedToUser: builder.query({
       query: (userId) => ({
-        url: `/subject/${userId}`,
+        url: `/subject/assigned/${userId}`,
         method: 'GET'
       }),
       providesTags: ['Subjects']

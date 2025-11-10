@@ -1,4 +1,4 @@
-import { useCreateSubjectMutation } from '@app/redux/api';
+import { useCreateSubjectMutation, useGetTeacherMeQuery } from '@app/redux/api';
 import { joiResolver } from '@hookform/resolvers/joi';
 import {
   Alert,
@@ -18,6 +18,7 @@ import { createSubjectSchema } from '../../schemas/subject.schema';
 
 const AddSubjectModal = ({ open, onClose, onSuccess }) => {
   const [createSubject, { isLoading, error }] = useCreateSubjectMutation();
+  const { data: currentTeacher } = useGetTeacherMeQuery();
   const [submitAttempted, setSubmitAttempted] = React.useState(false);
 
   const {
@@ -49,7 +50,8 @@ const AddSubjectModal = ({ open, onClose, onSuccess }) => {
         name: data.name.trim(),
         code: data.code.trim(),
         description: data.description.trim(),
-        is_active: data.is_active
+        is_active: data.is_active,
+        createdBy: currentTeacher?._id
       };
       const result = await createSubject(payload).unwrap();
       reset();

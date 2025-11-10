@@ -17,6 +17,12 @@ const SubjectSchema = new mongoose.Schema(
         }, // Subject code like "MATH101"
         description: { type: String, trim: true },
 
+        createdBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Teacher",
+            required: true,
+        },
+
         assigned_teachers: [
             {
                 type: mongoose.Schema.Types.ObjectId,

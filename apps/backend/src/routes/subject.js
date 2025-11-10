@@ -18,7 +18,7 @@ const router = express.Router();
 router.put("/:id", editSubject);
 router.post("/", createSubject);
 router.get("/", getAllSubjects);
-router.get("/:id", getAllSubjectsAssignedToUser);
+router.get("/assigned/:id", getAllSubjectsAssignedToUser);
 router.get("/teacher/subjects", getTeacherSubjects);
 router.get("/:id", getSubjectById);
 router.post("/assign-user", asignUserToSubject);

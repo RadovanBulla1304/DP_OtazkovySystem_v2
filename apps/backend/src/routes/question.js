@@ -7,7 +7,7 @@ const {
     getQuestionById,
     getQuestionsByModuleId,
     getQuestionsBySubjectId,
-    getQuestionsByUserId,
+    getQuestionByUserId,
     validateQuestion,
     respondToValidation,
     getValidatedQuestionsWithAgreementBySubject,
@@ -25,7 +25,7 @@ const router = express.Router();
 router.get("/subject/:subjectId", getQuestionsBySubjectId); // Get questions by subject ID
 router.get("/subject/:subjectId/validated-with-agreement", getValidatedQuestionsWithAgreementBySubject); // Get validated questions with user agreement
 router.get("/module/:moduleId", getQuestionsByModuleId);    // Get questions by module ID
-router.get("/user/:userId", getQuestionsByUserId);          // Get questions by user ID
+router.get("/user/:userId", getQuestionByUserId);          // Get questions by user ID
 router.get("/:id", getQuestionById);                        // Get a question by ID
 router.get("/", getAllQuestions);                           // Get all questions
 router.post("/", createQuestion);                           // Create a new question

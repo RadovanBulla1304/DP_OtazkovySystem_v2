@@ -35,7 +35,7 @@ exports.getQuestionById = async (req, res) => {
 /**
  * GET questions by user ID (createdBy)
  */
-exports.getQuestionsByUserId = async (req, res) => {
+exports.getQuestionByUserId = async (req, res) => {
     try {
         const questions = await Question.find({ createdBy: req.params.userId });
         res.status(200).json(questions);

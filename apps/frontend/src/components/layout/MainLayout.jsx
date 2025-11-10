@@ -84,9 +84,46 @@ const LogoContainer = styled(Box)({
     `,
     willChange: 'opacity, transform',
     transform: 'translateZ(0)',
-    backfaceVisibility: 'hidden'
+    backfaceVisibility: 'hidden',
+    pointerEvents: 'none' // Prevent image reloading on interactions
   }
 });
+
+// Memoized logo component to prevent reloading
+const Logo = React.memo(({ expanded, collapsed, drawerCollapsed }) => (
+  <>
+    <img
+      src={expanded}
+      alt="uniza logo expanded"
+      loading="eager"
+      style={{
+        height: '50px',
+        width: 'auto',
+        opacity: drawerCollapsed ? 0 : 1,
+        transform: drawerCollapsed ? 'translateX(-100%)' : 'translateX(0)'
+      }}
+      draggable={false}
+    />
+    <img
+      src={collapsed}
+      alt="uniza logo collapsed"
+      loading="eager"
+      style={{
+        height: '50px',
+        width: 'auto',
+        opacity: drawerCollapsed ? 1 : 0,
+        transform: drawerCollapsed ? 'translateX(0)' : 'translateX(100%)'
+      }}
+      draggable={false}
+    />
+  </>
+));
+Logo.displayName = 'Logo';
+Logo.propTypes = {
+  expanded: PropTypes.string.isRequired,
+  collapsed: PropTypes.string.isRequired,
+  drawerCollapsed: PropTypes.bool.isRequired
+};
 
 const SectionHeader = React.memo(({ title, collapsed }) => (
   <Typography
@@ -139,9 +176,9 @@ const MainLayout = ({ children }) => {
   const { mode, toggleThemeMode } = React.useContext(ThemeModeContext);
 
   // First try to fetch user, only fetch teacher if user query fails or returns null
-  const { data: user, isError: isUserError } = useGetUserMeQuery();
+  const { data: user, isLoading: isUserLoading } = useGetUserMeQuery();
   const { data: teacher } = useGetTeacherMeQuery(undefined, {
-    skip: !!user || !isUserError
+    skip: !!user || isUserLoading
   });
 
   const [drawerCollapsed, setDrawerCollapsed] = React.useState(false);
@@ -407,27 +444,10 @@ const MainLayout = ({ children }) => {
               padding: '5px'
             }}
           >
-            <img
-              src={currentLogoExpanded}
-              alt="uniza logo expanded"
-              style={{
-                height: '50px',
-                width: 'auto',
-                opacity: drawerCollapsed ? 0 : 1,
-                transform: drawerCollapsed ? 'translateX(-100%)' : 'translateX(0)'
-              }}
-              draggable={false}
-            />
-            <img
-              src={currentLogoCollapsed}
-              alt="uniza logo collapsed"
-              style={{
-                height: '50px',
-                width: 'auto',
-                opacity: drawerCollapsed ? 1 : 0,
-                transform: drawerCollapsed ? 'translateX(0)' : 'translateX(100%)'
-              }}
-              draggable={false}
+            <Logo
+              expanded={currentLogoExpanded}
+              collapsed={currentLogoCollapsed}
+              drawerCollapsed={drawerCollapsed}
             />
           </Link>
         </LogoContainer>

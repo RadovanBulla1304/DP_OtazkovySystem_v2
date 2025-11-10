@@ -1,3 +1,4 @@
+import { useGetTeacherMeQuery } from '@app/redux/api';
 import { Delete as DeleteIcon, People as PeopleIcon } from '@mui/icons-material';
 import { Box, Card, CardContent, Chip, IconButton, Tooltip, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
@@ -9,6 +10,12 @@ const SubjectCard = ({
   onManageTeachersClick,
   isDeleting
 }) => {
+  // Get current teacher to check if they created this subject
+  const { data: currentTeacher } = useGetTeacherMeQuery();
+
+  // Check if current teacher is the creator or an admin
+  const canManageTeachers = currentTeacher?.isAdmin || currentTeacher?._id === subject.createdBy;
+
   return (
     <Card
       sx={{
@@ -33,52 +40,109 @@ const SubjectCard = ({
           Vytvorené: {new Date(subject.createdAt).toLocaleDateString()}
         </Typography>
 
-        {/* Assigned Teachers */}
+        {/* Creator Teacher */}
         <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
           <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 'bold' }}>
-            Učitelia:
+            Vytvorené učiteľom:
+          </Typography>
+          {subject.createdBy && subject.assigned_teachers ? (
+            (() => {
+              const creatorData =
+                typeof subject.createdBy === 'string'
+                  ? subject.assigned_teachers.find((t) =>
+                      typeof t === 'string' ? t === subject.createdBy : t._id === subject.createdBy
+                    )
+                  : subject.createdBy;
+              const creator = typeof creatorData === 'string' ? null : creatorData;
+              return creator ? (
+                <Chip
+                  key={creator._id}
+                  label={`${creator.name} ${creator.surname}`}
+                  size="small"
+                  color="secondary"
+                  variant="filled"
+                />
+              ) : (
+                <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                  Neznámy
+                </Typography>
+              );
+            })()
+          ) : (
+            <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+              Neznámy
+            </Typography>
+          )}
+        </Box>
+
+        {/* Assigned Teachers */}
+        <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+          <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 'bold' }}>
+            Priradení učitelia:
           </Typography>
           {subject.assigned_teachers && subject.assigned_teachers.length > 0 ? (
-            subject.assigned_teachers.slice(0, 3).map((teacher) => {
-              const teacherData = typeof teacher === 'string' ? null : teacher;
-              return teacherData ? (
-                <Chip
-                  key={teacherData._id}
-                  label={`${teacherData.name} ${teacherData.surname}`}
-                  size="small"
-                  color="primary"
-                  variant="outlined"
-                />
-              ) : null;
-            })
+            (() => {
+              // Filter out the creator from assigned teachers
+              const otherTeachers = subject.assigned_teachers.filter((teacher) => {
+                const teacherId = typeof teacher === 'string' ? teacher : teacher._id;
+                return teacherId !== subject.createdBy;
+              });
+
+              if (otherTeachers.length === 0) {
+                return (
+                  <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                    Žiadni ďalší učitelia
+                  </Typography>
+                );
+              }
+
+              return (
+                <>
+                  {otherTeachers.slice(0, 3).map((teacher) => {
+                    const teacherData = typeof teacher === 'string' ? null : teacher;
+                    return teacherData ? (
+                      <Chip
+                        key={teacherData._id}
+                        label={`${teacherData.name} ${teacherData.surname}`}
+                        size="small"
+                        color="primary"
+                        variant="outlined"
+                      />
+                    ) : null;
+                  })}
+                  {otherTeachers.length > 3 && (
+                    <Chip
+                      label={`+${otherTeachers.length - 3} ďalších`}
+                      size="small"
+                      variant="outlined"
+                    />
+                  )}
+                </>
+              );
+            })()
           ) : (
             <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
               Žiadni učitelia
             </Typography>
           )}
-          {subject.assigned_teachers && subject.assigned_teachers.length > 3 && (
-            <Chip
-              label={`+${subject.assigned_teachers.length - 3} ďalších`}
-              size="small"
-              variant="outlined"
-            />
-          )}
         </Box>
       </CardContent>
       <Box p={2} pt={0}>
         <Box display="flex" justifyContent="end" alignItems="center" gap={1}>
-          <Tooltip title="Spravovať učiteľov">
-            <IconButton
-              size="small"
-              color="primary"
-              onClick={(e) => {
-                e.stopPropagation();
-                onManageTeachersClick(subject);
-              }}
-            >
-              <PeopleIcon />
-            </IconButton>
-          </Tooltip>
+          {canManageTeachers && (
+            <Tooltip title="Spravovať učiteľov">
+              <IconButton
+                size="small"
+                color="primary"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onManageTeachersClick(subject);
+                }}
+              >
+                <PeopleIcon />
+              </IconButton>
+            </Tooltip>
+          )}
           <Tooltip title="Odstrániť predmet">
             <IconButton
               size="small"
@@ -103,6 +167,7 @@ SubjectCard.propTypes = {
     _id: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
     createdAt: PropTypes.string.isRequired,
+    createdBy: PropTypes.string.isRequired,
     assigned_teachers: PropTypes.arrayOf(
       PropTypes.oneOfType([
         PropTypes.string,

@@ -5,6 +5,7 @@ import {
   useGetAllTeachersQuery,
   useGetModulsBySubjectQuery,
   useGetSubjectByIdQuery,
+  useGetTeacherMeQuery,
   useGetUsersListQuery,
   useUnasignUserFromSubjectMutation
 } from '@app/redux/api';
@@ -88,6 +89,12 @@ const SubjectDetail = () => {
 
   // Fetch teachers
   const { data: allTeachers = [] } = useGetAllTeachersQuery();
+
+  // Get current teacher to check permissions
+  const { data: currentTeacher } = useGetTeacherMeQuery();
+
+  // Check if current teacher can manage this subject
+  const canManageSubject = currentTeacher?.isAdmin || currentTeacher?._id === subject?.createdBy;
 
   // Fetch modules for this subject
   const {
@@ -384,26 +391,30 @@ const SubjectDetail = () => {
             </Typography>
 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Tooltip title="Spravovať učiteľov">
-                <IconButton color="primary" onClick={() => setIsManageTeachersOpen(true)}>
-                  <PeopleIcon />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Priradiť používateľov z CSV">
-                <IconButton onClick={handleOpenCSVModal}>
-                  <UploadFileIcon />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Upraviť predmet">
-                <IconButton color="primary" onClick={handleEditSubject}>
-                  <EditIcon />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Vymazať predmet">
-                <IconButton color="error" onClick={handleOpenDeleteDialog}>
-                  <DeleteIcon />
-                </IconButton>
-              </Tooltip>
+              {canManageSubject && (
+                <>
+                  <Tooltip title="Spravovať učiteľov">
+                    <IconButton color="primary" onClick={() => setIsManageTeachersOpen(true)}>
+                      <PeopleIcon />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Priradiť používateľov z CSV">
+                    <IconButton onClick={handleOpenCSVModal}>
+                      <UploadFileIcon />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Upraviť predmet">
+                    <IconButton color="primary" onClick={handleEditSubject}>
+                      <EditIcon />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Vymazať predmet">
+                    <IconButton color="error" onClick={handleOpenDeleteDialog}>
+                      <DeleteIcon />
+                    </IconButton>
+                  </Tooltip>
+                </>
+              )}
             </Box>
           </Box>
 

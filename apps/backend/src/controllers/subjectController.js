@@ -101,6 +101,24 @@ exports.getAllSubjectsAssignedToUser = [
         }
     },
 ];
+
+// Get subjects for a specific teacher (for non-admin teachers)
+exports.getTeacherSubjects = [
+    async (req, res) => {
+        try {
+            const teacherId = req.user.user_id;
+
+            const subjects = await Subject.find(
+                { assigned_teachers: teacherId },
+                { __v: 0 }
+            ).populate('assigned_teachers', 'name surname email');
+
+            res.status(200).json(subjects);
+        } catch (err) {
+            throwError(`Error fetching teacher subjects: ${err.message}`, 500);
+        }
+    }
+];
 exports.editSubject = [
     validate(editSubject), // Validate the request body using the createSubject schema
     async (req, res) => {
@@ -377,20 +395,3 @@ exports.unassignTeacherFromSubject = [
     }
 ];
 
-// Get subjects for a specific teacher (for non-admin teachers)
-exports.getTeacherSubjects = [
-    async (req, res) => {
-        try {
-            const teacherId = req.user.user_id;
-
-            const subjects = await Subject.find(
-                { assigned_teachers: teacherId },
-                { __v: 0 }
-            ).populate('assigned_teachers', 'name surname email');
-
-            res.status(200).json(subjects);
-        } catch (err) {
-            throwError(`Error fetching teacher subjects: ${err.message}`, 500);
-        }
-    }
-];
