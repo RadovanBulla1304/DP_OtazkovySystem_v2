@@ -10,10 +10,19 @@ import {
   DialogTitle,
   TextField
 } from '@mui/material';
+import Joi from 'joi';
 import PropTypes from 'prop-types';
 import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { createSubjectSchema } from '../../schemas/subject.schema';
+import { toast } from 'react-toastify';
+
+// Simple schema just for editing name
+const editSubjectSchema = Joi.object({
+  name: Joi.string().required().messages({
+    'string.empty': 'Názov predmetu je povinný',
+    'any.required': 'Názov predmetu je povinný'
+  })
+});
 
 const EditSubjectModal = ({ open, onClose, onSuccess, subject }) => {
   const [editSubject, { isLoading, error }] = useEditSubjectMutation();
@@ -26,7 +35,7 @@ const EditSubjectModal = ({ open, onClose, onSuccess, subject }) => {
     reset,
     setValue
   } = useForm({
-    resolver: joiResolver(createSubjectSchema),
+    resolver: joiResolver(editSubjectSchema),
     defaultValues: {
       name: subject?.name || ''
     }
@@ -40,17 +49,24 @@ const EditSubjectModal = ({ open, onClose, onSuccess, subject }) => {
   }, [subject, open, setValue, reset]);
 
   const handleFormSubmit = async (data) => {
+    console.log('handleFormSubmit called with data:', data);
+    console.log('Subject ID:', subject?._id);
     setSubmitAttempted(true);
     try {
-      const result = await editSubject({
+      const payload = {
         subjectId: subject._id,
         data: { name: data.name.trim() }
-      }).unwrap();
+      };
+      console.log('Calling editSubject with payload:', payload);
+      const result = await editSubject(payload).unwrap();
+      console.log('Edit subject result:', result);
+      toast.success('Predmet bol úspešne upravený');
       reset();
       setSubmitAttempted(false);
       onSuccess?.(result);
     } catch (err) {
       console.error('Failed to edit subject:', err);
+      toast.error('Chyba pri úprave predmetu: ' + (err?.data?.message || err.message));
     }
   };
 
@@ -95,7 +111,15 @@ const EditSubjectModal = ({ open, onClose, onSuccess, subject }) => {
         <Button onClick={handleClose} disabled={isLoading} variant="outlined" color="error">
           Zrušiť
         </Button>
-        <Button onClick={handleSubmit(handleFormSubmit)} variant="contained" disabled={isLoading}>
+        <Button
+          onClick={(e) => {
+            console.log('Uložiť button clicked');
+            e.preventDefault();
+            handleSubmit(handleFormSubmit)(e);
+          }}
+          variant="contained"
+          disabled={isLoading}
+        >
           {isLoading ? <CircularProgress size={24} /> : 'Uložiť'}
         </Button>
       </DialogActions>

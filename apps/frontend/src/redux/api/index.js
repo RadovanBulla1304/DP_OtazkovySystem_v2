@@ -152,7 +152,8 @@ export const api = createApi({
         url: `/subject/${data.subjectId}`,
         method: 'PUT',
         body: data.data
-      })
+      }),
+      invalidatesTags: ['Subjects']
     }),
     deleteSubject: builder.mutation({
       query: (subjectId) => ({

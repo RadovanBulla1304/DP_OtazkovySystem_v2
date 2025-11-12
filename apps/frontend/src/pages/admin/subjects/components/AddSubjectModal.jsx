@@ -14,6 +14,7 @@ import {
 import PropTypes from 'prop-types';
 import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import { toast } from 'react-toastify';
 import { createSubjectSchema } from '../../schemas/subject.schema';
 
 const AddSubjectModal = ({ open, onClose, onSuccess }) => {
@@ -54,11 +55,13 @@ const AddSubjectModal = ({ open, onClose, onSuccess }) => {
         createdBy: currentTeacher?._id
       };
       const result = await createSubject(payload).unwrap();
+      toast.success('Predmet bol úspešne vytvorený');
       reset();
       setSubmitAttempted(false);
       onSuccess?.(result);
     } catch (err) {
       console.error('Failed to create subject:', err);
+      toast.error('Chyba pri vytváraní predmetu');
     }
   };
 
