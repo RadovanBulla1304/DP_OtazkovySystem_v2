@@ -32,52 +32,28 @@ const EditUserModal = ({ userData, isTeacher }) => {
     register,
     handleSubmit,
     reset,
-    formState: { errors, isValid },
-    watch
+    formState: { errors, isValid }
   } = useForm({
-    mode: 'onChange',
+    mode: 'all', // Changed from 'onChange' to 'all' to validate immediately including on mount
     resolver: joiResolver(schema),
     defaultValues: {
       name: userData.name || '',
       surname: userData.surname || '',
       email: userData.email || '',
-      groupNumber: userData.groupNumber || '',
-      studentNumber: userData.studentNumber || '',
+      groupNumber: String(userData.groupNumber || userData.group_number || ''),
+      studentNumber: String(userData.studentNumber || userData.student_number || ''),
       isAdmin: userData.isAdmin || userData.is_admin || false,
       isActive: userData.isActive || userData.is_active || false
     }
   });
-
-  // Watch required fields
-  const name = watch('name');
-  const surname = watch('surname');
-  const email = watch('email');
-  const groupNumber = watch('groupNumber');
-  const studentNumber = watch('studentNumber');
-
-  // Check if form is valid
-  const isFormValid = () => {
-    if (isTeacher) {
-      return name?.trim() && surname?.trim() && email?.trim() && isValid;
-    } else {
-      return (
-        name?.trim() &&
-        surname?.trim() &&
-        email?.trim() &&
-        groupNumber?.trim() &&
-        studentNumber &&
-        isValid
-      );
-    }
-  };
 
   const handleClickOpen = () => {
     reset({
       name: userData.name || '',
       surname: userData.surname || '',
       email: userData.email || '',
-      groupNumber: userData.groupNumber || '',
-      studentNumber: userData.studentNumber || '',
+      groupNumber: String(userData.groupNumber || userData.group_number || ''),
+      studentNumber: String(userData.studentNumber || userData.student_number || ''),
       isAdmin: userData.isAdmin || userData.is_admin || false,
       isActive: userData.isActive || userData.is_active || false
     });
@@ -221,7 +197,7 @@ const EditUserModal = ({ userData, isTeacher }) => {
             <Button
               type="submit"
               variant="contained"
-              disabled={isUserLoading || isTeacherLoading || !isFormValid()}
+              disabled={isUserLoading || isTeacherLoading || !isValid}
             >
               Uložiť
             </Button>
