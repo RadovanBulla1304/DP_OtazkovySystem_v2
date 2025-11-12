@@ -3,8 +3,6 @@ darkmode:
 
 -------------------------------------------
 todo
-    -> ucitela vie odstranit len admin 
-    -> predmet existuje aj ak nema ziadneho ucitela
     -> studenti budu premazavany na konci kazdeho roka
 student je pridany k predmetu len 1 rok..  hranica 1.9. -> po jednom roku potrebujeme odstranit priradenie predmetu ale nechat jeho data 
  -> na najblizsie 3 roky (schvaleen otazky a posty vo fore su navzdy tie sa nevymazavaju)
@@ -52,3 +50,5 @@ opravene
     -> mozem priradit, dalsieho ucitela tomuto predmetu. Treba vytvorit admina ktory uvidi vsetky predmety 
 //refresh ked pridam ucitela k predmetu
     -> admin nech vidi tabulku na x-ovej predmety , na y-ovej ucitelia
+    -> ucitela vie odstranit len admin 
+    -> predmet existuje aj ak nema ziadneho ucitela(musi byt vytvoreny ale ucitelom)

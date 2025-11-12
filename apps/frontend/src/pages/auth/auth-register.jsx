@@ -1,3 +1,4 @@
+import { api } from '@app/redux/api';
 import { LoadingButton } from '@mui/lab';
 import {
   Box,
@@ -11,11 +12,13 @@ import {
   Typography
 } from '@mui/material';
 import { useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { registerTeacher, registerUser } from './authService';
 
 const AuthRegister = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
@@ -47,6 +50,8 @@ const AuthRegister = () => {
       };
       try {
         const response = await registerUser(data);
+        // Invalidate users cache so lists refresh automatically
+        dispatch(api.util.invalidateTags(['Users']));
         setIsLoading(false);
 
         // Check if email confirmation is required
@@ -73,6 +78,8 @@ const AuthRegister = () => {
       };
       try {
         await registerTeacher(data);
+        // Invalidate teachers cache so the list refreshes automatically
+        dispatch(api.util.invalidateTags(['Teachers']));
         setIsLoading(false);
         navigate('/auth/login');
       } catch (err) {

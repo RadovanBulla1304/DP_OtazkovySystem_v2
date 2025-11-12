@@ -110,6 +110,20 @@ const TeamSwitcher = ({ collapsed = false }) => {
   const isLoading = isAdmin ? isLoadingAll : isTeacher ? isLoadingTeacher : isLoadingAssigned;
   const refetch = isAdmin ? refetchAll : isTeacher ? refetchTeacher : refetchAssigned;
 
+  // Force refetch when role is determined or changes
+  React.useEffect(() => {
+    if (isAdmin || isTeacher || isUser) {
+      // Refetch the appropriate query based on role
+      if (isAdmin) {
+        refetchAll();
+      } else if (isTeacher) {
+        refetchTeacher();
+      } else if (isUser) {
+        refetchAssigned();
+      }
+    }
+  }, [isAdmin, isTeacher, isUser, refetchAll, refetchTeacher, refetchAssigned]);
+
   // Get the current subject ID from localStorage using useSyncExternalStore
   const currentSubjectId = React.useSyncExternalStore(
     (cb) => {

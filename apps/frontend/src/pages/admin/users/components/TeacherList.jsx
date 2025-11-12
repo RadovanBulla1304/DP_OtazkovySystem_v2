@@ -1,4 +1,5 @@
 import CenteredCheckIcon from '@app/components/table/CenteredCheckIcon';
+import * as authService from '@app/pages/auth/authService';
 import { useGetAllTeachersQuery, useRemoveTeacherMutation } from '@app/redux/api';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { IconButton, Paper, Tooltip, Typography } from '@mui/material';
@@ -13,6 +14,10 @@ const TeacherList = () => {
   const [removeTeacher] = useRemoveTeacherMutation();
   const [teacherToDelete, setTeacherToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Get current logged-in user to check if they are admin
+  const currentUser = authService.getUserFromStorage() || authService.getTeacherFromStorage();
+  const isCurrentUserAdmin = currentUser?.isAdmin || false;
 
   const onRemoveHandler = async (teacher) => {
     try {
@@ -48,26 +53,31 @@ const TeacherList = () => {
       flex: 1,
       renderCell: (value) => (value.row.isActive ? <CenteredCheckIcon /> : null)
     },
-    {
-      field: 'actions',
-      type: 'actions',
-      headerName: 'Akcie',
-      getActions: (params) => [
-        <EditUserModal key={'edit'} userData={params.row} isTeacher={true} />, // teacher
-        <Tooltip key={'delete'} title="Odstrániť učiteľa">
-          <IconButton
-            color="error"
-            onClick={(e) => {
-              e.stopPropagation();
-              setTeacherToDelete(params.row);
-            }}
-            disabled={isDeleting}
-          >
-            <DeleteIcon />
-          </IconButton>
-        </Tooltip>
-      ]
-    }
+    // Only include actions column if current user is admin
+    ...(isCurrentUserAdmin
+      ? [
+          {
+            field: 'actions',
+            type: 'actions',
+            headerName: 'Akcie',
+            getActions: (params) => [
+              <EditUserModal key={'edit'} userData={params.row} isTeacher={true} />,
+              <Tooltip key={'delete'} title="Odstrániť učiteľa">
+                <IconButton
+                  color="error"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setTeacherToDelete(params.row);
+                  }}
+                  disabled={isDeleting}
+                >
+                  <DeleteIcon />
+                </IconButton>
+              </Tooltip>
+            ]
+          }
+        ]
+      : [])
   ];
 
   return (
