@@ -162,6 +162,7 @@ const Subjects = () => {
               variant="outlined"
               color="primary"
               onClick={() => setIsBulkAssignOpen(true)}
+              disabled={!subjects || subjects.length === 0}
             >
               Priradenie učiteľov
             </Button>

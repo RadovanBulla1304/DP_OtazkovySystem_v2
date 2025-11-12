@@ -127,9 +127,10 @@ const WeekSelector = ({
                 p: 3,
                 textAlign: 'center',
                 border: '1px dashed',
-                borderColor: 'grey.300',
+                borderColor: (theme) => (theme.palette.mode === 'dark' ? 'grey.700' : 'grey.300'),
                 borderRadius: 1,
-                bgcolor: 'grey.50'
+                bgcolor: (theme) =>
+                  theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'grey.50'
               }}
             >
               <Typography variant="h6" color="text.secondary" sx={{ mb: 1 }}>

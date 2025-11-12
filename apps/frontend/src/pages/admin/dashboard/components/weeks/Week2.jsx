@@ -89,7 +89,14 @@ const Week2 = ({
                   borderRadius: 1,
                   cursor: validated ? 'default' : 'pointer',
                   bgcolor: validated ? 'success.50' : 'transparent',
-                  '&:hover': validated ? {} : { backgroundColor: 'grey.50' }
+                  '&:hover': validated
+                    ? {}
+                    : {
+                        backgroundColor: (theme) =>
+                          theme.palette.mode === 'dark'
+                            ? 'rgba(255, 255, 255, 0.08)'
+                            : 'action.hover'
+                      }
                 }}
                 onClick={() => {
                   if (!validated) {

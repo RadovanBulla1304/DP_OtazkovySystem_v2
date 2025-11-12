@@ -106,7 +106,15 @@ const Week3 = ({
                 borderRadius: 1,
                 cursor: responded || !hasValidation ? 'default' : 'pointer',
                 bgcolor: responded ? 'success.50' : hasValidation ? 'warning.50' : 'transparent',
-                '&:hover': responded || !hasValidation ? {} : { backgroundColor: 'grey.50' }
+                '&:hover':
+                  responded || !hasValidation
+                    ? {}
+                    : {
+                        backgroundColor: (theme) =>
+                          theme.palette.mode === 'dark'
+                            ? 'rgba(255, 255, 255, 0.08)'
+                            : 'action.hover'
+                      }
               }}
               onClick={() => {
                 if (!responded && hasValidation) {
