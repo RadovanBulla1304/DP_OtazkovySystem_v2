@@ -1,4 +1,7 @@
 
+darkmode:
+pridat otazku week1
+
 -------------------------------------------
 todo
 nevidim otazky week2 right side

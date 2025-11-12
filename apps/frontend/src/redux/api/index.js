@@ -412,6 +412,15 @@ export const api = createApi({
       ]
     }),
 
+    // Bulk assign all questions for a module (call once when transitioning to Week 2)
+    bulkAssignQuestions: builder.mutation({
+      query: (modulId) => ({
+        url: `/question/assignments/bulk/${modulId}`,
+        method: 'POST'
+      }),
+      invalidatesTags: ['Questions']
+    }),
+
     // QUESTION RATINGS
     createQuestionRating: builder.mutation({
       query: (data) => ({
@@ -1148,6 +1157,7 @@ export const {
   useLazyGetQuestionByIdQuery,
   useGetQuestionByUserIdQuery,
   useGetQuestionAssignmentsQuery,
+  useBulkAssignQuestionsMutation,
   // QUESTION RATINGS
   useCreateQuestionRatingMutation,
   useEditQuestionRatingMutation,

@@ -1,5 +1,6 @@
 import * as authService from '@app/pages/auth/authService';
 import {
+  useBulkAssignQuestionsMutation,
   useGetQuestionsByModulQuery,
   useLazyGetModulsBySubjectQuery,
   useRespondToValidationMutation,
@@ -35,9 +36,13 @@ const Dashboard = () => {
   // RTK Query mutations for validation and responses
   const [validateQuestion] = useValidateQuestionMutation();
   const [respondToValidation] = useRespondToValidationMutation();
+  const [bulkAssignQuestions] = useBulkAssignQuestionsMutation();
 
   // localCreated stores newly created questions client-side until server returns them
   const [localCreated, setLocalCreated] = useState({}); // { modulId: { weekNumber: [questions] } }
+
+  // Track which modules have had assignments created
+  const [assignmentsCreatedFor, setAssignmentsCreatedFor] = useState(new Set());
 
   const auth = authService.getUserFromStorage();
   const userId = auth?.id || auth?._id || auth?.userId || null;
@@ -207,6 +212,41 @@ const Dashboard = () => {
     }
     return weeks.find((w) => isDateInRange(now, w.start, w.end)) || weeks[0] || null;
   };
+
+  // Automatically trigger bulk assignment when transitioning to Week 2
+  useEffect(() => {
+    if (!selectedModul || !selectedModul._id) return;
+
+    const weeks = buildWeeks(selectedModul);
+    const now = new Date();
+    const currentWeek = getEffectiveCurrentWeek(weeks, now);
+
+    // If we're in Week 2 or later, and haven't created assignments yet
+    if (currentWeek && currentWeek.weekNumber >= 2) {
+      const moduleKey = selectedModul._id;
+
+      // Check if we already triggered for this module
+      if (!assignmentsCreatedFor.has(moduleKey)) {
+        console.log('🎯 Triggering bulk assignment for module:', moduleKey);
+
+        bulkAssignQuestions(moduleKey)
+          .unwrap()
+          .then((result) => {
+            console.log('✅ Bulk assignment successful:', result);
+            // Mark this module as having assignments created
+            setAssignmentsCreatedFor((prev) => new Set(prev).add(moduleKey));
+          })
+          .catch((error) => {
+            console.log('ℹ️ Bulk assignment response:', error);
+            // Even if it says "already exist", mark as created
+            if (error?.data?.message?.includes('already exist')) {
+              setAssignmentsCreatedFor((prev) => new Set(prev).add(moduleKey));
+            }
+          });
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedModul, debugWeekOverride]);
 
   return (
     <Box sx={{ pt: 2 }}>

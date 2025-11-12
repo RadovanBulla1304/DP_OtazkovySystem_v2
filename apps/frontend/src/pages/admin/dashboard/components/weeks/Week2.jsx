@@ -33,12 +33,14 @@ const Week2 = ({
   const earnedPoints = validationPoints.length;
   const maxPoints = 2;
 
-  // Get the assigned questions
-  const assignedQuestions = assignments.map((assignment) => assignment.question);
+  // Get the assigned questions, filtering out any null/undefined questions
+  const assignedQuestions = assignments
+    .map((assignment) => assignment.question)
+    .filter((q) => q !== null && q !== undefined);
 
   // Check which questions have been validated by the current user
   const questionsValidatedByUser = assignedQuestions.filter(
-    (q) => q.validated_by && String(q.validated_by) === String(userId)
+    (q) => q && q.validated_by && String(q.validated_by) === String(userId)
   ).length;
   const isCompleted = questionsValidatedByUser >= 2;
 
