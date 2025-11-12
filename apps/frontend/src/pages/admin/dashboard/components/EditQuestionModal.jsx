@@ -15,6 +15,7 @@ import {
 } from '@mui/material';
 import PropTypes from 'prop-types';
 import { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 
 const EditQuestionModal = ({ open, question, onClose, onSubmit }) => {
   const [formData, setFormData] = useState({
@@ -82,10 +83,11 @@ const EditQuestionModal = ({ open, question, onClose, onSubmit }) => {
         },
         correct: formData.correct
       });
+      toast.success('Otázka bola úspešne aktualizovaná');
       onClose();
     } catch (error) {
       console.error('Error updating question:', error);
-      alert('Chyba pri aktualizácii otázky');
+      toast.error('Chyba pri aktualizácii otázky');
     } finally {
       setIsSubmitting(false);
     }

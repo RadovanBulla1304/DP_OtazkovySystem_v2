@@ -1,6 +1,3 @@
-
-darkmode:
-
 -------------------------------------------
 todo
     -> studenti budu premazavany na konci kazdeho roka
@@ -9,7 +6,6 @@ student je pridany k predmetu len 1 rok..  hranica 1.9. -> po jednom roku potreb
 
 pri delete : 
 studenta -> zachovat (schvalene otazky, prispevky vo fore)
-Do 6.10 spravit funkcnu verrziu na testovanie ! 
 -------------------------------------------
 
 opravene

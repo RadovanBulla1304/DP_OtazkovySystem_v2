@@ -1,12 +1,7 @@
 -------------------------------------------
 bugy
-//week2 - 0/2 bodov nerefreshuje
 
-pri uprave otazky v week3 pridat toast uspesny/neuspesny
-v week2 na pravej strane dahboaardu sa mi neloadli otazky -> toto kuknut este 
 -------------------------------------------
-
-
 
 //OPRAVENE
 -------------------------------------------
@@ -20,3 +15,4 @@ v week2 na pravej strane dahboaardu sa mi neloadli otazky -> toto kuknut este
 //upravit priradenych userov k projektom - ked odstranim usera neodstrani sa z projektov
 //addmodul modal prerobit na dialog 
 //ak uzivatel nema priradeny predmet a priradime mu projekt je problem(vidi vsetky projekty)-> treba zmenit ze vieme priradit iba ludi co su priradeny k predmetu
+//pri uprave otazky v week3 pridat toast uspesny/neuspesny
