@@ -3,6 +3,7 @@ import { joiResolver } from '@hookform/resolvers/joi';
 import { Box, Button, DialogTitle, Modal, Stack, TextField } from '@mui/material';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { sk } from 'date-fns/locale';
 import dayjs from 'dayjs';
 import PropTypes from 'prop-types';
 import { useEffect } from 'react';
@@ -54,7 +55,6 @@ const EditModulModal = ({ open, onClose, onSuccess, modul }) => {
       date_start: modul?.date_start ? dayjs(modul.date_start).toDate() : null,
       date_end: modul?.date_end ? dayjs(modul.date_end).toDate() : null
     });
-    // eslint-disable-next-line
   }, [modul, open, setValue, reset]);
 
   const onSubmit = async (data) => {
@@ -102,7 +102,7 @@ const EditModulModal = ({ open, onClose, onSuccess, modul }) => {
               />
             )}
           />
-          <LocalizationProvider dateAdapter={AdapterDateFns}>
+          <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={sk}>
             <Controller
               name="date_start"
               control={control}
@@ -112,6 +112,7 @@ const EditModulModal = ({ open, onClose, onSuccess, modul }) => {
                   value={field.value}
                   onChange={(date) => field.onChange(date)}
                   disabled={isLoading}
+                  format="dd/MM/yyyy"
                   slotProps={{
                     textField: {
                       fullWidth: true,
@@ -122,6 +123,30 @@ const EditModulModal = ({ open, onClose, onSuccess, modul }) => {
                 />
               )}
             />
+
+            {/* Week duration buttons */}
+            {startDate && (
+              <Box sx={{ display: 'flex', gap: 1, my: 1 }}>
+                {[1, 2, 3].map((weeks) => (
+                  <Button
+                    key={weeks}
+                    variant="outlined"
+                    size="small"
+                    onClick={() => {
+                      const newEnd = new Date(startDate);
+                      // Calculate end date: add (weeks * 7 - 1) days to get the last day of the period
+                      // Then set time to 23:59:59.999 to include the entire last day
+                      newEnd.setDate(newEnd.getDate() + (weeks * 7 - 1));
+                      newEnd.setHours(23, 59, 59, 999);
+                      setValue('date_end', newEnd);
+                    }}
+                  >
+                    {weeks} týždeň{weeks > 1 ? 'e' : ''}
+                  </Button>
+                ))}
+              </Box>
+            )}
+
             <Controller
               name="date_end"
               control={control}
@@ -132,6 +157,7 @@ const EditModulModal = ({ open, onClose, onSuccess, modul }) => {
                   onChange={(date) => field.onChange(date)}
                   disabled={isLoading || !startDate}
                   minDate={startDate || undefined}
+                  format="dd/MM/yyyy"
                   slotProps={{
                     textField: {
                       fullWidth: true,
