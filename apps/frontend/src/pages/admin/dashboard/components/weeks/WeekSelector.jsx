@@ -52,8 +52,8 @@ const WeekSelector = ({
       return (
         <Week2
           {...commonProps}
-          modulQuestions={modulQuestions}
           userId={userId}
+          selectedModul={selectedModul}
           setQuestionToValidate={setQuestionToValidate}
           setValidateOpen={setValidateOpen}
         />

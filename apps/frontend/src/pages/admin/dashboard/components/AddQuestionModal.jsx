@@ -124,10 +124,6 @@ const AddQuestionModal = ({ disabled = false, modulId, onCreated }) => {
             error={!!errors.text}
             helperText={errors.text?.message}
             fullWidth
-            sx={{
-              bgcolor: '#fff',
-              borderRadius: 2
-            }}
           />
 
           <RadioGroup
@@ -155,10 +151,6 @@ const AddQuestionModal = ({ disabled = false, modulId, onCreated }) => {
                   value={options[idx]}
                   onChange={(e) => handleOptionChange(idx, e.target.value)}
                   fullWidth
-                  sx={{
-                    bgcolor: '#fff',
-                    borderRadius: 2
-                  }}
                   required
                 />
               </Box>
