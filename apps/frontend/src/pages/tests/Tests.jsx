@@ -98,7 +98,10 @@ const Tests = () => {
     skip: !subjectId
   });
 
-  // Auto-publish/unpublish tests based on dates
+  // State to track which tests have manual publication overrides
+  const [manualOverrides, setManualOverrides] = useState(new Set());
+
+  // Auto-publish/unpublish tests based on dates (unless manually overridden)
   useEffect(() => {
     if (!tests || tests.length === 0 || !isTeacher) return;
 
@@ -107,6 +110,11 @@ const Tests = () => {
 
     const checkAndUpdateTests = async () => {
       for (const test of tests) {
+        // Skip tests that have manual overrides
+        if (manualOverrides.has(test._id)) {
+          continue;
+        }
+
         const startDate = new Date(test.date_start);
         const endDate = new Date(test.date_end);
 
@@ -121,6 +129,9 @@ const Tests = () => {
               is_published: shouldBePublished
             }).unwrap();
             needsRefetch = true;
+            console.log(
+              `Auto-${shouldBePublished ? 'published' : 'unpublished'} test "${test.title}"`
+            );
           } catch (error) {
             console.error('Error auto-updating test publication:', error);
           }
@@ -139,7 +150,7 @@ const Tests = () => {
     const interval = setInterval(checkAndUpdateTests, 60000); // Check every minute
 
     return () => clearInterval(interval);
-  }, [tests, isTeacher, togglePublication, refetch]);
+  }, [tests, isTeacher, togglePublication, refetch, manualOverrides]);
 
   const resetForm = useCallback(() => {
     setFormData({
@@ -249,13 +260,25 @@ const Tests = () => {
 
   const handleTogglePublication = async (test) => {
     try {
+      const newPublishedState = !test.is_published;
       await togglePublication({
         id: test._id,
-        is_published: !test.is_published
+        is_published: newPublishedState
       }).unwrap();
+
+      // Mark this test as having a manual override
+      setManualOverrides((prev) => new Set(prev).add(test._id));
+
+      toast.success(
+        newPublishedState
+          ? 'Test bol úspešne zverejnený (manuálne)'
+          : 'Test bol úspešne skrytý (manuálne)'
+      );
+
       refetch();
     } catch (error) {
       console.error('Error toggling publication:', error);
+      toast.error('Chyba pri zmene stavu zverejnenia');
     }
   };
 
