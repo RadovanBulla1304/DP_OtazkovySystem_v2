@@ -1,4 +1,7 @@
 import { Box, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
+import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { sk } from 'date-fns/locale';
 import PropTypes from 'prop-types';
 
 const FilterControls = ({ currentSubject, filter, onFilterChange, subjectModuls }) => {
@@ -27,14 +30,26 @@ const FilterControls = ({ currentSubject, filter, onFilterChange, subjectModuls 
           ))}
         </Select>
       </FormControl>
-      <TextField
-        label="Dátum"
-        type="date"
-        size="small"
-        InputLabelProps={{ shrink: true }}
-        value={filter.date}
-        onChange={(e) => onFilterChange({ ...filter, date: e.target.value })}
-      />
+      <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={sk}>
+        <DatePicker
+          label="Dátum"
+          value={filter.date ? new Date(filter.date) : null}
+          onChange={(newValue) => {
+            const dateStr = newValue
+              ? `${newValue.getFullYear()}-${String(newValue.getMonth() + 1).padStart(2, '0')}-${String(newValue.getDate()).padStart(2, '0')}`
+              : '';
+            onFilterChange({ ...filter, date: dateStr });
+          }}
+          format="dd/MM/yyyy"
+          slotProps={{
+            textField: {
+              size: 'small',
+              sx: { minWidth: 160 }
+            },
+            field: { clearable: true }
+          }}
+        />
+      </LocalizationProvider>
     </Box>
   );
 };
