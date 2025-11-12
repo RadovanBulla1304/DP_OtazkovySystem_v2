@@ -110,6 +110,13 @@ const Dashboard = () => {
     }
   }, [currentSubjectId, trigger]);
 
+  // Auto-select first module when modules are loaded
+  useEffect(() => {
+    if (!isFetching && moduls && moduls.length > 0 && !selectedModulId) {
+      setSelectedModulId(moduls[0]._id);
+    }
+  }, [moduls, isFetching, selectedModulId]);
+
   // Keep selected module object in state
   useEffect(() => {
     const mod = moduls.find((m) => m._id === selectedModulId) || null;

@@ -4,9 +4,7 @@ todo
 nevidim otazky week2 right side
 pridavanie bodov vo week2 
 aktualizovanie bodov week2  
-darkmode dashboard right side ak dame tyzden co este nie je 
 ked pridavam modul musim kliknut na toggle 2 krat aby sa aktivoval btn 
-upravit modul zmenit datum na dd/mm/yyyy
 zobrazit nejaky modul na dashboard autmoaticky
 
     -> ucitela vie odstranit len admin 
