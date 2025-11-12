@@ -1,8 +1,5 @@
 import Joi from 'joi';
 
-
-
-
 export const createModulSchema = Joi.object({
     title: Joi.string().required().messages({
         'string.empty': 'Názov modulu je povinný.'

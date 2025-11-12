@@ -7,9 +7,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  FormControlLabel,
   Stack,
-  Switch,
   TextField
 } from '@mui/material';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
@@ -32,7 +30,7 @@ const AddModulModal = ({ open, onClose, subjectId, onSuccess }) => {
     reset,
     setValue,
     watch,
-    formState: { errors, isValid }
+    formState: { errors }
   } = useForm({
     resolver: joiResolver(createModulSchema),
     mode: 'onChange', // Enable validation on change
@@ -43,15 +41,12 @@ const AddModulModal = ({ open, onClose, subjectId, onSuccess }) => {
       date_start: null,
       date_end: null,
       required_questions_per_user: 2,
-      is_active: true,
       subject: ''
     }
   });
 
   // Watch the start date to enable/disable end date picker
   const startDate = watch('date_start');
-  // const endDate = watch('date_end');
-  // const isActive = watch('is_active');
 
   // Set subject ID
   useEffect(() => {
@@ -70,7 +65,7 @@ const AddModulModal = ({ open, onClose, subjectId, onSuccess }) => {
         date_start: data.date_start.toISOString(),
         date_end: data.date_end.toISOString(),
         subject: data.subject,
-        is_active: Boolean(data.is_active),
+        is_active: true,
         required_questions_per_user: Number(data.required_questions_per_user),
         createdBy: currentTeacher?._id || currentUser?._id
       };
@@ -219,25 +214,6 @@ const AddModulModal = ({ open, onClose, subjectId, onSuccess }) => {
               )}
             />
 
-            <Controller
-              name="is_active"
-              control={control}
-              render={({ field }) => (
-                <FormControlLabel
-                  control={
-                    <Switch
-                      {...field}
-                      checked={!!field.value}
-                      onChange={(_, checked) => field.onChange(checked)}
-                      color="primary"
-                      disabled={isLoading}
-                    />
-                  }
-                  label="Modul je aktívny"
-                />
-              )}
-            />
-
             <DialogActions>
               <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
                 <Button
@@ -248,12 +224,7 @@ const AddModulModal = ({ open, onClose, subjectId, onSuccess }) => {
                 >
                   Zrušiť
                 </Button>
-                <Button
-                  type="submit"
-                  variant="contained"
-                  color="primary"
-                  disabled={isLoading || !isValid}
-                >
+                <Button type="submit" variant="contained" color="primary" disabled={isLoading}>
                   {isLoading ? 'Ukladá sa...' : 'Pridať'}
                 </Button>
               </Box>

@@ -4,8 +4,6 @@ todo
 nevidim otazky week2 right side
 pridavanie bodov vo week2 
 aktualizovanie bodov week2  
-ked pridavam modul musim kliknut na toggle 2 krat aby sa aktivoval btn 
-zobrazit nejaky modul na dashboard autmoaticky
 
     -> ucitela vie odstranit len admin 
     -> predmet existuje aj ak nema ziadneho ucitela
