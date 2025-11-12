@@ -118,6 +118,7 @@ const TestFormDialog = ({
               label="Dátum a čas začiatku"
               value={formData.date_start}
               onChange={(value) => onInputChange('date_start', value)}
+              format="dd/MM/yyyy HH:mm"
               renderInput={(params) => <TextField {...params} fullWidth required />}
             />
           </Grid>
@@ -127,6 +128,7 @@ const TestFormDialog = ({
               label="Dátum a čas konca"
               value={formData.date_end}
               onChange={(value) => onInputChange('date_end', value)}
+              format="dd/MM/yyyy HH:mm"
               renderInput={(params) => <TextField {...params} fullWidth required />}
             />
           </Grid>

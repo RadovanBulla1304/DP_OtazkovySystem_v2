@@ -47,7 +47,8 @@ const AllUsersQuestions = () => {
   const {
     data: questions = [],
     isLoading: questionsLoading,
-    error: questionsError
+    error: questionsError,
+    refetch: refetchQuestions
   } = useGetValidatedQuestionsWithAgreementBySubjectQuery(
     { subjectId, filter: createdByFilter },
     {
@@ -57,10 +58,12 @@ const AllUsersQuestions = () => {
 
   // Fetch modules when subjectId changes
   useEffect(() => {
+    console.log('AllUsersQuestions - subjectId changed:', subjectId);
     if (subjectId) {
       trigger(subjectId);
+      refetchQuestions(); // Refetch questions when subject changes
     }
-  }, [subjectId, trigger]);
+  }, [subjectId, trigger, refetchQuestions]);
 
   // Handle teacher validation modal
   const handleOpenValidationModal = (question) => {
