@@ -37,7 +37,9 @@ const TeamSwitcherButton = styled(Button)(({ theme }) => ({
   },
   border: `1px solid ${theme.palette.divider}`,
   marginTop: 'auto',
-  marginBottom: theme.spacing(2)
+  marginBottom: theme.spacing(2),
+  whiteSpace: 'nowrap',
+  overflow: 'hidden'
 }));
 
 const SubjectAvatar = styled(Avatar)(({ theme }) => ({
@@ -62,7 +64,7 @@ const TeamSwitcher = ({ collapsed = false }) => {
 
   // Fetch user and teacher data
   const { data: userData, isLoading: isUserLoading } = useGetUserMeQuery();
-  const { data: teacherData } = useGetTeacherMeQuery(undefined, {
+  const { data: teacherData, isLoading: isTeacherLoading } = useGetTeacherMeQuery(undefined, {
     skip: !!userData || isUserLoading
   });
 
@@ -76,7 +78,8 @@ const TeamSwitcher = ({ collapsed = false }) => {
     isLoading: isLoadingAll,
     refetch: refetchAll
   } = useGetAllSubjectsQuery(undefined, {
-    skip: !isAdmin
+    skip: !isAdmin,
+    refetchOnMountOrArgChange: true
   });
 
   const {
@@ -84,7 +87,8 @@ const TeamSwitcher = ({ collapsed = false }) => {
     isLoading: isLoadingTeacher,
     refetch: refetchTeacher
   } = useGetTeacherSubjectsQuery(undefined, {
-    skip: !isTeacher
+    skip: !isTeacher,
+    refetchOnMountOrArgChange: true
   });
 
   const {
@@ -92,7 +96,8 @@ const TeamSwitcher = ({ collapsed = false }) => {
     isLoading: isLoadingAssigned,
     refetch: refetchAssigned
   } = useGetAllSubjectsAssignedToUserQuery(user?._id, {
-    skip: !isUser || !user?._id
+    skip: !isUser || !user?._id,
+    refetchOnMountOrArgChange: true
   });
 
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -110,19 +115,8 @@ const TeamSwitcher = ({ collapsed = false }) => {
   const isLoading = isAdmin ? isLoadingAll : isTeacher ? isLoadingTeacher : isLoadingAssigned;
   const refetch = isAdmin ? refetchAll : isTeacher ? refetchTeacher : refetchAssigned;
 
-  // Force refetch when role is determined or changes
-  React.useEffect(() => {
-    if (isAdmin || isTeacher || isUser) {
-      // Refetch the appropriate query based on role
-      if (isAdmin) {
-        refetchAll();
-      } else if (isTeacher) {
-        refetchTeacher();
-      } else if (isUser) {
-        refetchAssigned();
-      }
-    }
-  }, [isAdmin, isTeacher, isUser, refetchAll, refetchTeacher, refetchAssigned]);
+  // Wait for role determination before showing subjects
+  const isRoleDetermined = !isUserLoading && !isTeacherLoading;
 
   // Get the current subject ID from localStorage using useSyncExternalStore
   const currentSubjectId = React.useSyncExternalStore(
@@ -201,7 +195,7 @@ const TeamSwitcher = ({ collapsed = false }) => {
         >
           <Box sx={{ width: 230, maxHeight: 350, overflow: 'auto' }}>
             <List dense>
-              {isLoading ? (
+              {!isRoleDetermined || isLoading ? (
                 <ListItem>
                   <ListItemText primary="Načítavam..." />
                 </ListItem>
@@ -254,10 +248,15 @@ const TeamSwitcher = ({ collapsed = false }) => {
       >
         <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
           <SubjectAvatar>{currentSubject?.name?.charAt(0) || '?'}</SubjectAvatar>
-          <Typography variant="body2" sx={{ flexGrow: 1 }}>
-            {currentSubject?.name || 'Žiadny predmet'}
+          <Typography
+            variant="body2"
+            sx={{ flexGrow: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+          >
+            {!isRoleDetermined || isLoading
+              ? 'Načítavam...'
+              : currentSubject?.name || 'Žiadny predmet'}
           </Typography>
-          <ExpandMoreIcon fontSize="small" />
+          <ExpandMoreIcon fontSize="small" sx={{ flexShrink: 0 }} />
         </Box>
       </TeamSwitcherButton>
 
@@ -277,7 +276,7 @@ const TeamSwitcher = ({ collapsed = false }) => {
       >
         <Box sx={{ width: 230, maxHeight: 350, overflow: 'auto' }}>
           <List dense>
-            {isLoading ? (
+            {!isRoleDetermined || isLoading ? (
               <ListItem>
                 <ListItemText primary="Načítavam..." />
               </ListItem>

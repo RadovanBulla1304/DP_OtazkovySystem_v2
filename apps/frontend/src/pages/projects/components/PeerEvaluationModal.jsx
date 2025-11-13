@@ -270,12 +270,12 @@ const PeerEvaluationModal = ({ open, onClose, subjectId }) => {
                         align="center"
                         sx={{
                           cursor: cursorStyle,
-                          backgroundColor: isOwn ? '#bebebe' : 'transparent',
+                          backgroundColor: isOwn ? 'action.disabledBackground' : 'transparent',
                           '&:hover': {
                             backgroundColor: isOwn
-                              ? '#bebebe'
+                              ? 'action.disabledBackground'
                               : isCurrentUserRow
-                                ? '#e3f2fd'
+                                ? 'action.hover'
                                 : 'transparent'
                           },
                           padding: '4px'
@@ -326,13 +326,13 @@ const PeerEvaluationModal = ({ open, onClose, subjectId }) => {
               ))}
               {/* Average row - only visible to teachers */}
               {isTeacher && (
-                <TableRow sx={{ backgroundColor: '#f0f0f0' }}>
+                <TableRow sx={{ backgroundColor: 'action.hover' }}>
                   <TableCell
                     sx={{
                       fontWeight: 'bold',
                       position: 'sticky',
                       left: 0,
-                      backgroundColor: '#f0f0f0',
+                      backgroundColor: 'action.hover',
                       zIndex: 2
                     }}
                   >

@@ -38,9 +38,9 @@ import PeerEvaluationModal from './components/PeerEvaluationModal';
 
 const Projects = () => {
   // Check if user is a teacher - first try user, then teacher
-  const { data: user, isError: isUserError } = useGetUserMeQuery();
-  const { data: teacher } = useGetTeacherMeQuery(undefined, {
-    skip: !!user || !isUserError
+  const { data: user, isLoading: isUserLoading } = useGetUserMeQuery();
+  const { data: teacher, isLoading: isTeacherLoading } = useGetTeacherMeQuery(undefined, {
+    skip: !!user || isUserLoading
   });
   const isTeacher = !!teacher;
   const currentSubjectId = useCurrentSubjectId();
@@ -52,7 +52,8 @@ const Projects = () => {
     isError: isErrorAll,
     refetch: refetchAll
   } = useGetAllProjectsQuery(currentSubjectId ? { subject: currentSubjectId } : undefined, {
-    skip: !isTeacher
+    skip: !isTeacher,
+    refetchOnMountOrArgChange: true
   });
 
   const {
@@ -61,7 +62,8 @@ const Projects = () => {
     isError: isErrorUser,
     refetch: refetchUser
   } = useGetUserProjectsQuery(undefined, {
-    skip: isTeacher
+    skip: isTeacher,
+    refetchOnMountOrArgChange: true
   });
 
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
@@ -72,7 +74,7 @@ const Projects = () => {
   const [isPeerEvaluationOpen, setIsPeerEvaluationOpen] = useState(false);
 
   const projects = isTeacher ? allProjectsData?.data || [] : userProjectsData?.data || [];
-  const isLoading = isTeacher ? isLoadingAll : isLoadingUser;
+  const isLoading = isUserLoading || isTeacherLoading || (isTeacher ? isLoadingAll : isLoadingUser);
   const isError = isTeacher ? isErrorAll : isErrorUser;
   const refetch = isTeacher ? refetchAll : refetchUser;
 
