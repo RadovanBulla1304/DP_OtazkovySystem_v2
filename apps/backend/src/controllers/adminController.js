@@ -7,6 +7,7 @@ const Subject = require("../models/subject");
 const User = require("../models/user");
 const Teacher = require("../models/teacher");
 const Project = require("../models/project");
+const Point = require("../models/point");
 
 const { validate, validated } = require("../util/validation");
 const { createUserSchema, updateUserSchema } = require("../schemas/user.schema");
@@ -244,6 +245,9 @@ exports.removeUser = async (req, res) => {
         { assigned_students: userId },
         { $pull: { assigned_students: userId } }
       );
+
+      // Delete all points associated with this user
+      await Point.deleteMany({ student: userId });
 
       // Also update the user's assignedSubjects and assignedProjects arrays to empty (optional cleanup)
       record.assignedSubjects = [];
