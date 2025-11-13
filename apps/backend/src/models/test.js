@@ -59,6 +59,12 @@ const TestSchema = new mongoose.Schema(
             min: 0,
             max: 100,
         },
+        max_points: {
+            type: Number,
+            required: true,
+            min: 1,
+            default: 10,
+        },
     },
     {
         timestamps: true,

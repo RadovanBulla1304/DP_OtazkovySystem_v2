@@ -100,6 +100,9 @@ const TestCard = ({
             <strong>Minimálny potrebný počet bodov:</strong> {test.passing_score}%
           </Typography>
           <Typography variant="body2" gutterBottom>
+            <strong>Maximálny počet bodov:</strong> {test.max_points}
+          </Typography>
+          <Typography variant="body2" gutterBottom>
             <strong>Maximálny počet pokusov:</strong> {test.max_attempts}
           </Typography>
 
@@ -129,7 +132,7 @@ const TestCard = ({
           </Box>
 
           {/* Show user's attempt status if not a teacher */}
-          {!isTeacher && <UserAttemptStatus testId={test._id} />}
+          {!isTeacher && <UserAttemptStatus testId={test._id} maxPoints={test.max_points} />}
 
           {/* Show message if max attempts reached */}
           {!isTeacher && hasReachedMaxAttempts && (

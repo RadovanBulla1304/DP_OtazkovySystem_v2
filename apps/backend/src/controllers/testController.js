@@ -2,6 +2,8 @@ const Test = require('../models/test');
 const TestAttempt = require('../models/testAttempt');
 const Module = require('../models/modul');
 const Question = require('../models/question');
+const Point = require('../models/point');
+const User = require('../models/user');
 const { validate, validated } = require('../util/validation');
 const { createTestSchema, updateTestSchema } = require('../schemas/test.schema');
 
@@ -66,7 +68,8 @@ createTest = [validate(createTestSchema), async (req, res) => {
             selected_modules: data.selected_modules,
             createdBy: req.user.user_id,
             max_attempts: data.max_attempts || 1,
-            passing_score: data.passing_score || 60
+            passing_score: data.passing_score || 60,
+            max_points: data.max_points || 10
         });
 
         const savedTest = await test.save();
@@ -320,6 +323,11 @@ const getTestStatistics = async (req, res) => {
             ? attempts.reduce((sum, attempt) => sum + (attempt.totalTime_spent || 0), 0) / attempts.length
             : 0;
 
+        // Calculate average points earned
+        const averagePoints = attempts.length > 0
+            ? (averageScore / 100) * test.max_points
+            : 0;
+
         // Get unique users who took the test
         const uniqueUsers = new Set(attempts.map(a => a.user?._id?.toString())).size;
 
@@ -365,6 +373,7 @@ const getTestStatistics = async (req, res) => {
                 email: attempt.user?.email
             },
             score: attempt.score,
+            pointsEarned: Math.round((attempt.score / 100) * test.max_points * 100) / 100,
             passed: attempt.passed,
             submittedAt: attempt.submittedAt,
             totalTime_spent: attempt.totalTime_spent,
@@ -377,12 +386,14 @@ const getTestStatistics = async (req, res) => {
                 _id: test._id,
                 title: test.title,
                 total_questions: test.total_questions,
-                passing_score: test.passing_score
+                passing_score: test.passing_score,
+                max_points: test.max_points
             },
             summary: {
                 totalAttempts,
                 uniqueUsers,
                 averageScore: Math.round(averageScore * 100) / 100,
+                averagePoints: Math.round(averagePoints * 100) / 100,
                 passRate: Math.round(passRate * 100) / 100,
                 passedCount,
                 failedCount: totalAttempts - passedCount,
@@ -601,6 +612,33 @@ const submitTestAttempt = async (req, res) => {
         testAttempt.submittedAt = new Date();
 
         await testAttempt.save();
+
+        // Award points for test completion
+        try {
+            const pointsEarned = Math.round((score / 100) * testAttempt.test.max_points * 100) / 100;
+
+            const point = new Point({
+                student: userId,
+                reason: `Dokončenie testu: ${testAttempt.test.title}`,
+                points: pointsEarned,
+                category: 'test_performance',
+                related_entity: {
+                    entity_type: 'TestAttempt',
+                    entity_id: attemptId
+                }
+            });
+
+            await point.save();
+
+            // Update user's points array
+            await User.findByIdAndUpdate(
+                userId,
+                { $push: { points: point._id } }
+            );
+        } catch (pointError) {
+            console.error('Error awarding points for test completion:', pointError);
+            // Don't fail test submission if point awarding fails
+        }
 
         // Populate again to get fresh data
         await testAttempt.populate('questions.question');

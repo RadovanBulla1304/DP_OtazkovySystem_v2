@@ -84,9 +84,18 @@ const TestResults = () => {
               Správne odpovede
             </Typography>
           </Box>
+          <Box>
+            <Typography variant="h3" color="primary">
+              {Math.round((testAttempt.score / 100) * test.max_points * 100) / 100}/
+              {test.max_points}
+            </Typography>
+            <Typography variant="body1" color="text.secondary">
+              Bodov získaných
+            </Typography>
+          </Box>
         </Box>
         <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-          Minimálny požadovaný počet bodov:: {test.passing_score}%
+          Minimálny požadovaný počet bodov: {test.passing_score}%
         </Typography>
         <Typography variant="caption" color="text.secondary">
           Odovzdané: {new Date(testAttempt.submittedAt).toLocaleString()}

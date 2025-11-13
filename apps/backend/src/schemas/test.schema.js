@@ -53,6 +53,10 @@ const createTestSchema = Joi.object({
         'number.min': 'Percentuálna hranica úspešnosti musí byť aspoň 0',
         'number.max': 'Percentuálna hranica úspešnosti môže byť maximálne 100'
     }),
+    max_points: Joi.number().min(1).default(10).messages({
+        'number.base': 'Maximálny počet bodov musí byť číslo',
+        'number.min': 'Maximálny počet bodov musí byť aspoň 1'
+    }),
     skipValidationCheck: Joi.boolean().optional()
 });
 
@@ -95,6 +99,10 @@ const updateTestSchema = Joi.object({
         'number.base': 'Percentuálna hranica úspešnosti musí byť číslo',
         'number.min': 'Percentuálna hranica úspešnosti musí byť aspoň 0',
         'number.max': 'Percentuálna hranica úspešnosti môže byť maximálne 100'
+    }),
+    max_points: Joi.number().min(1).messages({
+        'number.base': 'Maximálny počet bodov musí byť číslo',
+        'number.min': 'Maximálny počet bodov musí byť aspoň 1'
     })
 });
 

@@ -5,7 +5,6 @@ import {
   useGetAllSubjectsQuery,
   useGetTeacherMeQuery,
   useGetTeacherSubjectsQuery,
-  useGetUserMeQuery,
   useTriggerYearlyUnassignmentMutation
 } from '@app/redux/api';
 import { Add, Assignment, PersonRemove } from '@mui/icons-material';
@@ -29,20 +28,16 @@ import DeleteSubjectDialog from './components/DeleteSubjectDialog';
 import SubjectCard from './components/SubjectCard';
 
 const Subjects = () => {
-  // Fetch user and teacher data to determine role
+  // Fetch teacher data to determine role
   const storedUser = authService.getUserFromStorage();
   const isTeacherFromStorage = storedUser?.isTeacher === true;
 
-  const { data: userData, isLoading: isUserLoading } = useGetUserMeQuery(undefined, {
-    skip: isTeacherFromStorage
-  });
   const { data: teacherData, isLoading: isTeacherLoading } = useGetTeacherMeQuery(undefined, {
     skip: !isTeacherFromStorage
   });
 
-  // Determine roles based on which data we have
-  // For USERS: both admin and non-admin see their assigned subjects (no difference)
-  // For TEACHERS: admin sees all subjects, non-admin sees only their assigned subjects
+  // Determine roles based on teacher data
+  // Admin teachers see all subjects, non-admin teachers see only their assigned subjects
   const isAdminTeacher = isTeacherFromStorage && teacherData?.isAdmin;
   const isRegularTeacher = isTeacherFromStorage && !!teacherData && !teacherData.isAdmin;
 
@@ -68,8 +63,7 @@ const Subjects = () => {
   });
 
   const subjects = isAdminTeacher ? allSubjects : teacherSubjects;
-  const isLoading =
-    isUserLoading || isTeacherLoading || (isAdminTeacher ? isLoadingAll : isLoadingTeacher);
+  const isLoading = isTeacherLoading || (isAdminTeacher ? isLoadingAll : isLoadingTeacher);
   const isError = isAdminTeacher ? isErrorAll : isErrorTeacher;
   const refetch = isAdminTeacher ? refetchAll : refetchTeacher;
 

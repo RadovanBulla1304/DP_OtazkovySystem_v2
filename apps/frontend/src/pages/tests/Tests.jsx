@@ -70,7 +70,8 @@ const Tests = () => {
     time_limit: 30,
     selected_modules: [],
     max_attempts: 1,
-    passing_score: 60
+    passing_score: 60,
+    max_points: 10
   });
 
   // State for creating new questions
@@ -164,7 +165,8 @@ const Tests = () => {
       time_limit: 30,
       selected_modules: [],
       max_attempts: 1,
-      passing_score: 60
+      passing_score: 60,
+      max_points: 10
     });
     setEditingTest(null);
   }, []);
@@ -184,7 +186,8 @@ const Tests = () => {
       time_limit: test.time_limit,
       selected_modules: test.selected_modules.map((m) => m._id),
       max_attempts: test.max_attempts,
-      passing_score: test.passing_score
+      passing_score: test.passing_score,
+      max_points: test.max_points || 10
     });
     setEditingTest(test);
     setOpenDialog(true);
@@ -214,7 +217,8 @@ const Tests = () => {
         subject: subjectId,
         selected_modules: formData.selected_modules,
         max_attempts: formData.max_attempts,
-        passing_score: formData.passing_score
+        passing_score: formData.passing_score,
+        max_points: formData.max_points
       };
 
       // Validate with appropriate schema

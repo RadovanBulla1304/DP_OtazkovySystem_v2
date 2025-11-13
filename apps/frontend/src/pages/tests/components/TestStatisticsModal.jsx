@@ -107,6 +107,9 @@ const TestStatisticsModal = ({ testId, open, onClose }) => {
                       Priemerný výsledok
                     </Typography>
                     <Typography variant="h4">{stats.summary.averageScore}%</Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {stats.summary.averagePoints || 0}/{stats.test?.max_points || 0} bodov
+                    </Typography>
                   </CardContent>
                 </Card>
               </Grid>

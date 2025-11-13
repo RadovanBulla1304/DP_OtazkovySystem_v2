@@ -119,7 +119,7 @@ const TestFormDialog = ({
               value={formData.date_start}
               onChange={(value) => onInputChange('date_start', value)}
               format="dd/MM/yyyy HH:mm"
-              renderInput={(params) => <TextField {...params} fullWidth required />}
+              slotProps={{ textField: { fullWidth: true, required: true } }}
             />
           </Grid>
 
@@ -129,11 +129,11 @@ const TestFormDialog = ({
               value={formData.date_end}
               onChange={(value) => onInputChange('date_end', value)}
               format="dd/MM/yyyy HH:mm"
-              renderInput={(params) => <TextField {...params} fullWidth required />}
+              slotProps={{ textField: { fullWidth: true, required: true } }}
             />
           </Grid>
 
-          <Grid item xs={6}>
+          <Grid item xs={4}>
             <TextField
               label="Maximálny počet pokusov"
               type="number"
@@ -145,7 +145,7 @@ const TestFormDialog = ({
             />
           </Grid>
 
-          <Grid item xs={6}>
+          <Grid item xs={4}>
             <TextField
               label="Hranica úspešnosti (%)"
               type="number"
@@ -154,6 +154,19 @@ const TestFormDialog = ({
               onChange={(e) => onInputChange('passing_score', parseInt(e.target.value))}
               inputProps={{ min: 0, max: 100 }}
               required
+            />
+          </Grid>
+
+          <Grid item xs={4}>
+            <TextField
+              label="Maximálny počet bodov"
+              type="number"
+              fullWidth
+              value={formData.max_points}
+              onChange={(e) => onInputChange('max_points', parseInt(e.target.value))}
+              inputProps={{ min: 1 }}
+              required
+              helperText="Celkový počet bodov, ktoré môže študent získať"
             />
           </Grid>
 

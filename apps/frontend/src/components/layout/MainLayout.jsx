@@ -262,7 +262,8 @@ const MainLayout = ({ children }) => {
   let drawerOption = [];
   let adminOptions = [];
 
-  if (!user?.isAdmin && !teacher) {
+  // All users (both admin and non-admin) see the same menu with Dashboard
+  if (!teacher) {
     drawerOption = drawerOption.concat([
       { isHeader: true, title: 'Obsah' },
       // { title: 'Moduly', navTo: '/moduls', icon: <ViewModuleIcon /> },
@@ -271,6 +272,7 @@ const MainLayout = ({ children }) => {
       { title: 'Fórum', navTo: '/forum', icon: <ViewModuleIcon /> }
     ]);
   } else {
+    // Teachers don't have Dashboard
     drawerOption = drawerOption.concat([
       { isHeader: true, title: 'Obsah' },
       // { title: 'Moduly', navTo: '/moduls', icon: <ViewModuleIcon /> },
@@ -278,7 +280,10 @@ const MainLayout = ({ children }) => {
       { title: 'Fórum', navTo: '/forum', icon: <ViewModuleIcon /> }
     ]);
   }
-  if (user && !user?.isAdmin && !teacher) {
+
+  // Questions section
+  if (user && !teacher) {
+    // All users (admin or not) see "Moje otázky"
     drawerOption.push({
       title: 'Moje otázky',
       navTo: '/my-questions',
@@ -291,10 +296,11 @@ const MainLayout = ({ children }) => {
       icon: <QuestionAnswerIcon />
     });
   }
+
   drawerOption = drawerOption.concat([{ title: 'Testy', navTo: '/tests', icon: <AvTimerIcon /> }]);
 
-  // Admin section - will be placed at the bottom
-  if (user?.isAdmin || teacher) {
+  // Admin section - ONLY for teachers (not for user.isAdmin)
+  if (teacher) {
     adminOptions.push(
       { isHeader: true, title: 'Správca' },
       { title: 'Používatelia', navTo: '/admin/users', icon: <GroupIcon /> },
