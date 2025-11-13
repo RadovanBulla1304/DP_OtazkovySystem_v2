@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { SignIn, Register, RegisterTeacher, checkUiVersion, signinTeacher, meTeacher, ConfirmEmail } = require("../controllers/publicController");
+const { SignIn, Register, RegisterTeacher, checkUiVersion, signinTeacher, ConfirmEmail } = require("../controllers/publicController");
 // Teacher sign-in route
 
 router.post("/signin", SignIn);

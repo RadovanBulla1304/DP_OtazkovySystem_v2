@@ -2,12 +2,17 @@ import * as authService from '@app/pages/auth/authService';
 import {
   useBulkAssignQuestionsMutation,
   useGetQuestionsByModulQuery,
+  useGetTeacherMeQuery,
+  useGetUserMeQuery,
   useLazyGetModulsBySubjectQuery,
   useRespondToValidationMutation,
   useValidateQuestionMutation
 } from '@app/redux/api';
 import {
   Box,
+  Button,
+  ButtonGroup,
+  Chip,
   CircularProgress,
   FormControl,
   InputLabel,
@@ -29,6 +34,17 @@ const Dashboard = () => {
   const [selectedModulId, setSelectedModulId] = useState('');
   const [trigger, { data: moduls = [], isFetching }] = useLazyGetModulsBySubjectQuery();
   const [selectedModul, setSelectedModul] = useState(null);
+
+  // Determine if user is admin for debug controls
+  const storedUser = authService.getUserFromStorage();
+  const isTeacherFromStorage = storedUser?.isTeacher === true;
+  const { data: userData } = useGetUserMeQuery(undefined, {
+    skip: isTeacherFromStorage
+  });
+  const { data: teacherData } = useGetTeacherMeQuery(undefined, {
+    skip: !isTeacherFromStorage
+  });
+  const isAdmin = isTeacherFromStorage ? teacherData?.isAdmin : userData?.isAdmin;
 
   // RTK Query mutations for validation and responses
   const [validateQuestion] = useValidateQuestionMutation();
@@ -134,9 +150,8 @@ const Dashboard = () => {
   const [respondOpen, setRespondOpen] = useState(false);
   const [questionToRespond, setQuestionToRespond] = useState(null);
 
-  // Debug: manual week override
-  // const [debugWeekOverride, setDebugWeekOverride] = useState(null);
-  const debugWeekOverride = null;
+  // Debug: manual week override (only for admin users)
+  const [debugWeekOverride, setDebugWeekOverride] = useState(null);
 
   // When selected module changes, reset selectedWeekNumber to the current week (or 1)
   useEffect(() => {
@@ -266,45 +281,46 @@ const Dashboard = () => {
             </Select>
           </FormControl>
 
-          {/* Debug controls */}
-          {/* <Box
-            sx={{
-              mb: 3,
-              p: 2,
-              bgcolor: 'warning.50',
-              borderRadius: 1,
-              border: '1px solid',
-              borderColor: 'warning.200'
-            }}
-          >
-            <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-              Debug: Manuálne prepnutie týždňa
-            </Typography>
-            <ButtonGroup variant="outlined" size="small">
-              <Button
-                onClick={() => setDebugWeekOverride(1)}
-                color={debugWeekOverride === 1 ? 'primary' : 'inherit'}
-              >
-                Týždeň 1
-              </Button>
-              <Button
-                onClick={() => setDebugWeekOverride(2)}
-                color={debugWeekOverride === 2 ? 'primary' : 'inherit'}
-              >
-                Týždeň 2
-              </Button>
-              <Button
-                onClick={() => setDebugWeekOverride(3)}
-                color={debugWeekOverride === 3 ? 'primary' : 'inherit'}
-              >
-                Týždeň 3
-              </Button>
-              <Button onClick={() => setDebugWeekOverride(null)}>Reset</Button>
-            </ButtonGroup>
-            {debugWeekOverride && (
-              <Chip label={`Aktívny: Týždeň ${debugWeekOverride}`} size="small" sx={{ ml: 1 }} />
-            )}
-          </Box> */}
+          {/* Debug controls - only for admin users */}
+          {isAdmin && (
+            <Box
+              sx={{
+                mb: 3,
+                p: 2,
+                borderRadius: 1,
+                border: '1px solid',
+                borderColor: 'divider'
+              }}
+            >
+              <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+                Debug: Manuálne prepnutie týždňa
+              </Typography>
+              <ButtonGroup variant="outlined" size="small">
+                <Button
+                  onClick={() => setDebugWeekOverride(1)}
+                  color={debugWeekOverride === 1 ? 'primary' : 'inherit'}
+                >
+                  Týždeň 1
+                </Button>
+                <Button
+                  onClick={() => setDebugWeekOverride(2)}
+                  color={debugWeekOverride === 2 ? 'primary' : 'inherit'}
+                >
+                  Týždeň 2
+                </Button>
+                <Button
+                  onClick={() => setDebugWeekOverride(3)}
+                  color={debugWeekOverride === 3 ? 'primary' : 'inherit'}
+                >
+                  Týždeň 3
+                </Button>
+                <Button onClick={() => setDebugWeekOverride(null)}>Reset</Button>
+              </ButtonGroup>
+              {debugWeekOverride && (
+                <Chip label={`Aktívny: Týždeň ${debugWeekOverride}`} size="small" sx={{ ml: 1 }} />
+              )}
+            </Box>
+          )}
         </>
       ) : (
         <Typography color="text.secondary">Pre tento predmet nie sú žiadne moduly.</Typography>

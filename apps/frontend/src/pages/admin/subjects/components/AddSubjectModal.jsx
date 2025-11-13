@@ -1,3 +1,4 @@
+import * as authService from '@app/pages/auth/authService';
 import { useCreateSubjectMutation, useGetTeacherMeQuery } from '@app/redux/api';
 import { joiResolver } from '@hookform/resolvers/joi';
 import {
@@ -19,7 +20,11 @@ import { createSubjectSchema } from '../../schemas/subject.schema';
 
 const AddSubjectModal = ({ open, onClose, onSuccess }) => {
   const [createSubject, { isLoading, error }] = useCreateSubjectMutation();
-  const { data: currentTeacher } = useGetTeacherMeQuery();
+  const storedUser = authService.getUserFromStorage();
+  const isTeacherFromStorage = storedUser?.isTeacher === true;
+  const { data: currentTeacher } = useGetTeacherMeQuery(undefined, {
+    skip: !isTeacherFromStorage
+  });
   const [submitAttempted, setSubmitAttempted] = React.useState(false);
 
   const {

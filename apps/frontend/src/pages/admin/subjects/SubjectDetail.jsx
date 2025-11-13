@@ -1,3 +1,4 @@
+import * as authService from '@app/pages/auth/authService';
 import {
   useDeleteAllModulsBySubjectMutation,
   useDeleteModulMutation,
@@ -91,7 +92,11 @@ const SubjectDetail = () => {
   const { data: allTeachers = [] } = useGetAllTeachersQuery();
 
   // Get current teacher to check permissions
-  const { data: currentTeacher } = useGetTeacherMeQuery();
+  const storedUser = authService.getUserFromStorage();
+  const isTeacherFromStorage = storedUser?.isTeacher === true;
+  const { data: currentTeacher } = useGetTeacherMeQuery(undefined, {
+    skip: !isTeacherFromStorage
+  });
 
   // Check if current teacher can manage this subject
   const canManageSubject = currentTeacher?.isAdmin || currentTeacher?._id === subject?.createdBy;

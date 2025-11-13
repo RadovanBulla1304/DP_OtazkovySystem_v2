@@ -1,3 +1,4 @@
+import * as authService from '@app/pages/auth/authService';
 import { useCreateQuestionMutation, useGetTeacherMeQuery } from '@app/redux/api';
 import {
   Alert,
@@ -33,7 +34,11 @@ const CreateQuestionModal = ({ open, onClose, modules, onQuestionCreated }) => {
   });
 
   // Fetch the current teacher's data
-  const { data: teacherData, isLoading: isLoadingTeacher } = useGetTeacherMeQuery();
+  const storedUser = authService.getUserFromStorage();
+  const isTeacherFromStorage = storedUser?.isTeacher === true;
+  const { data: teacherData, isLoading: isLoadingTeacher } = useGetTeacherMeQuery(undefined, {
+    skip: !isTeacherFromStorage
+  });
   const [createQuestion, { isLoading }] = useCreateQuestionMutation();
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);

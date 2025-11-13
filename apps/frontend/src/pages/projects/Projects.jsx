@@ -1,4 +1,5 @@
 import { useCurrentSubjectId } from '@app/hooks/useCurrentSubjectId';
+import * as authService from '@app/pages/auth/authService';
 import {
   useDeleteProjectMutation,
   useGetAllProjectsQuery,
@@ -37,10 +38,15 @@ import AssignUsersToProject from './components/AssignUsersToProject';
 import PeerEvaluationModal from './components/PeerEvaluationModal';
 
 const Projects = () => {
-  // Check if user is a teacher - first try user, then teacher
-  const { data: user, isLoading: isUserLoading } = useGetUserMeQuery();
+  // Check if user is a teacher - use localStorage first
+  const storedUser = authService.getUserFromStorage();
+  const isTeacherFromStorage = storedUser?.isTeacher === true;
+
+  const { data: user, isLoading: isUserLoading } = useGetUserMeQuery(undefined, {
+    skip: isTeacherFromStorage
+  });
   const { data: teacher, isLoading: isTeacherLoading } = useGetTeacherMeQuery(undefined, {
-    skip: !!user || isUserLoading
+    skip: !isTeacherFromStorage
   });
   const isTeacher = !!teacher;
   const currentSubjectId = useCurrentSubjectId();

@@ -62,15 +62,24 @@ const CollapsedAvatar = styled(Avatar)(({ theme }) => ({
 const TeamSwitcher = ({ collapsed = false }) => {
   const user = authService.getUserFromStorage();
 
-  // Fetch user and teacher data
-  const { data: userData, isLoading: isUserLoading } = useGetUserMeQuery();
-  const { data: teacherData, isLoading: isTeacherLoading } = useGetTeacherMeQuery(undefined, {
-    skip: !!userData || isUserLoading
+  // Determine if user is a teacher from localStorage first
+  const isTeacherFromStorage = user?.isTeacher === true;
+
+  // Fetch user and teacher data based on localStorage info
+  const { data: userData, isLoading: isUserLoading } = useGetUserMeQuery(undefined, {
+    skip: isTeacherFromStorage
   });
 
-  const isAdmin = teacherData?.isAdmin || userData?.isAdmin;
-  const isTeacher = !!teacherData && !teacherData.isAdmin;
-  const isUser = !!userData && !userData.isAdmin;
+  const { data: teacherData, isLoading: isTeacherLoading } = useGetTeacherMeQuery(undefined, {
+    skip: !isTeacherFromStorage
+  });
+
+  // Determine roles based on which data we have
+  // For USERS: both admin and non-admin see their assigned subjects (no difference)
+  // For TEACHERS: admin sees all subjects, non-admin sees only their assigned subjects
+  const isAdminTeacher = isTeacherFromStorage && teacherData?.isAdmin;
+  const isRegularTeacher = isTeacherFromStorage && !!teacherData && !teacherData.isAdmin;
+  const isAnyUser = !isTeacherFromStorage && !!userData;
 
   // Conditionally fetch subjects based on role
   const {
@@ -78,7 +87,7 @@ const TeamSwitcher = ({ collapsed = false }) => {
     isLoading: isLoadingAll,
     refetch: refetchAll
   } = useGetAllSubjectsQuery(undefined, {
-    skip: !isAdmin,
+    skip: !isAdminTeacher,
     refetchOnMountOrArgChange: true
   });
 
@@ -87,7 +96,7 @@ const TeamSwitcher = ({ collapsed = false }) => {
     isLoading: isLoadingTeacher,
     refetch: refetchTeacher
   } = useGetTeacherSubjectsQuery(undefined, {
-    skip: !isTeacher,
+    skip: !isRegularTeacher,
     refetchOnMountOrArgChange: true
   });
 
@@ -96,7 +105,7 @@ const TeamSwitcher = ({ collapsed = false }) => {
     isLoading: isLoadingAssigned,
     refetch: refetchAssigned
   } = useGetAllSubjectsAssignedToUserQuery(user?._id, {
-    skip: !isUser || !user?._id,
+    skip: !isAnyUser || !user?._id,
     refetchOnMountOrArgChange: true
   });
 
@@ -106,14 +115,25 @@ const TeamSwitcher = ({ collapsed = false }) => {
 
   // Use appropriate subjects array based on role
   const subjects = React.useMemo(() => {
-    if (isAdmin) return allSubjects;
-    if (isTeacher) return teacherSubjects;
-    if (isUser) return allSubjectsAssignedToUser;
+    if (isAdminTeacher) return allSubjects;
+    if (isRegularTeacher) return teacherSubjects;
+    if (isAnyUser) return allSubjectsAssignedToUser;
     return [];
-  }, [isAdmin, isTeacher, isUser, allSubjects, teacherSubjects, allSubjectsAssignedToUser]);
+  }, [
+    isAdminTeacher,
+    isRegularTeacher,
+    isAnyUser,
+    allSubjects,
+    teacherSubjects,
+    allSubjectsAssignedToUser
+  ]);
 
-  const isLoading = isAdmin ? isLoadingAll : isTeacher ? isLoadingTeacher : isLoadingAssigned;
-  const refetch = isAdmin ? refetchAll : isTeacher ? refetchTeacher : refetchAssigned;
+  const isLoading = isAdminTeacher
+    ? isLoadingAll
+    : isRegularTeacher
+      ? isLoadingTeacher
+      : isLoadingAssigned;
+  const refetch = isAdminTeacher ? refetchAll : isRegularTeacher ? refetchTeacher : refetchAssigned;
 
   // Wait for role determination before showing subjects
   const isRoleDetermined = !isUserLoading && !isTeacherLoading;
@@ -214,8 +234,10 @@ const TeamSwitcher = ({ collapsed = false }) => {
                 ))
               )}
 
-              {(isAdmin || isTeacher) && subjects.length > 0 && <Divider sx={{ my: 1 }} />}
-              {(isAdmin || isTeacher) && (
+              {(isAdminTeacher || isRegularTeacher) && subjects.length > 0 && (
+                <Divider sx={{ my: 1 }} />
+              )}
+              {(isAdminTeacher || isRegularTeacher) && (
                 <ListItemButton
                   onClick={handleAddSubject}
                   sx={{ '&:hover': { cursor: 'pointer' } }}
@@ -294,8 +316,10 @@ const TeamSwitcher = ({ collapsed = false }) => {
               ))
             )}
 
-            {(isAdmin || isTeacher) && subjects.length > 0 && <Divider sx={{ my: 1 }} />}
-            {(isAdmin || isTeacher) && (
+            {(isAdminTeacher || isRegularTeacher) && subjects.length > 0 && (
+              <Divider sx={{ my: 1 }} />
+            )}
+            {(isAdminTeacher || isRegularTeacher) && (
               <ListItemButton onClick={handleAddSubject} sx={{ '&:hover': { cursor: 'pointer' } }}>
                 <AddIcon fontSize="small" sx={{ mr: 1 }} />
                 <ListItemText primary="Pridať predmet" />

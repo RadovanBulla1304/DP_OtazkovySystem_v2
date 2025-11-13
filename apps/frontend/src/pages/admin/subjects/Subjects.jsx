@@ -1,3 +1,4 @@
+import * as authService from '@app/pages/auth/authService';
 import {
   useDeleteAllModulsBySubjectMutation,
   useDeleteSubjectMutation,
@@ -29,13 +30,21 @@ import SubjectCard from './components/SubjectCard';
 
 const Subjects = () => {
   // Fetch user and teacher data to determine role
-  const { data: userData, isLoading: isUserLoading } = useGetUserMeQuery();
+  const storedUser = authService.getUserFromStorage();
+  const isTeacherFromStorage = storedUser?.isTeacher === true;
+
+  const { data: userData, isLoading: isUserLoading } = useGetUserMeQuery(undefined, {
+    skip: isTeacherFromStorage
+  });
   const { data: teacherData, isLoading: isTeacherLoading } = useGetTeacherMeQuery(undefined, {
-    skip: !!userData || isUserLoading
+    skip: !isTeacherFromStorage
   });
 
-  const isAdmin = teacherData?.isAdmin || userData?.isAdmin;
-  const isTeacher = !!teacherData && !teacherData.isAdmin;
+  // Determine roles based on which data we have
+  // For USERS: both admin and non-admin see their assigned subjects (no difference)
+  // For TEACHERS: admin sees all subjects, non-admin sees only their assigned subjects
+  const isAdminTeacher = isTeacherFromStorage && teacherData?.isAdmin;
+  const isRegularTeacher = isTeacherFromStorage && !!teacherData && !teacherData.isAdmin;
 
   // Conditionally fetch subjects based on role
   const {
@@ -44,7 +53,7 @@ const Subjects = () => {
     isError: isErrorAll,
     refetch: refetchAll
   } = useGetAllSubjectsQuery(undefined, {
-    skip: !isAdmin,
+    skip: !isAdminTeacher,
     refetchOnMountOrArgChange: true
   });
 
@@ -54,15 +63,15 @@ const Subjects = () => {
     isError: isErrorTeacher,
     refetch: refetchTeacher
   } = useGetTeacherSubjectsQuery(undefined, {
-    skip: !isTeacher,
+    skip: !isRegularTeacher,
     refetchOnMountOrArgChange: true
   });
 
-  const subjects = isAdmin ? allSubjects : teacherSubjects;
+  const subjects = isAdminTeacher ? allSubjects : teacherSubjects;
   const isLoading =
-    isUserLoading || isTeacherLoading || (isAdmin ? isLoadingAll : isLoadingTeacher);
-  const isError = isAdmin ? isErrorAll : isErrorTeacher;
-  const refetch = isAdmin ? refetchAll : refetchTeacher;
+    isUserLoading || isTeacherLoading || (isAdminTeacher ? isLoadingAll : isLoadingTeacher);
+  const isError = isAdminTeacher ? isErrorAll : isErrorTeacher;
+  const refetch = isAdminTeacher ? refetchAll : refetchTeacher;
 
   const [deleteSubject] = useDeleteSubjectMutation();
   const [deleteAllModulsBySubject] = useDeleteAllModulsBySubjectMutation();
@@ -214,7 +223,7 @@ const Subjects = () => {
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
         <Typography variant="h4">Predmety</Typography>
         <Box display="flex" gap={2} alignItems="center">
-          {isAdmin && (
+          {isAdminTeacher && (
             <>
               <Tooltip title="Odstrániť priradenie všetkých používateľov (DEBUG)">
                 <IconButton
@@ -289,7 +298,7 @@ const Subjects = () => {
       )}
 
       {/* Bulk Assign Teachers Modal */}
-      {isAdmin && (
+      {isAdminTeacher && (
         <BulkAssignTeachers
           open={isBulkAssignOpen}
           onClose={() => setIsBulkAssignOpen(false)}

@@ -8,40 +8,46 @@ function getCurrentSubjectId() {
 
 export function useCurrentSubject() {
     const user = authService.getUserFromStorage();
+    const isTeacherFromStorage = user?.isTeacher === true;
 
-    // Determine if user is teacher/admin
-    const { data: userData, isLoading: isUserLoading } = useGetUserMeQuery();
+    // Fetch user or teacher data based on localStorage info
+    const { data: userData } = useGetUserMeQuery(undefined, {
+        skip: isTeacherFromStorage
+    });
     const { data: teacherData } = useGetTeacherMeQuery(undefined, {
-        skip: !!userData || isUserLoading
+        skip: !isTeacherFromStorage
     });
 
-    const isAdmin = teacherData?.isAdmin || userData?.isAdmin;
-    const isTeacher = !!teacherData && !teacherData.isAdmin;
-    const isUser = !!userData && !userData.isAdmin;
+    // Determine roles based on which data we have
+    // For USERS: both admin and non-admin see their assigned subjects (no difference)
+    // For TEACHERS: admin sees all subjects, non-admin sees only their assigned subjects
+    const isAdminTeacher = isTeacherFromStorage && teacherData?.isAdmin;
+    const isRegularTeacher = isTeacherFromStorage && !!teacherData && !teacherData.isAdmin;
+    const isAnyUser = !isTeacherFromStorage && !!userData;
 
     // Conditionally fetch subjects based on role
     // Admin teachers see all subjects
     const { data: allSubjects = [] } = useGetAllSubjectsQuery(undefined, {
-        skip: !isAdmin
+        skip: !isAdminTeacher
     });
 
     // Non-admin teachers see their assigned subjects
     const { data: teacherSubjects = [] } = useGetTeacherSubjectsQuery(undefined, {
-        skip: !isTeacher
+        skip: !isRegularTeacher
     });
 
     // Regular users see their assigned subjects
     const { data: userSubjects = [] } = useGetAllSubjectsAssignedToUserQuery(user?._id, {
-        skip: !isUser || !user?._id
+        skip: !isAnyUser || !user?._id
     });
 
     // Use appropriate subjects array based on role
     let subjects = [];
-    if (isAdmin) {
+    if (isAdminTeacher) {
         subjects = allSubjects;
-    } else if (isTeacher) {
+    } else if (isRegularTeacher) {
         subjects = teacherSubjects;
-    } else if (isUser) {
+    } else if (isAnyUser) {
         subjects = userSubjects;
     }
 

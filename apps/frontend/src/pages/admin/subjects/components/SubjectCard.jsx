@@ -1,3 +1,4 @@
+import * as authService from '@app/pages/auth/authService';
 import { useGetTeacherMeQuery } from '@app/redux/api';
 import { Delete as DeleteIcon, People as PeopleIcon } from '@mui/icons-material';
 import { Box, Card, CardContent, Chip, IconButton, Tooltip, Typography } from '@mui/material';
@@ -11,7 +12,11 @@ const SubjectCard = ({
   isDeleting
 }) => {
   // Get current teacher to check if they created this subject
-  const { data: currentTeacher } = useGetTeacherMeQuery();
+  const storedUser = authService.getUserFromStorage();
+  const isTeacherFromStorage = storedUser?.isTeacher === true;
+  const { data: currentTeacher } = useGetTeacherMeQuery(undefined, {
+    skip: !isTeacherFromStorage
+  });
 
   // Check if current teacher is the creator or an admin
   const canManageTeachers = currentTeacher?.isAdmin || currentTeacher?._id === subject.createdBy;

@@ -1,3 +1,4 @@
+import * as authService from '@app/pages/auth/authService';
 import { useCreateModulMutation, useGetTeacherMeQuery, useGetUserMeQuery } from '@app/redux/api';
 import { joiResolver } from '@hookform/resolvers/joi';
 import {
@@ -21,8 +22,14 @@ import { createModulSchema } from '../../schemas/modul.schema';
 
 const AddModulModal = ({ open, onClose, subjectId, onSuccess }) => {
   const [createModul, { isLoading }] = useCreateModulMutation();
-  const { data: currentUser } = useGetUserMeQuery();
-  const { data: currentTeacher } = useGetTeacherMeQuery();
+  const storedUser = authService.getUserFromStorage();
+  const isTeacherFromStorage = storedUser?.isTeacher === true;
+  const { data: currentUser } = useGetUserMeQuery(undefined, {
+    skip: isTeacherFromStorage
+  });
+  const { data: currentTeacher } = useGetTeacherMeQuery(undefined, {
+    skip: !isTeacherFromStorage
+  });
 
   const {
     control,

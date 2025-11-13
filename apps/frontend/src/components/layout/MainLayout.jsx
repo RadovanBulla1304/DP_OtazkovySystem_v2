@@ -177,10 +177,17 @@ const MainLayout = ({ children }) => {
   const dispatch = useDispatch();
   const { mode, toggleThemeMode } = React.useContext(ThemeModeContext);
 
-  // First try to fetch user, only fetch teacher if user query fails or returns null
-  const { data: user, isLoading: isUserLoading } = useGetUserMeQuery();
+  // Get user from localStorage first to determine type
+  const storedUser = authService.getUserFromStorage();
+  const isTeacherFromStorage = storedUser?.isTeacher === true;
+
+  // Fetch user or teacher data based on localStorage info
+  const { data: user } = useGetUserMeQuery(undefined, {
+    skip: isTeacherFromStorage
+  });
+
   const { data: teacher } = useGetTeacherMeQuery(undefined, {
-    skip: !!user || isUserLoading
+    skip: !isTeacherFromStorage
   });
 
   const [drawerCollapsed, setDrawerCollapsed] = React.useState(false);

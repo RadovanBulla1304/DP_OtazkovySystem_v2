@@ -1,5 +1,6 @@
 import { useCurrentSubjectId } from '@app/hooks/useCurrentSubjectId';
 import { createTestSchema, updateTestSchema } from '@app/pages/admin/schemas/test.schema';
+import * as authService from '@app/pages/auth/authService';
 import {
   useCreateTestMutation,
   useDeleteTestMutation,
@@ -52,7 +53,11 @@ const Tests = () => {
   const [deleteConfirmModal, setDeleteConfirmModal] = useState(null);
 
   // Check if user is a teacher
-  const { data: teacher } = useGetTeacherMeQuery();
+  const storedUser = authService.getUserFromStorage();
+  const isTeacherFromStorage = storedUser?.isTeacher === true;
+  const { data: teacher } = useGetTeacherMeQuery(undefined, {
+    skip: !isTeacherFromStorage
+  });
   const isTeacher = !!teacher;
 
   // Form state
