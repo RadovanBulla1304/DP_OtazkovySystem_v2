@@ -335,11 +335,31 @@ exports.getValidatedQuestionsWithAgreementBySubject = async (req, res) => {
         // Find questions that match the filter
         const questions = await Question.find(query)
             .populate('modul', 'title ')
-            .populate('createdBy', 'name surname email')
             .populate('validated_by', 'name surname email')
             .sort({ createdAt: -1 });
 
-        res.status(200).json(questions);
+        // Manually populate createdBy from both User and Teacher collections
+        const populatedQuestions = await Promise.all(
+            questions.map(async (question) => {
+                const questionObj = question.toObject();
+
+                if (questionObj.createdBy) {
+                    // Try to find in User collection first
+                    let creator = await User.findById(questionObj.createdBy).select('name surname email');
+
+                    // If not found in User, try Teacher collection
+                    if (!creator) {
+                        creator = await Teacher.findById(questionObj.createdBy).select('name surname email');
+                    }
+
+                    questionObj.createdBy = creator;
+                }
+
+                return questionObj;
+            })
+        );
+
+        res.status(200).json(populatedQuestions);
     } catch (err) {
         throwError(`Error fetching validated questions with agreement: ${err.message}`, 500);
     }
