@@ -1,11 +1,5 @@
 -------------------------------------------
 todo:
-ked pridam otazku ako ucitel pri vytvarani testu. tak ptm v all questions vidim vytvorene N/A
-
- -> na najblizsie 3 roky (schvaleen otazky a posty vo fore su navzdy tie sa nevymazavaju)
-
-pri delete : 
-studenta -> zachovat (schvalene otazky, prispevky vo fore)
 -------------------------------------------
 //OPRAVENE
 -------------------------------------------
@@ -48,4 +42,9 @@ studenta -> zachovat (schvalene otazky, prispevky vo fore)
     -> ucitela vie odstranit len admin 
     -> predmet existuje aj ak nema ziadneho ucitela(musi byt vytvoreny ale ucitelom)
     -> studenti budu premazavany na konci kazdeho roka
-student je pridany k predmetu len 1 rok..  hranica 1.9. -> po jednom roku potrebujeme odstranit priradenie predmetu ale nechat jeho data 
+//student je pridany k predmetu len 1 rok..  hranica 1.9. -> po jednom roku potrebujeme odstranit priradenie predmetu ale nechat jeho data 
+//ked pridam otazku ako ucitel pri vytvarani testu. tak ptm v all questions vidim vytvorene N/A
+// -> na najblizsie 3 roky (schvaleen otazky a posty vo fore su navzdy tie sa nevymazavaju)
+
+//pri delete : 
+//studenta -> zachovat (schvalene otazky, prispevky vo fore)

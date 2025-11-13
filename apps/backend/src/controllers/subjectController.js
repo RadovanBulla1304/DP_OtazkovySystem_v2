@@ -410,3 +410,19 @@ exports.triggerYearlyUnassignment = async (req, res) => {
     }
 };
 
+exports.triggerInactiveUserCleanup = async (req, res) => {
+    try {
+        const { triggerManualCleanup } = require('../jobs/cleanupInactiveUsers');
+        const result = await triggerManualCleanup();
+
+        res.status(200).json({
+            message: "Inactive user cleanup triggered successfully",
+            result
+        });
+    } catch (err) {
+        res.status(500).json({
+            message: "Error triggering inactive user cleanup",
+            error: err.message
+        });
+    }
+};

@@ -54,6 +54,10 @@ const UserSchema = new mongoose.Schema(
         ref: "Project",
       },
     ],
+    lastUnassignedDate: {
+      type: Date,
+      default: null,
+    },
     points: [
       {
         type: mongoose.Schema.Types.ObjectId,

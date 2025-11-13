@@ -8,6 +8,7 @@ const authMiddleware = require("./src/middlewares/auth");
 const { throwError } = require("./src/util/universal");
 const { errorHandler } = require("./src/middlewares/error-handler");
 const { scheduleYearlyUnassignment } = require("./src/jobs/yearlyUnassignment");
+const { scheduleInactiveUserCleanup } = require("./src/jobs/cleanupInactiveUsers");
 
 const app = express();
 
@@ -29,6 +30,7 @@ app.use(json());
 
 // Initialize scheduled jobs
 scheduleYearlyUnassignment();
+scheduleInactiveUserCleanup();
 
 // Public routes should not use authMiddleware
 app.use("/public", require("./src/routes/public")); // This is for public routes like signin and register

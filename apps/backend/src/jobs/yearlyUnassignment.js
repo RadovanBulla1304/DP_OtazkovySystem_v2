@@ -21,7 +21,10 @@ const unassignAllStudentsFromSubjects = async () => {
                 // Remove this subject from all assigned students' assignedSubjects array
                 const userResult = await User.updateMany(
                     { _id: { $in: subject.assigned_students } },
-                    { $pull: { assignedSubjects: subject._id } }
+                    {
+                        $pull: { assignedSubjects: subject._id },
+                        $set: { lastUnassignedDate: new Date() }
+                    }
                 );
 
                 totalUsersUpdated += userResult.modifiedCount;

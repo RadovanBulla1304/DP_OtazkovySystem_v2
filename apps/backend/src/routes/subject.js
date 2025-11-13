@@ -11,7 +11,8 @@ const {
     unassignTeacherFromSubject,
     getTeacherSubjects,
     getAllSubjectsAssignedToUser,
-    triggerYearlyUnassignment
+    triggerYearlyUnassignment,
+    triggerInactiveUserCleanup
 } = require("../controllers/subjectController");
 
 const router = express.Router();
@@ -27,5 +28,6 @@ router.post("/unassign-user", unasignUserFromSubject);
 router.post("/assign-teacher", assignTeacherToSubject);
 router.post("/unassign-teacher", unassignTeacherFromSubject);
 router.post("/trigger-yearly-unassignment", triggerYearlyUnassignment);
+router.post("/trigger-inactive-user-cleanup", triggerInactiveUserCleanup);
 router.delete("/:id", deleteSubject);
 module.exports = router;
