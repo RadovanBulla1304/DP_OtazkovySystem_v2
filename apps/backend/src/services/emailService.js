@@ -17,8 +17,6 @@ const createTransporter = () => {
             },
         });
     } else {
-        // Development: Log to console instead of sending
-        console.log('⚠️  SMTP not configured. Email will be logged to console.');
         return null;
     }
 };
@@ -67,19 +65,11 @@ Ak ste sa neregistrovali, ignorujte tento email.
     if (transporter) {
         try {
             const info = await transporter.sendMail(mailOptions);
-            console.log('✅ Confirmation email sent:', info);
             return true;
         } catch (error) {
-            console.error('❌ Error sending confirmation email:', error);
             return false;
         }
     } else {
-        // Development mode: just log the confirmation URL
-        console.log('\n📧 ========== CONFIRMATION EMAIL ==========');
-        console.log(`To: ${email}`);
-        console.log(`Name: ${name}`);
-        console.log(`Confirmation URL: ${confirmationUrl}`);
-        console.log('==========================================\n');
         return true;
     }
 };

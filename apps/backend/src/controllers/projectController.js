@@ -34,7 +34,6 @@ const createProject = [
                 data: project
             });
         } catch (error) {
-            console.error("Error creating project:", error);
             res.status(500).json({
                 success: false,
                 message: "Error creating project",
@@ -81,7 +80,6 @@ const updateProject = [
                 data: project
             });
         } catch (error) {
-            console.error("Error updating project:", error);
             res.status(500).json({
                 success: false,
                 message: "Error updating project",
@@ -116,7 +114,6 @@ const getAllProjects = async (req, res) => {
             data: projects
         });
     } catch (error) {
-        console.error("Error fetching projects:", error);
         res.status(500).json({
             success: false,
             message: "Error fetching projects",
@@ -147,7 +144,6 @@ const getProjectById = async (req, res) => {
             data: project
         });
     } catch (error) {
-        console.error("Error fetching project:", error);
         res.status(500).json({
             success: false,
             message: "Error fetching project",
@@ -175,7 +171,6 @@ const deleteProject = async (req, res) => {
             message: "Project deleted successfully"
         });
     } catch (error) {
-        console.error("Error deleting project:", error);
         res.status(500).json({
             success: false,
             message: "Error deleting project",
@@ -245,7 +240,6 @@ const assignUsersToProject = async (req, res) => {
             message: `${userIds.length} user(s) assigned to project successfully`
         });
     } catch (error) {
-        console.error("Error assigning users to project:", error);
         res.status(500).json({
             success: false,
             message: "Error assigning users to project",
@@ -285,7 +279,6 @@ const removeUserFromProject = async (req, res) => {
             message: "User removed from project successfully"
         });
     } catch (error) {
-        console.error("Error removing user from project:", error);
         res.status(500).json({
             success: false,
             message: "Error removing user from project",
@@ -313,7 +306,6 @@ const getUserProjects = async (req, res) => {
             data: projects
         });
     } catch (error) {
-        console.error("Error fetching user projects:", error);
         res.status(500).json({
             success: false,
             message: "Error fetching user projects",
@@ -410,7 +402,6 @@ const saveProjectRating = async (req, res) => {
             message: "Rating saved successfully"
         });
     } catch (error) {
-        console.error("Error saving project rating:", error);
         res.status(500).json({
             success: false,
             message: "Error saving project rating",
@@ -467,7 +458,6 @@ const getAllProjectRatings = async (req, res) => {
             }
         });
     } catch (error) {
-        console.error("Error fetching project ratings:", error);
         res.status(500).json({
             success: false,
             message: "Error fetching project ratings",
@@ -535,7 +525,6 @@ const getProjectRatingsSummary = async (req, res) => {
             data: summary
         });
     } catch (error) {
-        console.error("Error fetching project ratings summary:", error);
         res.status(500).json({
             success: false,
             message: "Error fetching project ratings summary",

@@ -327,7 +327,6 @@ exports.assignTeacherToSubject = [
                 subject
             });
         } catch (err) {
-            console.error("Error assigning teacher to subject:", err);
             res.status(500).json({
                 message: "Error assigning teacher to subject",
                 error: err.message
@@ -386,7 +385,6 @@ exports.unassignTeacherFromSubject = [
                 subject
             });
         } catch (err) {
-            console.error("Error unassigning teacher from subject:", err);
             res.status(500).json({
                 message: "Error unassigning teacher from subject",
                 error: err.message

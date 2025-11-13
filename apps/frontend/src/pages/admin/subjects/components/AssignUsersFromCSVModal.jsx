@@ -53,18 +53,12 @@ const AssignUsersFromCSVModal = ({ open, onClose, subjectId, onSuccess }) => {
       const matched = [];
       const unmatched = [];
 
-      console.log('Total lines in CSV:', lines.length);
-
       // Detect delimiter from first line
       const firstLine = lines[0] || '';
       const delimiter = firstLine.includes(';') ? ';' : ',';
-      console.log('Detected delimiter:', delimiter);
-
       lines.forEach((line, index) => {
         // Split by detected delimiter (semicolon or comma)
         const parts = line.split(delimiter).map((part) => part.trim().replace(/"/g, ''));
-
-        console.log(`Row ${index}:`, parts);
 
         // Based on your screenshot, the format is:
         // Column 0: skupina (3ZIH1A)
@@ -81,7 +75,6 @@ const AssignUsersFromCSVModal = ({ open, onClose, subjectId, onSuccess }) => {
 
           // Skip if student number is empty or invalid
           if (!studentNumber || studentNumber === '') {
-            console.log(`Skipping row ${index} - empty student number`);
             return;
           }
 
@@ -96,8 +89,6 @@ const AssignUsersFromCSVModal = ({ open, onClose, subjectId, onSuccess }) => {
 
           parsed.push(rowData);
 
-          console.log(`Parsed row ${index}:`, rowData);
-
           // Try to match user from database
           const matchedUser = findMatchingUser(allUsers, {
             name,
@@ -106,7 +97,6 @@ const AssignUsersFromCSVModal = ({ open, onClose, subjectId, onSuccess }) => {
           });
 
           if (matchedUser) {
-            console.log(`✓ Matched user:`, matchedUser);
             matched.push({
               ...rowData,
               userId: matchedUser._id,
@@ -115,21 +105,12 @@ const AssignUsersFromCSVModal = ({ open, onClose, subjectId, onSuccess }) => {
               matched: true
             });
           } else {
-            console.log(`✗ No match found for:`, rowData);
             unmatched.push({
               ...rowData,
               matched: false
             });
           }
-        } else {
-          console.log(`Skipping row ${index} - insufficient columns (${parts.length})`);
         }
-      });
-
-      console.log('Parsing complete:', {
-        total: parsed.length,
-        matched: matched.length,
-        unmatched: unmatched.length
       });
 
       setParsedData(parsed);
@@ -141,9 +122,6 @@ const AssignUsersFromCSVModal = ({ open, onClose, subjectId, onSuccess }) => {
   };
 
   const findMatchingUser = (users, csvRow) => {
-    console.log('Trying to match:', csvRow);
-    console.log('Available users count:', users.length);
-
     // Try to match by studentNumber first (most reliable and most important)
     if (csvRow.studentNumber) {
       const studentNumberStr = String(csvRow.studentNumber).trim();
@@ -155,7 +133,6 @@ const AssignUsersFromCSVModal = ({ open, onClose, subjectId, onSuccess }) => {
       });
 
       if (byStudentNumber) {
-        console.log('✓ Found by student number:', byStudentNumber);
         return byStudentNumber;
       }
     }
@@ -171,12 +148,10 @@ const AssignUsersFromCSVModal = ({ open, onClose, subjectId, onSuccess }) => {
       );
 
       if (byNameSurname) {
-        console.log('✓ Found by name+surname:', byNameSurname);
         return byNameSurname;
       }
     }
 
-    console.log('✗ No match found');
     return null;
   };
 

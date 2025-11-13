@@ -56,7 +56,6 @@ const AddModulModal = ({ open, onClose, subjectId, onSuccess }) => {
   }, [open, subjectId, setValue]);
 
   const onSubmit = async (data) => {
-    console.log('Form data to submit:', data);
     try {
       // Only send required fields for creation
       const payload = {
@@ -69,7 +68,6 @@ const AddModulModal = ({ open, onClose, subjectId, onSuccess }) => {
         required_questions_per_user: Number(data.required_questions_per_user),
         createdBy: currentTeacher?._id || currentUser?._id
       };
-      console.log('Constructed payload:', payload);
       await createModul(payload).unwrap();
       toast.success('Modul bol úspešne pridaný');
       reset();

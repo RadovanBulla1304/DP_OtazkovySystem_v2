@@ -164,13 +164,11 @@ const getForumQuestions = async (req, res) => {
 
         if (modul) {
             filter.modul = modul
-            console.log('Filtering by modul:', modul)
         }
 
         if (tags) {
             const tagArray = tags.split(',').map(tag => tag.trim())
             filter.tags = { $in: tagArray }
-            console.log('Filtering by tags:', tagArray)
         }
 
         if (search) {
@@ -179,24 +177,17 @@ const getForumQuestions = async (req, res) => {
                 { description: { $regex: search, $options: 'i' } },
                 { tags: { $regex: search, $options: 'i' } }
             ]
-            console.log('Filtering by search:', search)
         }
 
         // Filter by author type (User/Teacher)
         if (createdByModel && (createdByModel === 'User' || createdByModel === 'Teacher')) {
             filter.createdByModel = createdByModel
-            console.log('Filtering by createdByModel:', createdByModel)
         }
 
         // Filter by specific author ID (for "My questions")
         if (createdBy) {
             filter.createdBy = createdBy
-            console.log('Filtering by createdBy:', createdBy)
         }
-
-        console.log('Final filter:', JSON.stringify(filter))
-        console.log('Sort by:', sortBy)
-
         // Build sort object
         let sortObj = { is_pinned: -1 } // Always prioritize pinned posts
 
@@ -366,7 +357,6 @@ const getForumQuestions = async (req, res) => {
             }
         })
     } catch (error) {
-        console.error('Get forum questions error:', error)
         res.status(500).json({
             success: false,
             message: "Server error while fetching forum questions",
@@ -469,7 +459,6 @@ const getForumQuestion = async (req, res) => {
             }
         })
     } catch (error) {
-        console.error('Get forum question error:', error)
         res.status(500).json({
             success: false,
             message: "Server error while fetching forum question",
@@ -529,7 +518,6 @@ const createForumQuestion = [
                 data: enrichedQuestion
             })
         } catch (error) {
-            console.error('Create forum question error:', error)
             res.status(500).json({
                 success: false,
                 message: "Server error while creating forum question",
@@ -611,7 +599,6 @@ const addComment = async (req, res) => {
             data: populatedComment
         })
     } catch (error) {
-        console.error('Add comment error:', error)
         res.status(500).json({
             success: false,
             message: "Server error while adding comment",
@@ -719,8 +706,6 @@ const likeForumQuestion = async (req, res) => {
         })
     } catch (error) {
         // Log full stack for debugging
-        console.error(`[LIKE] Error for user ${req.user?.user_id} on question ${req.params.id}:`, error)
-        console.error(error.stack)
         const payload = {
             success: false,
             message: "Server error while liking question",
@@ -839,7 +824,6 @@ const dislikeForumQuestion = async (req, res) => {
             }
         })
     } catch (error) {
-        console.error(`[DISLIKE] Error for user ${req.user?.user_id} on question ${req.params.id}:`, error)
         res.status(500).json({
             success: false,
             message: "Server error while disliking question",
@@ -955,7 +939,6 @@ const likeComment = async (req, res) => {
             }
         })
     } catch (error) {
-        console.error('Like comment error:', error)
         res.status(500).json({
             success: false,
             message: "Server error while liking comment",
@@ -1070,7 +1053,6 @@ const dislikeComment = async (req, res) => {
             }
         })
     } catch (error) {
-        console.error('Dislike comment error:', error)
         res.status(500).json({
             success: false,
             message: "Server error while disliking comment",
@@ -1116,7 +1098,6 @@ const getForumTags = async (req, res) => {
             data: tags
         })
     } catch (error) {
-        console.error('Get forum tags error:', error)
         res.status(500).json({
             success: false,
             message: "Server error while fetching forum tags",

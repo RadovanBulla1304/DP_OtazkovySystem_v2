@@ -94,8 +94,6 @@ const Projects = () => {
   const confirmDelete = async (project) => {
     try {
       setIsDeleting(true);
-      console.log('Deleting project:', project._id);
-
       const response = await deleteProject(project._id);
 
       if (response.error) {
@@ -381,7 +379,6 @@ const Projects = () => {
             </Button>
             <Button
               onClick={() => {
-                console.log('Delete confirmed for project:', projectToDelete._id);
                 confirmDelete(projectToDelete);
               }}
               color="error"

@@ -148,7 +148,6 @@ const SubjectDetail = () => {
       const modulesResponse = await deleteAllModulsBySubject(subjectId);
 
       if (modulesResponse.error) {
-        console.error('Error deleting modules:', modulesResponse.error);
         toast.error(
           'Chyba pri odstraňovaní modulov: ' +
             (modulesResponse.error?.data?.message || 'Neznáma chyba')
@@ -162,7 +161,6 @@ const SubjectDetail = () => {
       const subjectResponse = await deleteSubject(subjectId);
 
       if (subjectResponse.error) {
-        console.error('Error deleting subject:', subjectResponse.error);
         toast.error(
           'Chyba pri odstraňovaní predmetu: ' +
             (subjectResponse.error?.data?.message || 'Neznáma chyba')
@@ -441,7 +439,7 @@ const SubjectDetail = () => {
             {/* Assigned Teachers Section */}
             <Grid item xs={12}>
               <Divider sx={{ my: 2 }} />
-              
+
               {/* Creator Teacher */}
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap', mb: 2 }}>
                 <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
@@ -461,7 +459,11 @@ const SubjectDetail = () => {
                         variant="filled"
                       />
                     ) : (
-                      <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ fontStyle: 'italic' }}
+                      >
                         Neznámy
                       </Typography>
                     );

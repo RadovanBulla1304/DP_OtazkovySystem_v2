@@ -49,17 +49,13 @@ const EditSubjectModal = ({ open, onClose, onSuccess, subject }) => {
   }, [subject, open, setValue, reset]);
 
   const handleFormSubmit = async (data) => {
-    console.log('handleFormSubmit called with data:', data);
-    console.log('Subject ID:', subject?._id);
     setSubmitAttempted(true);
     try {
       const payload = {
         subjectId: subject._id,
         data: { name: data.name.trim() }
       };
-      console.log('Calling editSubject with payload:', payload);
       const result = await editSubject(payload).unwrap();
-      console.log('Edit subject result:', result);
       toast.success('Predmet bol úspešne upravený');
       reset();
       setSubmitAttempted(false);
@@ -113,7 +109,6 @@ const EditSubjectModal = ({ open, onClose, onSuccess, subject }) => {
         </Button>
         <Button
           onClick={(e) => {
-            console.log('Uložiť button clicked');
             e.preventDefault();
             handleSubmit(handleFormSubmit)(e);
           }}

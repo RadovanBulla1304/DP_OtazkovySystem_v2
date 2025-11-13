@@ -61,7 +61,6 @@ exports.createTeacher = [
 
       res.status(201).send({ email: teacher.email });
     } catch (err) {
-      console.error("Error creating teacher:", err);
       res.status(500).json({
         message: `${req.t("messages.database_error")}: ${err.message}`,
       });
@@ -131,8 +130,6 @@ exports.createUser = [
   validate(createUserSchema),
   async (req, res) => {
     try {
-      console.log("Request body:", req.body);
-
       // Make sure validated data exists before destructuring
       const validatedData = validated(req);
       if (!validatedData) {
@@ -188,7 +185,6 @@ exports.createUser = [
 
       res.status(201).send({ email: user.email });
     } catch (err) {
-      console.error("Error creating user:", err);
       res.status(500).json({
         message: `${req.t("messages.database_error")}: ${err.message}`,
       });
@@ -216,7 +212,6 @@ exports.editUser = [
         }
       }
     }
-    console.log(data.userType);
     if (data.userType === "admin") {
       // Ak je zmena užívateľa na admina
       data.isAdmin = true;

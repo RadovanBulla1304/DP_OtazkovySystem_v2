@@ -48,15 +48,11 @@ createTest = [validate(createTestSchema), async (req, res) => {
                 });
             }
 
-            console.log(`Found ${questionCount} valid/validated questions in selected modules`);
-
             if (questionCount < data.total_questions) {
                 return res.status(400).json({
                     message: `Nedostatok validných otázok vo vybraných moduloch. Dostupné: ${questionCount}, Požadované: ${data.total_questions}`
                 });
             }
-        } else {
-            console.log('Skipping validation check as requested by client');
         }
 
         const test = new Test({
@@ -81,7 +77,6 @@ createTest = [validate(createTestSchema), async (req, res) => {
             test: savedTest
         });
     } catch (error) {
-        console.error('Error creating test:', error);
         res.status(500).json({
             message: 'Chyba pri vytváraní testu',
             error: error.message
@@ -137,7 +132,6 @@ const updateTest = [validate(updateTestSchema), async (req, res) => {
             test
         });
     } catch (error) {
-        console.error('Error updating test:', error);
         res.status(500).json({
             message: 'Chyba pri aktualizácii testu',
             error: error.message
@@ -175,7 +169,6 @@ const getTestsBySubject = async (req, res) => {
             total
         });
     } catch (error) {
-        console.error('Error fetching tests:', error);
         res.status(500).json({
             message: 'Error fetching tests',
             error: error.message
@@ -205,7 +198,6 @@ const getTestsByTeacher = async (req, res) => {
             total
         });
     } catch (error) {
-        console.error('Error fetching teacher tests:', error);
         res.status(500).json({
             message: 'Error fetching tests',
             error: error.message
@@ -231,7 +223,6 @@ const getTestById = async (req, res) => {
 
         res.json(test);
     } catch (error) {
-        console.error('Error fetching test:', error);
         res.status(500).json({
             message: 'Error fetching test',
             error: error.message
@@ -262,7 +253,6 @@ const deleteTest = async (req, res) => {
             message: 'Test and all associated attempts deleted successfully'
         });
     } catch (error) {
-        console.error('Error deleting test:', error);
         res.status(500).json({
             message: 'Error deleting test',
             error: error.message
@@ -293,7 +283,6 @@ const toggleTestPublication = async (req, res) => {
             test
         });
     } catch (error) {
-        console.error('Error updating test publication status:', error);
         res.status(500).json({
             message: 'Error updating test publication status',
             error: error.message
@@ -408,7 +397,6 @@ const getTestStatistics = async (req, res) => {
             data: statistics
         });
     } catch (error) {
-        console.error('Error fetching test statistics:', error);
         res.status(500).json({
             success: false,
             message: 'Error fetching test statistics',
@@ -530,7 +518,6 @@ const startTestAttempt = async (req, res) => {
             data: testAttempt
         });
     } catch (error) {
-        console.error('Error starting test attempt:', error);
         res.status(500).json({
             success: false,
             message: 'Error starting test attempt',
@@ -561,9 +548,6 @@ const submitTestAttempt = async (req, res) => {
         // Convert both to strings for comparison
         const attemptUserId = testAttempt.user.toString();
         const requestUserId = userId.toString();
-
-        console.log('Attempt user ID:', attemptUserId);
-        console.log('Request user ID:', requestUserId);
 
         if (attemptUserId !== requestUserId) {
             return res.status(403).json({
@@ -635,7 +619,6 @@ const submitTestAttempt = async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('Error submitting test attempt:', error);
         res.status(500).json({
             success: false,
             message: 'Error submitting test attempt',
@@ -673,7 +656,6 @@ const getTestAttemptById = async (req, res) => {
             data: testAttempt
         });
     } catch (error) {
-        console.error('Error fetching test attempt:', error);
         res.status(500).json({
             success: false,
             message: 'Error fetching test attempt',
@@ -687,11 +669,6 @@ const getUserTestAttempts = async (req, res) => {
         const { id: testId } = req.params; // Route uses :id not :testId
         const userId = req.user.user_id;
 
-        console.log('getUserTestAttempts called:');
-        console.log('  testId:', testId);
-        console.log('  userId:', userId);
-        console.log('  userId type:', typeof userId);
-
         const attempts = await TestAttempt.find({
             test: testId,
             user: userId,
@@ -700,22 +677,11 @@ const getUserTestAttempts = async (req, res) => {
             .select('score passed submittedAt')
             .sort({ submittedAt: -1 });
 
-        console.log('  Found attempts:', attempts.length);
-        if (attempts.length > 0) {
-            console.log('  First attempt:', {
-                test: attempts[0].test,
-                user: attempts[0].user,
-                score: attempts[0].score,
-                passed: attempts[0].passed
-            });
-        }
-
         res.status(200).json({
             success: true,
             data: attempts
         });
     } catch (error) {
-        console.error('Error fetching user test attempts:', error);
         res.status(500).json({
             success: false,
             message: 'Error fetching test attempts',
@@ -747,7 +713,6 @@ const deleteTestAttempt = async (req, res) => {
             message: 'Test attempt deleted successfully'
         });
     } catch (error) {
-        console.error('Error deleting test attempt:', error);
         res.status(500).json({
             success: false,
             message: 'Error deleting test attempt',

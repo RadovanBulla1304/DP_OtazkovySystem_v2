@@ -106,7 +106,6 @@ exports.createQuestion = [
                     { $push: { points: point._id } }
                 );
             } catch (pointError) {
-                console.error('Error awarding point for question creation:', pointError);
                 // Don't fail the question creation if point awarding fails
             }
 
@@ -172,7 +171,6 @@ exports.validateQuestion = async (req, res) => {
         const { id } = req.params;
         const { valid, comment } = req.body;
 
-        console.log('Validate question called:', { id, valid, comment, user: req.user }); // Debug log
 
         // Validate input
         if (typeof valid !== 'boolean') {
@@ -183,8 +181,6 @@ exports.validateQuestion = async (req, res) => {
         if (!question) {
             return res.status(404).json({ message: "Question not found." });
         }
-
-        console.log('Question found before update:', question.toObject()); // Debug log
 
         // Update question with validation info
         question.validated = valid;
@@ -220,19 +216,15 @@ exports.validateQuestion = async (req, res) => {
                     { $push: { points: point._id } }
                 );
             } catch (pointError) {
-                console.error('Error awarding point for question validation:', pointError);
                 // Don't fail the validation if point awarding fails
             }
         }
-
-        console.log('Question after update:', question.toObject()); // Debug log
 
         res.status(200).json({
             message: "Question validation saved successfully.",
             question: question
         });
     } catch (err) {
-        console.error('Error in validateQuestion:', err); // Debug log
         throwError(`Error validating question: ${err.message}`, 500);
     }
 };
@@ -289,7 +281,6 @@ exports.respondToValidation = async (req, res) => {
                     { $push: { points: point._id } }
                 );
             } catch (pointError) {
-                console.error('Error awarding point for question reparation:', pointError);
                 // Don't fail the response if point awarding fails
             }
         }
@@ -327,14 +318,12 @@ exports.getValidatedQuestionsWithAgreementBySubject = async (req, res) => {
             const studentIds = students.map(s => s._id);
             query.createdBy = { $in: studentIds };
             query['user_agreement.agreed'] = true;
-            console.log('Student filter - Found students:', studentIds.length);
         } else if (filter === 'teacher') {
             // Only teacher-created questions
             const teachers = await Teacher.find({}).select('_id');
             const teacherIds = teachers.map(t => t._id);
             query.createdBy = { $in: teacherIds };
             query.validated_by_teacher = true;
-            console.log('Teacher filter - Found teachers:', teacherIds.length);
         } else {
             // All: both student questions with agreement OR teacher questions
             query.$or = [
@@ -343,8 +332,6 @@ exports.getValidatedQuestionsWithAgreementBySubject = async (req, res) => {
             ];
         }
 
-        console.log('Final query:', JSON.stringify(query, null, 2));
-
         // Find questions that match the filter
         const questions = await Question.find(query)
             .populate('modul', 'title ')
@@ -352,7 +339,6 @@ exports.getValidatedQuestionsWithAgreementBySubject = async (req, res) => {
             .populate('validated_by', 'name surname email')
             .sort({ createdAt: -1 });
 
-        console.log('Found questions:', questions.length);
         res.status(200).json(questions);
     } catch (err) {
         throwError(`Error fetching validated questions with agreement: ${err.message}`, 500);
@@ -381,8 +367,6 @@ exports.teacherValidateQuestion = async (req, res) => {
             return res.status(404).json({ message: "Question not found." });
         }
 
-        console.log('Question found before teacher validation update:', question.toObject()); // Debug log
-
         // Update question with teacher validation info
         question.validated_by_teacher = validated_by_teacher;
         question.validated_by_teacher_comment = validated_by_teacher_comment.trim();
@@ -390,14 +374,11 @@ exports.teacherValidateQuestion = async (req, res) => {
 
         await question.save();
 
-        console.log('Question after teacher validation update:', question.toObject()); // Debug log
-
         res.status(200).json({
             message: "Teacher validation saved successfully.",
             question: question
         });
     } catch (err) {
-        console.error('Error in teacherValidateQuestion:', err); // Debug log
         throwError(`Error in teacher validation: ${err.message}`, 500);
     }
 };

@@ -1,5 +1,5 @@
 -------------------------------------------
-todo
+todo:
     -> studenti budu premazavany na konci kazdeho roka
 student je pridany k predmetu len 1 rok..  hranica 1.9. -> po jednom roku potrebujeme odstranit priradenie predmetu ale nechat jeho data 
  -> na najblizsie 3 roky (schvaleen otazky a posty vo fore su navzdy tie sa nevymazavaju)
@@ -7,8 +7,7 @@ student je pridany k predmetu len 1 rok..  hranica 1.9. -> po jednom roku potreb
 pri delete : 
 studenta -> zachovat (schvalene otazky, prispevky vo fore)
 -------------------------------------------
-
-opravene
+//OPRAVENE
 -------------------------------------------
 //users pridat stlpec predmet a body -> double click na row otvori modal s bodmi 
 //forum ukladat tagy aby ich netrebalo vzdy pisat. -> vsetky dat to loewrcase 

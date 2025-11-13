@@ -28,7 +28,6 @@ exports.getAllUsersAssignedToSubject = [
     async (req, res) => {
         try {
             const { subjectId } = req.params;
-            console.log('Received subjectId:', subjectId);
             if (!subjectId) {
                 return res.status(400).send({ message: 'Subject ID is required' });
             }
@@ -46,7 +45,6 @@ exports.getAllUsersAssignedToSubject = [
                     __v: 0,
                 }
             );
-            console.log('Fetched users:', users);
             res.status(200).send(users);
         } catch (err) {
             throwError(err.message, 500);

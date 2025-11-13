@@ -129,9 +129,6 @@ const Tests = () => {
               is_published: shouldBePublished
             }).unwrap();
             needsRefetch = true;
-            console.log(
-              `Auto-${shouldBePublished ? 'published' : 'unpublished'} test "${test.title}"`
-            );
           } catch (error) {
             console.error('Error auto-updating test publication:', error);
           }

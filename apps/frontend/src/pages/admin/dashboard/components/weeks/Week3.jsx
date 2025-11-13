@@ -118,7 +118,6 @@ const Week3 = ({
               }}
               onClick={() => {
                 if (!responded && hasValidation) {
-                  console.log('Opening respond modal with question:', q); // Debug log
                   setQuestionToRespond(q);
                   setRespondOpen(true);
                 }
@@ -218,7 +217,6 @@ const Week3 = ({
         onSubmit={async (questionId, updatedData) => {
           try {
             await updateQuestion({ questionId, ...updatedData }).unwrap();
-            console.log('Question updated successfully');
             // The RTK Query will automatically invalidate cache and refresh data
           } catch (error) {
             console.error('Error updating question:', error);

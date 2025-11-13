@@ -8,7 +8,6 @@ const getValidatedQuestionsForTest = async (req, res) => {
             data: []
         });
     } catch (error) {
-        console.error('Error fetching validated questions for test:', error);
         res.status(500).json({
             message: 'Error fetching validated questions',
             error: error.message
@@ -52,7 +51,6 @@ const getValidatedQuestionsByModules = async (req, res) => {
             data: questions
         });
     } catch (error) {
-        console.error('Error fetching validated questions by modules:', error);
         res.status(500).json({
             message: 'Error fetching validated questions',
             error: error.message
@@ -91,7 +89,6 @@ const getValidatedQuestionsCount = async (req, res) => {
             count
         });
     } catch (error) {
-        console.error('Error counting validated questions:', error);
         res.status(500).json({
             message: 'Error counting validated questions',
             error: error.message,

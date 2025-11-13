@@ -21,7 +21,6 @@ const AssignUsersToProject = ({ open, onClose, projectId, onSuccess }) => {
 
   // Get current subjectId from custom hook
   const subjectId = useCurrentSubjectId();
-  console.log('Current subjectId:', subjectId);
   // Fetch users assigned to the subject
   const { data: usersData, isLoading: isUsersLoading } = useGetUsersAssignedToSubjectQuery(
     subjectId ? { subjectId } : skipToken
@@ -29,7 +28,6 @@ const AssignUsersToProject = ({ open, onClose, projectId, onSuccess }) => {
   const [assignUsers, { isLoading: isAssigning }] = useAssignUsersToProjectMutation();
 
   const users = usersData || [];
-  console.log('Users assigned to subject:', users);
 
   // Define columns for the DataGrid
   const columns = [

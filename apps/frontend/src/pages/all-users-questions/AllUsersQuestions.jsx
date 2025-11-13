@@ -58,7 +58,6 @@ const AllUsersQuestions = () => {
 
   // Fetch modules when subjectId changes
   useEffect(() => {
-    console.log('AllUsersQuestions - subjectId changed:', subjectId);
     if (subjectId) {
       trigger(subjectId);
       refetchQuestions(); // Refetch questions when subject changes

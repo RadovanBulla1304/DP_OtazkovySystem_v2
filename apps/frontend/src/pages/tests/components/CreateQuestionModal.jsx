@@ -91,8 +91,6 @@ const CreateQuestionModal = ({ open, onClose, modules, onQuestionCreated }) => {
       // Try to create the question using the API
       try {
         const response = await createQuestion(questionData).unwrap();
-        console.log('Created question:', response);
-
         // Pass the created question (with real _id from the server) to parent component
         onQuestionCreated(response);
         handleClose();

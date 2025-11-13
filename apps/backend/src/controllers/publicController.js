@@ -87,8 +87,6 @@ exports.Register = [
     try {
       await sendConfirmationEmail(email, name, confirmationToken);
     } catch (error) {
-      console.error('Error sending confirmation email:', error);
-      // Continue even if email fails - user can request a new token later
     }
 
     res.status(201).send({
@@ -204,22 +202,14 @@ exports.checkUiVersion = async (req, res) => {
 exports.ConfirmEmail = async (req, res) => {
   try {
     const { token } = req.params;
-
-    console.log('📧 Confirmation request received for token:', token);
-
     if (!token) {
-      console.log('❌ No token provided');
       return res.status(400).send({ message: 'Token je povinný' });
     }
-
     // First, try to find user with this token (active confirmation)
     let user = await User.findOne({
       emailConfirmationToken: token,
       emailConfirmationExpires: { $gt: new Date() }, // Token not expired
     });
-
-    console.log('🔍 User search result:', user ? `Found: ${user.email}` : 'Not found');
-
     if (!user) {
       // Check if the email was already confirmed (token was cleared)
       // Try to find any user that had this token but already confirmed
@@ -232,7 +222,6 @@ exports.ConfirmEmail = async (req, res) => {
       });
 
       if (confirmedUser) {
-        console.log('✅ Email already confirmed for user:', confirmedUser.email);
         return res.status(200).send({
           message: 'Tento email je už potvrdený. Môžete sa prihlásiť.',
           success: true,
@@ -240,7 +229,6 @@ exports.ConfirmEmail = async (req, res) => {
         });
       }
 
-      console.log('❌ User not found or token expired');
       return res.status(400).send({
         message: 'Neplatný alebo expirovaný token. Prosím, registrujte sa znova.'
       });
@@ -253,14 +241,11 @@ exports.ConfirmEmail = async (req, res) => {
     user.emailConfirmationExpires = undefined;
     await user.save();
 
-    console.log('✅ Email confirmed successfully for:', user.email);
-
     res.status(200).send({
       message: 'Email bol úspešne potvrdený. Môžete sa prihlásiť.',
       success: true
     });
   } catch (error) {
-    console.error('❌ Error confirming email:', error);
     res.status(500).send({ message: 'Chyba pri potvrdení emailu' });
   }
 };

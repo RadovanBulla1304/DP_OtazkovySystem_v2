@@ -227,17 +227,15 @@ const Dashboard = () => {
 
       // Check if we already triggered for this module
       if (!assignmentsCreatedFor.has(moduleKey)) {
-        console.log('🎯 Triggering bulk assignment for module:', moduleKey);
-
         bulkAssignQuestions(moduleKey)
           .unwrap()
           .then((result) => {
-            console.log('✅ Bulk assignment successful:', result);
+            console.log('Bulk assignment successful:', result);
             // Mark this module as having assignments created
             setAssignmentsCreatedFor((prev) => new Set(prev).add(moduleKey));
           })
           .catch((error) => {
-            console.log('ℹ️ Bulk assignment response:', error);
+            console.log('Bulk assignment response:', error);
             // Even if it says "already exist", mark as created
             if (error?.data?.message?.includes('already exist')) {
               setAssignmentsCreatedFor((prev) => new Set(prev).add(moduleKey));
@@ -439,7 +437,6 @@ const Dashboard = () => {
             }).unwrap();
 
             // The RTK Query will automatically invalidate cache and refresh data
-            console.log('Validation submitted successfully');
           } catch (error) {
             console.error('Error submitting validation:', error);
             // In future: show toast / update UI
@@ -462,7 +459,6 @@ const Dashboard = () => {
             }).unwrap();
 
             // The RTK Query will automatically invalidate cache and refresh data
-            console.log('Response submitted successfully');
           } catch (error) {
             console.error('Error submitting response:', error);
           }

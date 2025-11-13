@@ -40,7 +40,6 @@ const Subjects = () => {
   // Check if we need to refresh the data (e.g., coming back from subject detail after deletion)
   useEffect(() => {
     if (location.state?.refresh) {
-      console.log('Refreshing subjects data after navigation...');
       refetch();
       // Clear the state to avoid repeated refreshes
       navigate(location.pathname, { replace: true, state: {} });
@@ -101,7 +100,6 @@ const Subjects = () => {
   const confirmDelete = async (subject) => {
     try {
       setIsDeleting(true);
-      console.log('Deleting all modules for subject:', subject._id);
 
       // First delete all modules associated with the subject
       const modulesResponse = await deleteAllModulsBySubject(subject._id);
@@ -111,8 +109,6 @@ const Subjects = () => {
         setIsDeleting(false);
         return;
       }
-
-      console.log('Modules deleted, now deleting subject:', subject._id);
 
       // Then delete the subject itself
       const subjectResponse = await deleteSubject(subject._id);
@@ -199,7 +195,6 @@ const Subjects = () => {
               subject={subject}
               onCardClick={handleCardClick}
               onDeleteClick={(subject) => {
-                console.log('Delete button clicked for subject:', subject.name);
                 setSubjectToDelete(subject);
               }}
               onManageTeachersClick={handleManageTeachers}
@@ -232,7 +227,6 @@ const Subjects = () => {
         open={!!subjectToDelete}
         onClose={() => setSubjectToDelete(null)}
         onConfirm={() => {
-          console.log('Delete confirmed for subject:', subjectToDelete._id);
           confirmDelete(subjectToDelete);
         }}
         subject={subjectToDelete}
