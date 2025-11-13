@@ -3,7 +3,7 @@ import logoExpandedWhite from '@app/assets/UNIZA_TEXT_A_White.png';
 import logoCollapsed from '@app/assets/UNIZA_TEXT_B.png';
 import logoCollapsedWhite from '@app/assets/UNIZA_TEXT_B_White.png';
 import * as authService from '@app/pages/auth/authService';
-import { useGetTeacherMeQuery, useGetUserMeQuery, api } from '@app/redux/api';
+import { api, useGetTeacherMeQuery, useGetUserMeQuery } from '@app/redux/api';
 import { replaceDiacritics } from '@app/utils/common.util';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';

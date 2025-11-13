@@ -393,3 +393,20 @@ exports.unassignTeacherFromSubject = [
     }
 ];
 
+exports.triggerYearlyUnassignment = async (req, res) => {
+    try {
+        const { triggerManualUnassignment } = require('../jobs/yearlyUnassignment');
+        const result = await triggerManualUnassignment();
+
+        res.status(200).json({
+            message: "Yearly unassignment triggered successfully",
+            result
+        });
+    } catch (err) {
+        res.status(500).json({
+            message: "Error triggering yearly unassignment",
+            error: err.message
+        });
+    }
+};
+

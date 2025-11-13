@@ -7,6 +7,7 @@ const { json } = require("body-parser");
 const authMiddleware = require("./src/middlewares/auth");
 const { throwError } = require("./src/util/universal");
 const { errorHandler } = require("./src/middlewares/error-handler");
+const { scheduleYearlyUnassignment } = require("./src/jobs/yearlyUnassignment");
 
 const app = express();
 
@@ -25,6 +26,9 @@ app.use(middleware.handle(i18next));
 
 app.use(express.json({ limit: "50mb" }));
 app.use(json());
+
+// Initialize scheduled jobs
+scheduleYearlyUnassignment();
 
 // Public routes should not use authMiddleware
 app.use("/public", require("./src/routes/public")); // This is for public routes like signin and register

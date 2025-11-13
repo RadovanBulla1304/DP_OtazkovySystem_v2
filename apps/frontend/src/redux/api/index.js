@@ -204,6 +204,13 @@ export const api = createApi({
       }),
       invalidatesTags: ['Subjects', 'Teachers']
     }),
+    triggerYearlyUnassignment: builder.mutation({
+      query: () => ({
+        url: '/subject/trigger-yearly-unassignment',
+        method: 'POST'
+      }),
+      invalidatesTags: ['Users', 'Subjects']
+    }),
     getTeacherSubjects: builder.query({
       query: () => ({
         url: '/subject/teacher/subjects',
@@ -1129,6 +1136,7 @@ export const {
   useUnasignUserFromSubjectMutation,
   useAssignTeacherToSubjectMutation,
   useUnassignTeacherFromSubjectMutation,
+  useTriggerYearlyUnassignmentMutation,
   useGetTeacherSubjectsQuery,
   // MODULS
   useCreateModulMutation,

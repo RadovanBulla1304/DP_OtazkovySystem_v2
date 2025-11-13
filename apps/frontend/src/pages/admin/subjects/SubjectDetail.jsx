@@ -421,7 +421,7 @@ const SubjectDetail = () => {
           <Grid container spacing={2}>
             <Grid item xs={12} md={6}>
               <Typography variant="body2" color="text.secondary">
-                ID: {subject._id}
+                Popis: {subject.description}
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 Vytvorené: {dayjs(subject.createdAt).format('DD.MM.YYYY')}

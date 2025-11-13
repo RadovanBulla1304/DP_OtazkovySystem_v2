@@ -34,9 +34,6 @@ const SubjectCard = ({
           {subject.name}
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          ID: {subject._id}
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
           Vytvorené: {new Date(subject.createdAt).toLocaleDateString()}
         </Typography>
 

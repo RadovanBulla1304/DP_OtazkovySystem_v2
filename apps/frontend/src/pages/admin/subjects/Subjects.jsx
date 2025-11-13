@@ -4,10 +4,19 @@ import {
   useGetAllSubjectsQuery,
   useGetTeacherMeQuery,
   useGetTeacherSubjectsQuery,
-  useGetUserMeQuery
+  useGetUserMeQuery,
+  useTriggerYearlyUnassignmentMutation
 } from '@app/redux/api';
-import { Add, Assignment } from '@mui/icons-material';
-import { Box, Button, CircularProgress, Grid, Typography } from '@mui/material';
+import { Add, Assignment, PersonRemove } from '@mui/icons-material';
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Grid,
+  IconButton,
+  Tooltip,
+  Typography
+} from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -57,6 +66,8 @@ const Subjects = () => {
 
   const [deleteSubject] = useDeleteSubjectMutation();
   const [deleteAllModulsBySubject] = useDeleteAllModulsBySubjectMutation();
+  const [triggerYearlyUnassignment, { isLoading: isTriggeringUnassignment }] =
+    useTriggerYearlyUnassignmentMutation();
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -163,6 +174,25 @@ const Subjects = () => {
     }
   };
 
+  // Yearly unassignment handler
+  const handleTriggerYearlyUnassignment = async () => {
+    if (
+      window.confirm(
+        'Naozaj chcete odstrániť VŠETKÝCH používateľov zo VŠETKÝCH predmetov? Táto akcia sa nedá vrátiť späť!'
+      )
+    ) {
+      try {
+        const result = await triggerYearlyUnassignment().unwrap();
+        toast.success(
+          `Odobratie používateľov úspešné! Predmety: ${result.result.subjectsModified}, Používatelia: ${result.result.usersModified}`
+        );
+        await refetch();
+      } catch (error) {
+        toast.error('Chyba pri odoberaní používateľov: ' + (error?.data?.message || error.message));
+      }
+    }
+  };
+
   if (isLoading || isDeleting) {
     return (
       <Box display="flex" justifyContent="center" mt={4}>
@@ -183,18 +213,30 @@ const Subjects = () => {
     <Box sx={{ pt: 3, pb: 3 }}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
         <Typography variant="h4">Predmety</Typography>
-        <Box display="flex" gap={2}>
+        <Box display="flex" gap={2} alignItems="center">
           {isAdmin && (
-            <Button
-              startIcon={<Assignment />}
-              size="medium"
-              variant="outlined"
-              color="primary"
-              onClick={() => setIsBulkAssignOpen(true)}
-              disabled={!subjects || subjects.length === 0}
-            >
-              Priradenie učiteľov
-            </Button>
+            <>
+              <Tooltip title="Odstrániť priradenie všetkých používateľov (DEBUG)">
+                <IconButton
+                  color="error"
+                  disabled={isTriggeringUnassignment}
+                  onClick={handleTriggerYearlyUnassignment}
+                  size="large"
+                >
+                  <PersonRemove />
+                </IconButton>
+              </Tooltip>
+              <Button
+                startIcon={<Assignment />}
+                size="medium"
+                variant="outlined"
+                color="primary"
+                onClick={() => setIsBulkAssignOpen(true)}
+                disabled={!subjects || subjects.length === 0}
+              >
+                Priradenie učiteľov
+              </Button>
+            </>
           )}
           <Button
             startIcon={<Add />}
