@@ -8,9 +8,6 @@ import {
 } from '@app/redux/api';
 import {
   Box,
-  Button,
-  ButtonGroup,
-  Chip,
   CircularProgress,
   FormControl,
   InputLabel,
@@ -138,7 +135,8 @@ const Dashboard = () => {
   const [questionToRespond, setQuestionToRespond] = useState(null);
 
   // Debug: manual week override
-  const [debugWeekOverride, setDebugWeekOverride] = useState(null);
+  // const [debugWeekOverride, setDebugWeekOverride] = useState(null);
+  const debugWeekOverride = null;
 
   // When selected module changes, reset selectedWeekNumber to the current week (or 1)
   useEffect(() => {
@@ -269,7 +267,7 @@ const Dashboard = () => {
           </FormControl>
 
           {/* Debug controls */}
-          <Box
+          {/* <Box
             sx={{
               mb: 3,
               p: 2,
@@ -306,7 +304,7 @@ const Dashboard = () => {
             {debugWeekOverride && (
               <Chip label={`Aktívny: Týždeň ${debugWeekOverride}`} size="small" sx={{ ml: 1 }} />
             )}
-          </Box>
+          </Box> */}
         </>
       ) : (
         <Typography color="text.secondary">Pre tento predmet nie sú žiadne moduly.</Typography>

@@ -1,14 +1,16 @@
 import {
   useDeleteAllModulsBySubjectMutation,
   useDeleteSubjectMutation,
-  useGetAllSubjectsQuery
+  useGetAllSubjectsQuery,
+  useGetTeacherMeQuery,
+  useGetTeacherSubjectsQuery,
+  useGetUserMeQuery
 } from '@app/redux/api';
 import { Add, Assignment } from '@mui/icons-material';
 import { Box, Button, CircularProgress, Grid, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import * as authService from '../../auth/authService';
 import AddModulModal from './components/AddModulModal';
 import AddSubjectModal from './components/AddSubjectModal';
 import AssignTeachersToSubject from './components/AssignTeachersToSubject';
@@ -17,16 +19,47 @@ import DeleteSubjectDialog from './components/DeleteSubjectDialog';
 import SubjectCard from './components/SubjectCard';
 
 const Subjects = () => {
-  const { data: subjects, isLoading, isError, refetch } = useGetAllSubjectsQuery();
+  // Fetch user and teacher data to determine role
+  const { data: userData, isLoading: isUserLoading } = useGetUserMeQuery();
+  const { data: teacherData, isLoading: isTeacherLoading } = useGetTeacherMeQuery(undefined, {
+    skip: !!userData || isUserLoading
+  });
+
+  const isAdmin = teacherData?.isAdmin || userData?.isAdmin;
+  const isTeacher = !!teacherData && !teacherData.isAdmin;
+
+  // Conditionally fetch subjects based on role
+  const {
+    data: allSubjects = [],
+    isLoading: isLoadingAll,
+    isError: isErrorAll,
+    refetch: refetchAll
+  } = useGetAllSubjectsQuery(undefined, {
+    skip: !isAdmin,
+    refetchOnMountOrArgChange: true
+  });
+
+  const {
+    data: teacherSubjects = [],
+    isLoading: isLoadingTeacher,
+    isError: isErrorTeacher,
+    refetch: refetchTeacher
+  } = useGetTeacherSubjectsQuery(undefined, {
+    skip: !isTeacher,
+    refetchOnMountOrArgChange: true
+  });
+
+  const subjects = isAdmin ? allSubjects : teacherSubjects;
+  const isLoading =
+    isUserLoading || isTeacherLoading || (isAdmin ? isLoadingAll : isLoadingTeacher);
+  const isError = isAdmin ? isErrorAll : isErrorTeacher;
+  const refetch = isAdmin ? refetchAll : refetchTeacher;
+
   const [deleteSubject] = useDeleteSubjectMutation();
   const [deleteAllModulsBySubject] = useDeleteAllModulsBySubjectMutation();
 
   const location = useLocation();
   const navigate = useNavigate();
-
-  // Get current teacher to check if admin
-  const currentTeacher = authService.getUserFromStorage();
-  const isAdmin = currentTeacher?.isAdmin || false;
 
   const [isSubjectModalOpen, setIsSubjectModalOpen] = useState(false);
   const [isModulModalOpen, setIsModulModalOpen] = useState(false);

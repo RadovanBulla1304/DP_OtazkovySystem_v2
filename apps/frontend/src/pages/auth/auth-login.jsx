@@ -32,8 +32,10 @@ export const AuthPage = () => {
     if (!response.error) {
       authService.saveTokenToStorage(response.data.token);
       let me;
+      let isTeacher = false;
       if (email.endsWith('@uniza.sk')) {
         me = await triggerTeacherMe().unwrap();
+        isTeacher = true;
         // Try to get fullName from response or fallback to name + surname
         let teacherFullName =
           me.fullName || (me.name && me.surname ? `${me.name} ${me.surname}` : undefined);
@@ -51,7 +53,7 @@ export const AuthPage = () => {
         me = await triggerUserMe().unwrap();
         authService.saveUserToStorage(me);
       }
-      navigate('/');
+      navigate(isTeacher ? '/subjects' : '/');
     }
   };
 
