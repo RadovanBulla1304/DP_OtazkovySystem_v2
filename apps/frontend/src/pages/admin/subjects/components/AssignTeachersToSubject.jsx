@@ -107,39 +107,50 @@ const AssignTeachersToSubject = ({ open, onClose, subject }) => {
           <Typography variant="subtitle1" gutterBottom>
             Priradení učitelia
           </Typography>
-          {subject?.assigned_teachers && subject.assigned_teachers.length > 0 ? (
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
-              {subject.assigned_teachers
-                .filter((teacher) => {
-                  const teacherId = typeof teacher === 'string' ? teacher : teacher._id;
-                  // Filter out optimistically removed teachers and the creator
-                  return (
-                    !optimisticRemovedTeachers.includes(teacherId) &&
-                    teacherId !== subject.createdBy
-                  );
-                })
-                .map((teacher) => {
-                  const teacherData =
-                    typeof teacher === 'string' ? teachers.find((t) => t._id === teacher) : teacher;
+          {(() => {
+            const filteredTeachers =
+              subject?.assigned_teachers?.filter((teacher) => {
+                const teacherId = typeof teacher === 'string' ? teacher : teacher._id;
+                return (
+                  !optimisticRemovedTeachers.includes(teacherId) && teacherId !== subject.createdBy
+                );
+              }) || [];
 
-                  if (!teacherData) return null;
+            if (filteredTeachers.length > 0) {
+              return (
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+                  {filteredTeachers.map((teacher) => {
+                    const teacherData =
+                      typeof teacher === 'string'
+                        ? teachers.find((t) => t._id === teacher)
+                        : teacher;
 
-                  return (
-                    <Chip
-                      key={teacherData._id}
-                      label={`${teacherData.name} ${teacherData.surname}`}
-                      onDelete={() => handleUnassign(teacherData._id)}
-                      color="primary"
-                      disabled={isUnassigning}
-                    />
-                  );
-                })}
-            </Box>
-          ) : (
-            <Typography variant="body2" color="text.secondary">
-              Žiadni učitelia nie sú priradení
-            </Typography>
-          )}
+                    if (!teacherData) return null;
+
+                    return (
+                      <Chip
+                        key={teacherData._id}
+                        label={`${teacherData.name} ${teacherData.surname}`}
+                        onDelete={() => handleUnassign(teacherData._id)}
+                        color="primary"
+                        disabled={isUnassigning}
+                      />
+                    );
+                  })}
+                </Box>
+              );
+            } else {
+              return (
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ fontStyle: 'italic', mt: 1 }}
+                >
+                  Žiadni učitelia nie sú priradení k tomuto predmetu
+                </Typography>
+              );
+            }
+          })()}
         </Box>
 
         {/* Assign New Teachers */}
