@@ -29,6 +29,11 @@ exports.signinTeacher = [
       throwError(req.t("messages.invalid_credentials"), 400);
     }
 
+    // Check if email is confirmed
+    if (!user.emailConfirmed) {
+      throwError("Email nie je potvrdený. Skontrolujte svoju emailovú schránku a potvrďte registráciu.", 403);
+    }
+
     const token = jwt.sign(
       {
         user_id: user._id,
@@ -118,28 +123,37 @@ exports.RegisterTeacher = [
       .update(password)
       .digest("hex");
 
+    // Generate email confirmation token
+    const confirmationToken = crypto.randomBytes(32).toString('hex');
+    const tokenExpires = new Date();
+    tokenExpires.setHours(tokenExpires.getHours() + 24); // Token valid for 24 hours
+
     // Create and save the new teacher
     const teacher = new Teacher({
       name,
       surname,
       email,
       password: hashedPassword,
-      isActive: true,
+      isActive: false, // Teacher must confirm email first
       isAdmin: false, // Default to false, admin can upgrade later
+      emailConfirmed: false,
+      emailConfirmationToken: confirmationToken,
+      emailConfirmationExpires: tokenExpires,
     });
 
     await teacher.save();
 
-    // Generate JWT token
-    const token = jwt.sign(
-      {
-        user_id: teacher._id,
-        isAdmin: teacher.isAdmin,
-      },
-      process.env.TOKEN_KEY
-    );
+    // Send confirmation email
+    try {
+      await sendConfirmationEmail(email, name, confirmationToken);
+    } catch (error) {
+      console.error('Error sending confirmation email:', error);
+    }
 
-    res.status(201).send({ token });
+    res.status(201).send({
+      message: 'Registrácia prebehla úspešne. Skontrolujte svoj email a potvrďte registráciu.',
+      requiresEmailConfirmation: true
+    });
   },
 ];
 
@@ -205,14 +219,24 @@ exports.ConfirmEmail = async (req, res) => {
     if (!token) {
       return res.status(400).send({ message: 'Token je povinný' });
     }
-    // First, try to find user with this token (active confirmation)
+
+    // Try to find user with this token (active confirmation)
     let user = await User.findOne({
       emailConfirmationToken: token,
       emailConfirmationExpires: { $gt: new Date() }, // Token not expired
     });
+
+    // If not found in users, try teachers
+    let teacher = null;
     if (!user) {
+      teacher = await Teacher.findOne({
+        emailConfirmationToken: token,
+        emailConfirmationExpires: { $gt: new Date() },
+      });
+    }
+
+    if (!user && !teacher) {
       // Check if the email was already confirmed (token was cleared)
-      // Try to find any user that had this token but already confirmed
       const confirmedUser = await User.findOne({
         emailConfirmed: true,
         $or: [
@@ -221,7 +245,15 @@ exports.ConfirmEmail = async (req, res) => {
         ]
       });
 
-      if (confirmedUser) {
+      const confirmedTeacher = await Teacher.findOne({
+        emailConfirmed: true,
+        $or: [
+          { emailConfirmationToken: token },
+          { emailConfirmationToken: { $exists: false } }
+        ]
+      });
+
+      if (confirmedUser || confirmedTeacher) {
         return res.status(200).send({
           message: 'Tento email je už potvrdený. Môžete sa prihlásiť.',
           success: true,
@@ -234,18 +266,20 @@ exports.ConfirmEmail = async (req, res) => {
       });
     }
 
-    // Update user
-    user.emailConfirmed = true;
-    user.isActive = true;
-    user.emailConfirmationToken = undefined;
-    user.emailConfirmationExpires = undefined;
-    await user.save();
+    // Update user or teacher
+    const account = user || teacher;
+    account.emailConfirmed = true;
+    account.isActive = true;
+    account.emailConfirmationToken = undefined;
+    account.emailConfirmationExpires = undefined;
+    await account.save();
 
     res.status(200).send({
       message: 'Email bol úspešne potvrdený. Môžete sa prihlásiť.',
       success: true
     });
   } catch (error) {
+    console.error('Error confirming email:', error);
     res.status(500).send({ message: 'Chyba pri potvrdení emailu' });
   }
 };

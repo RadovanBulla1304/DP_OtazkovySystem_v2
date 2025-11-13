@@ -77,11 +77,20 @@ const AuthRegister = () => {
         password_confirmation: event.target.password_confirmation.value
       };
       try {
-        await registerTeacher(data);
+        const response = await registerTeacher(data);
         // Invalidate teachers cache so the list refreshes automatically
         dispatch(api.util.invalidateTags(['Teachers']));
         setIsLoading(false);
-        navigate('/auth/login');
+
+        // Check if email confirmation is required
+        if (response?.requiresEmailConfirmation) {
+          setSuccessMessage(
+            response.message ||
+              'Registrácia prebehla úspešne. Skontrolujte svoj email a potvrďte registráciu.'
+          );
+        } else {
+          navigate('/auth/login');
+        }
       } catch (err) {
         setIsLoading(false);
         setError(err?.response?.data?.message || 'Registrácia zlyhala.');

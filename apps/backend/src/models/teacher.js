@@ -28,6 +28,9 @@ const TeacherSchema = new mongoose.Schema(
         },
         isAdmin: { type: Boolean, default: false },
         isActive: { type: Boolean, default: true },
+        emailConfirmed: { type: Boolean, default: false },
+        emailConfirmationToken: { type: String },
+        emailConfirmationExpires: { type: Date },
         assigned_subjects: [
             {
                 type: mongoose.Schema.Types.ObjectId,
