@@ -28,6 +28,10 @@ const QuestionSchema = new mongoose.Schema(
             ref: "User",
             required: true,
         },
+        createdByName: {
+            type: String,
+            default: null,
+        },
         validated: { type: Boolean, default: false },
         validated_by: {
             type: mongoose.Schema.Types.ObjectId,

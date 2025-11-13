@@ -22,6 +22,7 @@ export const createForumQuestionSchema = Joi.object({
         'any.required': 'Modul je povinný',
         'string.pattern.base': 'Neplatné ID modulu'
     }),
+    createdByName: Joi.string().allow(null).optional(),
 });
 
 export const updateForumQuestionSchema = Joi.object({
@@ -46,4 +47,5 @@ export const updateForumQuestionSchema = Joi.object({
     is_closed: Joi.boolean().messages({
         'boolean.base': 'Uzatvorené musí byť true alebo false'
     }),
+    createdByName: Joi.string().allow(null).optional(),
 });

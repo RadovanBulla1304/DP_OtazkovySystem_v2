@@ -6,6 +6,7 @@ export const createCommentSchema = Joi.object({
     content: Joi.string(),
     forum_question: objectId.required(),
     createdBy: objectId.required(),
+    createdByName: Joi.string().allow(null).optional(),
     parent: objectId.required(),
     likes: Joi.array().items(
         Joi.object({
@@ -27,6 +28,7 @@ export const updateCommentSchema = Joi.object({
     content: Joi.string(),
     forum_question: objectId,
     createdBy: objectId,
+    createdByName: Joi.string().allow(null).optional(),
     parent: objectId,
     likes: Joi.array().items(
         Joi.object({

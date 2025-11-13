@@ -35,6 +35,10 @@ const ForumQuestionSchema = new mongoose.Schema(
             required: true,
             default: 'User',
         },
+        createdByName: {
+            type: String,
+            default: null,
+        },
 
         // Track who liked/disliked as simple user ObjectId arrays (one entry per user)
         likes: [

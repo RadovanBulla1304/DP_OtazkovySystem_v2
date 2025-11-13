@@ -8,6 +8,10 @@ const User = require("../models/user");
 const Teacher = require("../models/teacher");
 const Project = require("../models/project");
 const Point = require("../models/point");
+const TestAttempt = require("../models/testAttempt");
+const Question = require("../models/question");
+const ForumQuestion = require("../models/forumQuestion");
+const Comment = require("../models/comment");
 
 const { validate, validated } = require("../util/validation");
 const { createUserSchema, updateUserSchema } = require("../schemas/user.schema");
@@ -233,6 +237,7 @@ exports.removeUser = async (req, res) => {
   if (record) {
     try {
       const userId = record._id;
+      const userName = `${record.name} ${record.surname}`.trim() || 'Deleted User';
 
       // Remove user from all projects where they are assigned
       await Project.updateMany(
@@ -248,6 +253,27 @@ exports.removeUser = async (req, res) => {
 
       // Delete all points associated with this user
       await Point.deleteMany({ student: userId });
+
+      // Delete all test attempts associated with this user
+      await TestAttempt.deleteMany({ user: userId });
+
+      // Store user's name in their questions before deletion
+      await Question.updateMany(
+        { createdBy: userId },
+        { $set: { createdByName: userName } }
+      );
+
+      // Store user's name in their forum questions before deletion
+      await ForumQuestion.updateMany(
+        { createdBy: userId, createdByModel: 'User' },
+        { $set: { createdByName: userName } }
+      );
+
+      // Store user's name in their comments before deletion
+      await Comment.updateMany(
+        { createdBy: userId },
+        { $set: { createdByName: userName } }
+      );
 
       // Also update the user's assignedSubjects and assignedProjects arrays to empty (optional cleanup)
       record.assignedSubjects = [];
