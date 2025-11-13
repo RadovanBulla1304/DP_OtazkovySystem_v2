@@ -3,7 +3,7 @@ import logoExpandedWhite from '@app/assets/UNIZA_TEXT_A_White.png';
 import logoCollapsed from '@app/assets/UNIZA_TEXT_B.png';
 import logoCollapsedWhite from '@app/assets/UNIZA_TEXT_B_White.png';
 import * as authService from '@app/pages/auth/authService';
-import { useGetTeacherMeQuery, useGetUserMeQuery } from '@app/redux/api';
+import { useGetTeacherMeQuery, useGetUserMeQuery, api } from '@app/redux/api';
 import { replaceDiacritics } from '@app/utils/common.util';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
@@ -33,6 +33,7 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import PropTypes from 'prop-types';
 import * as React from 'react';
+import { useDispatch } from 'react-redux';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { ThemeModeContext } from '../../contexts/ThemeModeContext';
 import ProfileMenu from './profile-menu.component';
@@ -173,6 +174,7 @@ const NavItem = styled(ListItemButton)(({ theme }) => ({
 const MainLayout = ({ children }) => {
   const matched = useMediaQuery('(min-width:900px)');
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { mode, toggleThemeMode } = React.useContext(ThemeModeContext);
 
   // First try to fetch user, only fetch teacher if user query fails or returns null
@@ -242,6 +244,10 @@ const MainLayout = ({ children }) => {
   const handleLogout = async () => {
     authService.removeUserFromStorage();
     authService.removeTokenFromStorage();
+    // Clear all RTK Query cache to prevent stale data when switching users
+    dispatch(api.util.resetApiState());
+    // Clear localStorage subject selection
+    localStorage.removeItem('currentSubjectId');
     closeProfileMenu();
     navigate('/auth/login');
   };

@@ -184,10 +184,6 @@ const CreateQuestionModal = ({ open, onClose, modules, onQuestionCreated }) => {
           onChange={(e) => handleInputChange('text', e.target.value)}
           fullWidth
           required
-          sx={{
-            bgcolor: '#fff',
-            borderRadius: 2
-          }}
         />
 
         <RadioGroup
@@ -215,10 +211,6 @@ const CreateQuestionModal = ({ open, onClose, modules, onQuestionCreated }) => {
                 onChange={(e) => handleOptionChange(option, e.target.value)}
                 fullWidth
                 required
-                sx={{
-                  bgcolor: '#fff',
-                  borderRadius: 2
-                }}
               />
             </Box>
           ))}
