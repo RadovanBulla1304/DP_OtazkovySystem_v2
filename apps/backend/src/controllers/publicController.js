@@ -13,19 +13,14 @@ exports.signinTeacher = [
   validate(signinTeacherSchema),
   async (req, res) => {
     const { email, password } = validated(req);
-    // Find teacher by email and isAdmin true
+    // Find teacher by email
     const user = await Teacher.findOne({ email });
     if (!user) {
       throwError(req.t("messages.invalid_credentials"), 400);
     }
 
-    // Hash the provided password and compare with stored hash
-    const hashedPassword = crypto
-      .createHmac("sha256", process.env.SALT_KEY)
-      .update(password)
-      .digest("hex");
-
-    if (hashedPassword !== user.password || !user.isActive) {
+    // Check password using the model's checkPassword method
+    if (!user.checkPassword(password) || !user.isActive) {
       throwError(req.t("messages.invalid_credentials"), 400);
     }
 
@@ -37,7 +32,7 @@ exports.signinTeacher = [
     const token = jwt.sign(
       {
         user_id: user._id,
-        is_admin: user.is_admin,
+        is_admin: user.isAdmin,
       },
       process.env.TOKEN_KEY
     );

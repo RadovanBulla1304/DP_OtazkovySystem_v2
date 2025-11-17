@@ -3,7 +3,7 @@ require('express-async-errors');
 const cron = require('node-cron');
 
 const mongoose = require('mongoose');
-const user = require('./src/models/user');
+const Teacher = require('./src/models/teacher');
 
 const app = require('./app');
 
@@ -17,16 +17,19 @@ if (!process.env.MONGO_DATABASE_URL) {
 }
 
 const createDefaultUser = async () => {
-    const userCount = await user.countDocuments({});
-    if (userCount === 0) {
-        const admin = new user({
-            email: 'superAdmin@uniza.sk',
+    const teacherCount = await Teacher.countDocuments({});
+    if (teacherCount === 0) {
+        const admin = new Teacher({
+            email: 'superadmin@uniza.sk',
             isAdmin: true,
             isActive: true,
             name: 'Administrator',
+            surname: 'System',
+            emailConfirmed: true,
         });
-        admin.setPassword('admin');
+        admin.setPassword('Skuska123456');
         await admin.save();
+        console.log('Default admin created: superadmin@uniza.sk');
     }
 };
 
