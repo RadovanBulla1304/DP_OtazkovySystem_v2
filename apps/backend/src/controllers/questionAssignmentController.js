@@ -176,3 +176,33 @@ exports.getAssignmentStats = async (req, res) => {
         throwError(`Error fetching assignment stats: ${err.message}`, 500);
     }
 };
+
+exports.getQuestionAssignmentsByUser = async (req, res) => {
+    try {
+        const { userId, modulId } = req.params;
+        const weekNumber = 2;
+
+        // Find all assignments for this user in this module
+        const assignments = await QuestionAssignment.find({
+            assignedTo: userId,
+            modul: modulId,
+            weekNumber
+        }).populate('question'); // Populate the full question data
+
+        // Check if any automatic points were awarded (when there weren't enough questions)
+        const automaticPoints = await Point.find({
+            student: userId,
+            category: 'question_validation',
+            reason: { $regex: /Automatic point/ }
+        });
+
+        res.status(200).json({
+            success: true,
+            data: assignments,
+            automaticPoints: automaticPoints.length
+        });
+
+    } catch (err) {
+        throwError(`Error fetching question assignments: ${err.message}`, 500);
+    }
+};

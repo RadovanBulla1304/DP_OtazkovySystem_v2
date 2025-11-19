@@ -112,29 +112,26 @@ exports.RegisterTeacher = [
       throwError("Email je už registrovaný", 400);
     }
 
-    // Hash the password using crypto
-    const hashedPassword = crypto
-      .createHmac("sha256", process.env.SALT_KEY)
-      .update(password)
-      .digest("hex");
-
     // Generate email confirmation token
     const confirmationToken = crypto.randomBytes(32).toString('hex');
     const tokenExpires = new Date();
     tokenExpires.setHours(tokenExpires.getHours() + 24); // Token valid for 24 hours
 
-    // Create and save the new teacher
+    // Create the new teacher
     const teacher = new Teacher({
       name,
       surname,
       email,
-      password: hashedPassword,
+      // DON'T set password here - use setPassword method instead
       isActive: false, // Teacher must confirm email first
       isAdmin: false, // Default to false, admin can upgrade later
       emailConfirmed: false,
       emailConfirmationToken: confirmationToken,
       emailConfirmationExpires: tokenExpires,
     });
+
+    // Use the model's setPassword method to hash password correctly
+    teacher.setPassword(password);
 
     await teacher.save();
 
@@ -151,7 +148,6 @@ exports.RegisterTeacher = [
     });
   },
 ];
-
 exports.SignIn = [
   validate(signinSchema),
   async (req, res) => {

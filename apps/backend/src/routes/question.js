@@ -17,7 +17,8 @@ const {
 const {
 
     getAssignmentStats,
-    bulkAssignQuestionsForModule
+    bulkAssignQuestionsForModule,
+    getQuestionAssignmentsByUser
 } = require("../controllers/questionAssignmentController");
 
 const router = express.Router();
@@ -41,5 +42,5 @@ router.post("/:id/teacher-validate", teacherValidateQuestion); // Teacher valida
 // Question assignments for Week 2
 router.post("/assignments/bulk/:modulId", bulkAssignQuestionsForModule); // Bulk assign all questions for module
 router.get("/assignments/stats/:modulId", getAssignmentStats);       // Get assignment statistics
-
+router.get("/assignments/:userId/:modulId", getQuestionAssignmentsByUser); // GET assignments for user in module - ADD THIS
 module.exports = router;

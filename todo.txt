@@ -1,5 +1,9 @@
 -------------------------------------------
 todo:
+
+Poradie dokoncit odstranovanie prvkov z databazy. 
+-> napr som si akurat vsimol ze ked odstranim usera tak nebol asi odstraneny z predmetu. 
+-> tak isto ked odstranim ucitela aby sa odstranil z predmetu atd.
 -------------------------------------------
 //OPRAVENE
 -------------------------------------------
