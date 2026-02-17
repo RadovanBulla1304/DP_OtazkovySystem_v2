@@ -1,3 +1,5 @@
+//TODO zarovnat tagy vo week 2 nech je lepsia responzivnost na mensich obrazovkach
+
 import * as authService from '@app/pages/auth/authService';
 import {
   useBulkAssignQuestionsMutation,

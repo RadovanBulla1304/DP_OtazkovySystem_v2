@@ -41,8 +41,6 @@ const sendConfirmationEmail = async (email, name, token) => {
             Potvrdiť email
           </a>
         </div>
-        <p>Alebo skopírujte tento odkaz do prehliadača:</p>
-        <p style="word-break: break-all; color: #666;">${confirmationUrl}</p>
         <p style="margin-top: 30px; color: #666; font-size: 12px;">
           Tento odkaz vyprší za 24 hodín.<br>
           Ak ste sa neregistrovali, ignorujte tento email.

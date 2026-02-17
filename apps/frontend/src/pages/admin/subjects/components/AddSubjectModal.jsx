@@ -1,3 +1,5 @@
+//TODO opravit nadpisy inputov aby pri focus nepresahovali
+
 import * as authService from '@app/pages/auth/authService';
 import { useCreateSubjectMutation, useGetTeacherMeQuery } from '@app/redux/api';
 import { joiResolver } from '@hookform/resolvers/joi';

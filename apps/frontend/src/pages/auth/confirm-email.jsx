@@ -51,7 +51,7 @@ const ConfirmEmail = () => {
               color="success.main"
               sx={{ textAlign: 'center', fontWeight: 600 }}
             >
-              ✓ Úspech!
+              ✓ Úspešné!
             </Typography>
             <Typography sx={{ textAlign: 'center' }}>{message}</Typography>
             <Link component={RouterLink} to="/auth/login" variant="body1" sx={{ mt: 2 }}>
@@ -63,7 +63,7 @@ const ConfirmEmail = () => {
         {status === 'error' && (
           <Box display="flex" flexDirection="column" alignItems="center" gap={2}>
             <Typography variant="h5" color="error" sx={{ textAlign: 'center', fontWeight: 600 }}>
-              ✗ Chyba
+              ✗ Neúspešné
             </Typography>
             <Typography sx={{ textAlign: 'center' }} color="error">
               {message}
