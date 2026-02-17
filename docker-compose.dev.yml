@@ -5,21 +5,26 @@ services:
             - frontend
             - backend
         build:
-            dockerfile: Dockerfile
+            dockerfile: Dockerfile.dev
             context: ./apps/nginx
         ports:
             - '3000:80'
     backend:
         build:
             context: ./apps/backend
-            dockerfile: Dockerfile
+            dockerfile: Dockerfile.dev
         depends_on:
             - mongo
-        restart: unless-stopped
+        volumes:
+            - ./apps/backend/:/usr/src/app
+            - /usr/src/app/.pnpm-store
+            - /usr/src/app/node_modules
+        command: pnpm run dev
         environment:
-            MONGO_DATABASE_URL: mongodb://${MONGO_USER}:${MONGO_PASSWORD}@mongo:27017/otazkovySystem?authSource=admin
-            TOKEN_KEY: ${TOKEN_KEY}
-            SALT_KEY: ${SALT_KEY}
+            MONGO_DATABASE_URL2: mongodb://mongo:27017/otazkovySystem
+            MONGO_DATABASE_URL: mongodb://mongoUser:hatatitla123*+465@mongo:27017/otazkovySystem?authSource=admin
+            TOKEN_KEY: e3c9cfe5c8c1ceab90b84e56f1ce8d8e0fcd9485
+            SALT_KEY: e3f38a23a13c8fe9b83f9fdf33cd9a7f7ef9b21de88b1f7b2c1efb9f1094ccf0
             PORT: 5000
             SMTP_HOST: ${SMTP_HOST}
             SMTP_PORT: ${SMTP_PORT}
@@ -28,22 +33,27 @@ services:
             SMTP_PASS: ${SMTP_PASS}
             SMTP_FROM: ${SMTP_FROM}
             FRONTEND_URL: ${FRONTEND_URL}
-            NODE_ENV: production
     frontend:
         build:
             context: ./apps/frontend
-            dockerfile: Dockerfile
-        restart: unless-stopped
+            dockerfile: Dockerfile.dev
+        volumes:
+            - ./apps/frontend:/usr/src/app
+            - /usr/src/app/node_modules
+        environment:
+            - CHOKIDAR_USEPOLLING=true  
     mongo:
         image: 'mongo'
         command: mongod --auth --logpath /dev/null
         restart: unless-stopped
         environment:
             - MONGO_INITDB_DATABASE=otazkovySystem
-            - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER}
-            - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
+            - MONGO_INITDB_ROOT_USERNAME=mongoUser
+            - MONGO_INITDB_ROOT_PASSWORD=hatatitla123*+465
         volumes:
             - ./volumes/backups:/backup:ro
             - ./volumes/backend:/data/db
             - ./apps/entry_point/api-mongo-init.js:/docker-entrypoint-initdb.d/api-mongo-init.js:ro
-        # DO NOT EXPOSE PORT IN PRODUCTION - only accessible from backend container
+        ports:
+            # change of mongo db port from 29029 to 29035 bcs of conflict with other service
+            - '29035:27017'
