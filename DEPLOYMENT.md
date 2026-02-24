@@ -59,7 +59,7 @@ chmod +x deploy-production.sh
 **Or manually:**
 
 ```bash
-docker-compose -f docker-compose.prod.yml up -d --build
+docker-compose up -d --build
 ```
 
 ### 3. Verify Deployment
@@ -67,13 +67,13 @@ docker-compose -f docker-compose.prod.yml up -d --build
 Check container status:
 
 ```bash
-docker-compose -f docker-compose.prod.yml ps
+docker-compose ps
 ```
 
 View logs:
 
 ```bash
-docker-compose -f docker-compose.prod.yml logs -f
+docker-compose logs -f
 ```
 
 ### 4. SSL/HTTPS Setup (Recommended)
@@ -98,9 +98,9 @@ sudo certbot --nginx -d yourdomain.com
 - Source code mounted as volumes
 - `FRONTEND_URL=http://localhost:3000`
 
-### Production (main branch)
+-### Production (main branch)
 
-- Uses `docker-compose.prod.yml`
+- Uses `docker-compose.yml`
 - Uses production `Dockerfile` files
 - Optimized builds
 - Debug controls hidden/disabled
@@ -114,19 +114,19 @@ sudo certbot --nginx -d yourdomain.com
 
 ```bash
 git pull origin main
-docker-compose -f docker-compose.prod.yml up -d --build
+docker-compose up -d --build
 ```
 
 ### View logs
 
 ```bash
-docker-compose -f docker-compose.prod.yml logs -f [service-name]
+docker-compose logs -f [service-name]
 ```
 
 ### Stop application
 
 ```bash
-docker-compose -f docker-compose.prod.yml down
+docker-compose down
 ```
 
 ### Backup database
@@ -138,7 +138,7 @@ docker exec -it dp_otazkovysystem-mongo-1 mongodump --out /backup/$(date +%Y%m%d
 ### Restart specific service
 
 ```bash
-docker-compose -f docker-compose.prod.yml restart backend
+docker-compose restart backend
 ```
 
 ## Troubleshooting
@@ -159,7 +159,7 @@ docker-compose -f docker-compose.prod.yml restart backend
 
 - Check if containers are running: `docker-compose -f docker-compose.prod.yml ps`
 - Verify port 3000 is open on your firewall
-- Check nginx logs: `docker-compose -f docker-compose.prod.yml logs proxy`
+- Check nginx logs: `docker-compose logs proxy`
 
 ## Security Checklist
 

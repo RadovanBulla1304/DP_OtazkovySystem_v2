@@ -1,14 +1,11 @@
 FROM node:20
 
-RUN npm i -g pnpm
-
 WORKDIR /usr/src/app
 
-COPY package.json  pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile
+# install only production dependencies inside the image
+COPY package.json ./
+RUN npm install --production
 
 COPY . .
 
-RUN pnpm build
-
-CMD [ "pnpm", "start" ]
+CMD ["node", "server.js"]
