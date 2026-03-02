@@ -2,14 +2,22 @@ const { throwError } = require("../util/universal");
 const Point = require("../models/point");
 const Question = require("../models/question");
 const User = require("../models/user"); // Assuming you have a User model
+const Module = require("../models/modul");
 
 /**
- * Get all points for a user
+ * Get all points for a user (optionally filtered by subject)
  */
 exports.getUserPoints = async (req, res) => {
     try {
         const userId = req.params.userId;
-        const points = await Point.find({ student: userId }).sort({ createdAt: -1 });
+        const { subjectId } = req.query;
+
+        const filter = { student: userId };
+        if (subjectId) {
+            filter.subject = subjectId;
+        }
+
+        const points = await Point.find(filter).sort({ createdAt: -1 });
 
         res.status(200).json({
             success: true,
@@ -21,12 +29,19 @@ exports.getUserPoints = async (req, res) => {
 };
 
 /**
- * Get summary of points by category for a user
+ * Get summary of points by category for a user (optionally filtered by subject)
  */
 exports.getUserPointsSummary = async (req, res) => {
     try {
         const userId = req.params.userId;
-        const points = await Point.find({ student: userId });
+        const { subjectId } = req.query;
+
+        const filter = { student: userId };
+        if (subjectId) {
+            filter.subject = subjectId;
+        }
+
+        const points = await Point.find(filter);
 
         // Group and sum points by category
         const summary = {};
@@ -53,18 +68,23 @@ exports.getUserPointsSummary = async (req, res) => {
 };
 
 /**
- * Get points summary for multiple users
+ * Get points summary for multiple users (optionally filtered by subject)
  */
 exports.getUsersPointsSummary = async (req, res) => {
     try {
-        const { userIds } = req.body;
+        const { userIds, subjectId } = req.body;
 
         if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
             return throwError("Valid array of user IDs is required", 400);
         }
 
-        // Find all points for the specified users
-        const allPoints = await Point.find({ student: { $in: userIds } }).sort({ createdAt: -1 });
+        // Find all points for the specified users, optionally filtered by subject
+        const filter = { student: { $in: userIds } };
+        if (subjectId) {
+            filter.subject = subjectId;
+        }
+
+        const allPoints = await Point.find(filter).sort({ createdAt: -1 });
 
         // Group points by user
         const userSummaries = {};
@@ -177,9 +197,19 @@ exports.awardPointsForQuestionCreation = async (req, res) => {
         for (const [studentId, studentQuestions] of Object.entries(questionsByStudent)) {
             // Award 1 point per question
             for (const question of studentQuestions) {
+                // Derive subject from question's module
+                let subjectId = null;
+                if (question.modul) {
+                    const mod = await Module.findById(question.modul);
+                    if (mod && mod.subject) {
+                        subjectId = mod.subject;
+                    }
+                }
+
                 // Create point record
                 const point = new Point({
                     student: studentId,
+                    subject: subjectId,
                     reason: `Vytvorenie otázky v týždni ${week}`,
                     points: 1, // 1 point per question
                     category: "question_creation",
@@ -259,9 +289,19 @@ exports.awardPointsForQuestionValidation = async (req, res) => {
         for (const [validatorId, validatedQuestions] of Object.entries(validationsByStudent)) {
             // Award 1 point per validation
             for (const question of validatedQuestions) {
+                // Derive subject from question's module
+                let subjectId = null;
+                if (question.modul) {
+                    const mod = await Module.findById(question.modul);
+                    if (mod && mod.subject) {
+                        subjectId = mod.subject;
+                    }
+                }
+
                 // Create point record
                 const point = new Point({
                     student: validatorId,
+                    subject: subjectId,
                     reason: `Validácia otázky v týždni ${week}`,
                     points: 1, // 1 point per validation
                     category: "question_validation",
@@ -331,9 +371,19 @@ exports.awardPointsForQuestionReparation = async (req, res) => {
             // The question creator is the one who responded to validation
             const studentId = question.createdBy.toString();
 
+            // Derive subject from question's module
+            let subjectId = null;
+            if (question.modul) {
+                const mod = await Module.findById(question.modul);
+                if (mod && mod.subject) {
+                    subjectId = mod.subject;
+                }
+            }
+
             // Create point record
             const point = new Point({
                 student: studentId,
+                subject: subjectId,
                 reason: `Reakcia na validáciu v týždni ${week}`,
                 points: 1, // 1 point per response
                 category: "question_reparation",
@@ -376,7 +426,7 @@ exports.awardPointsForQuestionReparation = async (req, res) => {
  */
 exports.awardCustomPoints = async (req, res) => {
     try {
-        const { studentId, points, reason, category = "other" } = req.body;
+        const { studentId, points, reason, category = "other", subjectId } = req.body;
 
         // Validate input
         if (!studentId || !points || !reason) {
@@ -398,6 +448,7 @@ exports.awardCustomPoints = async (req, res) => {
         // Create the point record
         const point = new Point({
             student: studentId,
+            subject: subjectId || null,
             reason,
             points,
             category

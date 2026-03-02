@@ -272,10 +272,10 @@ const MainLayout = ({ children }) => {
       { title: 'Fórum', navTo: '/forum', icon: <ViewModuleIcon /> }
     ]);
   } else {
-    // Teachers don't have Dashboard
+    // Teachers have their own Dashboard
     drawerOption = drawerOption.concat([
       { isHeader: true, title: 'Obsah' },
-      // { title: 'Moduly', navTo: '/moduls', icon: <ViewModuleIcon /> },
+      { title: 'Dashboard', navTo: '/teacher-dashboard', icon: <DashboardIcon /> },
       { title: 'Projekty', navTo: '/projects', icon: <AccountTreeIcon /> },
       { title: 'Fórum', navTo: '/forum', icon: <ViewModuleIcon /> }
     ]);

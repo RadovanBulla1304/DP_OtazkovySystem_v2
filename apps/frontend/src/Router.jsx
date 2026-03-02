@@ -12,6 +12,7 @@ import AllUsersQuestions from './pages/all-users-questions/AllUsersQuestions';
 import Forum from './pages/forum/Forum';
 import MyQuestions from './pages/my-questions/MyQuestions';
 import Projects from './pages/projects/Projects';
+import TeacherDashboard from './pages/teacher-dashboard/TeacherDashboard';
 import TakeTest from './pages/tests/TakeTest';
 import TestResults from './pages/tests/TestResults';
 import Tests from './pages/tests/Tests';
@@ -29,6 +30,7 @@ export const router = createBrowserRouter([
     element: <Protected />, // <MainLayout> is already inside Protected!
     children: [
       { path: '/', element: <Dashboard /> },
+      { path: '/teacher-dashboard', element: <TeacherDashboard /> },
       { path: '/tests', element: <Tests /> },
       { path: '/test/:testId/take', element: <TakeTest /> },
       { path: '/test-results/:attemptId', element: <TestResults /> },

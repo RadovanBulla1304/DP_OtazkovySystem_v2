@@ -983,10 +983,10 @@ export const api = createApi({
       ]
     }),
     getUsersPointsSummary: builder.mutation({
-      query: (userIds) => ({
+      query: ({ userIds, subjectId }) => ({
         url: `/point/users/summary`,
         method: 'POST',
-        body: { userIds }
+        body: { userIds, subjectId }
       }),
       invalidatesTags: ['Points']
     }),
