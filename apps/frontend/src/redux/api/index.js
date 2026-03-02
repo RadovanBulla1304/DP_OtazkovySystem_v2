@@ -16,7 +16,7 @@ const baseQuery = fetchBaseQuery({
 export const api = createApi({
   reducerPath: 'api',
   baseQuery,
-  tagTypes: ['Users', 'Subjects', 'Moduls', 'Questions', 'QuestionRatings', 'ForumQuestions', 'Comments', 'Tests', 'Points', 'Projects', 'ProjectRatings'],
+  tagTypes: ['Users', 'Subjects', 'Moduls', 'Questions', 'QuestionRatings', 'ForumQuestions', 'Comments', 'Tests', 'Points', 'Projects', 'ProjectRatings', 'PendingAssignments'],
   endpoints: (builder) => ({
     // USERS
     getUserMe: builder.query({
@@ -217,6 +217,39 @@ export const api = createApi({
         method: 'GET'
       }),
       providesTags: ['Subjects']
+    }),
+    // PENDING SUBJECT ASSIGNMENTS
+    createPendingAssignments: builder.mutation({
+      query: (data) => ({
+        url: '/subject/pending-assignments',
+        method: 'POST',
+        body: data
+      }),
+      invalidatesTags: ['PendingAssignments']
+    }),
+    getPendingAssignments: builder.query({
+      query: (subjectId) => ({
+        url: `/subject/pending-assignments/${subjectId}`,
+        method: 'GET'
+      }),
+      providesTags: (result, error, subjectId) => [
+        { type: 'PendingAssignments', id: subjectId },
+        'PendingAssignments'
+      ]
+    }),
+    deletePendingAssignment: builder.mutation({
+      query: (id) => ({
+        url: `/subject/pending-assignment/${id}`,
+        method: 'DELETE'
+      }),
+      invalidatesTags: ['PendingAssignments']
+    }),
+    deleteAllPendingAssignments: builder.mutation({
+      query: (subjectId) => ({
+        url: `/subject/pending-assignments/${subjectId}/all`,
+        method: 'DELETE'
+      }),
+      invalidatesTags: ['PendingAssignments']
     }),
     // MODULES
     createModul: builder.mutation({
@@ -1138,6 +1171,11 @@ export const {
   useUnassignTeacherFromSubjectMutation,
   useTriggerYearlyUnassignmentMutation,
   useGetTeacherSubjectsQuery,
+  // PENDING ASSIGNMENTS
+  useCreatePendingAssignmentsMutation,
+  useGetPendingAssignmentsQuery,
+  useDeletePendingAssignmentMutation,
+  useDeleteAllPendingAssignmentsMutation,
   // MODULS
   useCreateModulMutation,
   useGetAllModulsQuery,

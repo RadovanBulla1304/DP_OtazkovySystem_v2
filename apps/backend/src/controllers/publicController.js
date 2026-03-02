@@ -5,6 +5,7 @@ const { throwError } = require("../util/universal");
 const { validate, validated } = require("../util/validation");
 const { signinSchema, signupSchema, signupTeacherSchema, signinTeacherSchema } = require("../schemas/auth.schema");
 const { sendConfirmationEmail } = require("../services/emailService");
+const { resolvePendingAssignments } = require("./pendingAssignmentController");
 const crypto = require("crypto");
 // Teacher sign-in
 
@@ -265,9 +266,31 @@ exports.ConfirmEmail = async (req, res) => {
     account.emailConfirmationExpires = undefined;
     await account.save();
 
+    // Resolve pending subject assignments for students
+    let pendingResult = null;
+    if (user && user.studentNumber) {
+      try {
+        pendingResult = await resolvePendingAssignments(user.studentNumber, user._id);
+        if (pendingResult.count > 0) {
+          console.log(
+            `Auto-assigned user ${user.email} (${user.studentNumber}) to ${pendingResult.count} subject(s): ${pendingResult.assignedSubjects.join(', ')}`,
+          );
+        }
+      } catch (pendingErr) {
+        console.error('Error resolving pending assignments:', pendingErr);
+        // Don't fail email confirmation because of this
+      }
+    }
+
     res.status(200).send({
       message: 'Email bol úspešne potvrdený. Môžete sa prihlásiť.',
-      success: true
+      success: true,
+      ...(pendingResult && pendingResult.count > 0 && {
+        autoAssigned: {
+          count: pendingResult.count,
+          subjects: pendingResult.assignedSubjects,
+        },
+      }),
     });
   } catch (error) {
     console.error('Error confirming email:', error);

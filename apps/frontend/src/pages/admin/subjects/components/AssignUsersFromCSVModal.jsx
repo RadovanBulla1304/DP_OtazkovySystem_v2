@@ -1,5 +1,10 @@
-import { useAsignUserToSubjectMutation, useGetUsersListQuery } from '@app/redux/api';
+import {
+  useAsignUserToSubjectMutation,
+  useCreatePendingAssignmentsMutation,
+  useGetUsersListQuery
+} from '@app/redux/api';
 import CloseIcon from '@mui/icons-material/Close';
+import SaveIcon from '@mui/icons-material/Save';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import {
   Alert,
@@ -29,6 +34,8 @@ import { toast } from 'react-toastify';
 const AssignUsersFromCSVModal = ({ open, onClose, subjectId, onSuccess }) => {
   const { data: allUsers = [], isLoading: isUsersLoading } = useGetUsersListQuery();
   const [assignUserToSubject, { isLoading: isAssigning }] = useAsignUserToSubjectMutation();
+  const [createPendingAssignments, { isLoading: isSavingPending }] =
+    useCreatePendingAssignmentsMutation();
 
   const [csvFile, setCsvFile] = useState(null);
   const [parsedData, setParsedData] = useState([]);
@@ -44,81 +51,97 @@ const AssignUsersFromCSVModal = ({ open, onClose, subjectId, onSuccess }) => {
   };
 
   const parseCSV = (file) => {
+    // Try UTF-8 first, if it contains garbled characters (replacement char),
+    // re-read with Windows-1250 which is common for Slovak/Czech CSV exports
     const reader = new FileReader();
     reader.onload = (e) => {
       const text = e.target.result;
-      const lines = text.split('\n').filter((line) => line.trim() !== '');
 
-      const parsed = [];
-      const matched = [];
-      const unmatched = [];
+      // Check for common signs of wrong encoding (replacement character or mojibake)
+      if (text.includes('\uFFFD') || /Ã[©¡­³º¤]/.test(text)) {
+        const reReader = new FileReader();
+        reReader.onload = (e2) => {
+          processCSVText(e2.target.result);
+        };
+        reReader.readAsText(file, 'windows-1250');
+        return;
+      }
 
-      // Detect delimiter from first line
-      const firstLine = lines[0] || '';
-      const delimiter = firstLine.includes(';') ? ';' : ',';
-      lines.forEach((line, index) => {
-        // Split by detected delimiter (semicolon or comma)
-        const parts = line.split(delimiter).map((part) => part.trim().replace(/"/g, ''));
-
-        // Based on your screenshot, the format is:
-        // Column 0: skupina (3ZIH1A)
-        // Column 1: priezvisko (surname) - "Bulla"
-        // Column 2: meno (name) - "Radovan"
-        // Column 3: os.číslo / ISIC (student number) - "319311"
-        // Column 4 onwards: other data we don't need
-
-        if (parts.length >= 4) {
-          const group = parts[0];
-          const surname = parts[1];
-          const name = parts[2];
-          const studentNumber = parts[3];
-
-          // Skip if student number is empty or invalid
-          if (!studentNumber || studentNumber === '') {
-            return;
-          }
-
-          const rowData = {
-            index,
-            group,
-            surname,
-            name,
-            studentNumber,
-            originalLine: line
-          };
-
-          parsed.push(rowData);
-
-          // Try to match user from database
-          const matchedUser = findMatchingUser(allUsers, {
-            name,
-            surname,
-            studentNumber
-          });
-
-          if (matchedUser) {
-            matched.push({
-              ...rowData,
-              userId: matchedUser._id,
-              userEmail: matchedUser.email,
-              userGroupNumber: matchedUser.groupNumber,
-              matched: true
-            });
-          } else {
-            unmatched.push({
-              ...rowData,
-              matched: false
-            });
-          }
-        }
-      });
-
-      setParsedData(parsed);
-      setMatchedUsers(matched);
-      setUnmatchedRows(unmatched);
+      processCSVText(text);
     };
+    reader.readAsText(file, 'UTF-8');
+  };
 
-    reader.readAsText(file);
+  const processCSVText = (text) => {
+    const lines = text.split('\n').filter((line) => line.trim() !== '');
+
+    const parsed = [];
+    const matched = [];
+    const unmatched = [];
+
+    // Detect delimiter from first line
+    const firstLine = lines[0] || '';
+    const delimiter = firstLine.includes(';') ? ';' : ',';
+    lines.forEach((line, index) => {
+      // Split by detected delimiter (semicolon or comma)
+      const parts = line.split(delimiter).map((part) => part.trim().replace(/"/g, ''));
+
+      // Based on your screenshot, the format is:
+      // Column 0: skupina (3ZIH1A)
+      // Column 1: priezvisko (surname) - "Bulla"
+      // Column 2: meno (name) - "Radovan"
+      // Column 3: os.číslo / ISIC (student number) - "319311"
+      // Column 4 onwards: other data we don't need
+
+      if (parts.length >= 4) {
+        const group = parts[0];
+        const surname = parts[1];
+        const name = parts[2];
+        const studentNumber = parts[3];
+
+        // Skip if student number is empty or invalid
+        if (!studentNumber || studentNumber === '') {
+          return;
+        }
+
+        const rowData = {
+          index,
+          group,
+          surname,
+          name,
+          studentNumber,
+          originalLine: line
+        };
+
+        parsed.push(rowData);
+
+        // Try to match user from database
+        const matchedUser = findMatchingUser(allUsers, {
+          name,
+          surname,
+          studentNumber
+        });
+
+        if (matchedUser) {
+          matched.push({
+            ...rowData,
+            userId: matchedUser._id,
+            userEmail: matchedUser.email,
+            userGroupNumber: matchedUser.groupNumber,
+            matched: true
+          });
+        } else {
+          unmatched.push({
+            ...rowData,
+            matched: false
+          });
+        }
+      }
+    });
+
+    setParsedData(parsed);
+    setMatchedUsers(matched);
+    setUnmatchedRows(unmatched);
   };
 
   const findMatchingUser = (users, csvRow) => {
@@ -178,6 +201,36 @@ const AssignUsersFromCSVModal = ({ open, onClose, subjectId, onSuccess }) => {
     }
   };
 
+  const handleSavePendingAssignments = async () => {
+    if (unmatchedRows.length === 0) {
+      toast.warning('Žiadni neregistrovaní študenti na uloženie');
+      return;
+    }
+
+    try {
+      const students = unmatchedRows.map((row) => ({
+        studentNumber: row.studentNumber,
+        name: row.name,
+        surname: row.surname,
+        group: row.group
+      }));
+
+      const result = await createPendingAssignments({
+        subjectId,
+        students
+      }).unwrap();
+
+      toast.success(result.message || `Uložených ${unmatchedRows.length} čakajúcich priradení`);
+
+      if (result.results?.errors?.length > 0) {
+        result.results.errors.forEach((err) => toast.warning(err));
+      }
+    } catch (error) {
+      console.error('Error saving pending assignments:', error);
+      toast.error('Chyba pri ukladaní čakajúcich priradení');
+    }
+  };
+
   const handleClose = () => {
     setCsvFile(null);
     setParsedData([]);
@@ -208,7 +261,7 @@ const AssignUsersFromCSVModal = ({ open, onClose, subjectId, onSuccess }) => {
               Formát: skupina;priezvisko;meno;os.číslo;...
             </Typography>
             <Typography variant="body2" color="text.secondary" gutterBottom>
-              Príklad: 3ZIH1A;&quot;Bulla&quot;;&quot;Radovan&quot;;&quot;319311&quot;;...
+              Príklad: 3ZIH1A;&quot;Oliver&quot;;&quot;Donoval&quot;;&quot;319321&quot;;...
             </Typography>
             <Alert severity="info" sx={{ mt: 1, mb: 2 }}>
               <strong>Dôležité:</strong> Študenti sa párujú primárne podľa študentského čísla (4.
@@ -354,6 +407,10 @@ const AssignUsersFromCSVModal = ({ open, onClose, subjectId, onSuccess }) => {
               <Alert severity="warning" sx={{ mb: 2 }}>
                 Títo používatelia neboli nájdení v databáze a nebudú priradení.
               </Alert>
+              <Alert severity="info" sx={{ mb: 2 }}>
+                Môžete uložiť čakajúce priradenia — keď sa títo študenti zaregistrujú a potvrdia
+                email, budú automaticky priradení k tomuto predmetu.
+              </Alert>
               <TableContainer component={Paper} variant="outlined">
                 <Table size="small">
                   <TableHead>
@@ -381,15 +438,31 @@ const AssignUsersFromCSVModal = ({ open, onClose, subjectId, onSuccess }) => {
         </Stack>
       </DialogContent>
 
-      <DialogActions>
-        <Button onClick={handleClose} disabled={isAssigning} variant="outlined" color="error">
+      <DialogActions sx={{ gap: 1, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+        <Button
+          onClick={handleClose}
+          disabled={isAssigning || isSavingPending}
+          variant="outlined"
+          color="error"
+        >
           Zrušiť
+        </Button>
+        <Button
+          onClick={handleSavePendingAssignments}
+          variant="outlined"
+          color="warning"
+          disabled={unmatchedRows.length === 0 || isSavingPending || isAssigning}
+          startIcon={isSavingPending ? <CircularProgress size={20} /> : <SaveIcon />}
+        >
+          {isSavingPending
+            ? 'Ukladám...'
+            : `Uložiť ${unmatchedRows.length} čakajúcich priradení`}
         </Button>
         <Button
           onClick={handleAssignUsers}
           variant="contained"
           color="primary"
-          disabled={matchedUsers.length === 0 || isAssigning}
+          disabled={matchedUsers.length === 0 || isAssigning || isSavingPending}
           startIcon={isAssigning ? <CircularProgress size={20} /> : null}
         >
           {isAssigning ? 'Priraďujem...' : `Priradiť ${matchedUsers.length} študentov k predmetu`}
