@@ -14,7 +14,6 @@ import {
 } from '@app/redux/api';
 import { Box, Typography } from '@mui/material';
 import React from 'react';
-import DebugWeekControls from './components/DebugWeekControls';
 import FilterControls from './components/FilterControls';
 import ModuleQuestionsSection from './components/ModuleQuestionsSection';
 
@@ -32,8 +31,8 @@ const MyQuestions = () => {
     modulId: ''
   });
 
-  // Debug: manual week override
-  const [debugWeekOverride, setDebugWeekOverride] = React.useState(null);
+  // Debug: manual week override is disabled
+  // const [debugWeekOverride, setDebugWeekOverride] = React.useState(null);
 
   // Validation modal state
   const [validateOpen, setValidateOpen] = React.useState(false);
@@ -108,10 +107,10 @@ const MyQuestions = () => {
 
   // Helper to determine current week for a module
   const getCurrentWeek = (modul) => {
-    // Debug override takes precedence
-    if (debugWeekOverride !== null) {
-      return debugWeekOverride;
-    }
+    // Manual debug override disabled: always use module dates.
+    // if (debugWeekOverride !== null) {
+    //   return debugWeekOverride;
+    // }
 
     if (!modul || !modul.date_start || !modul.date_end) return 1;
 
@@ -303,11 +302,13 @@ const MyQuestions = () => {
         subjectModuls={subjectModuls}
       />
 
-      {/* Debug controls */}
+      {/* Debug controls disabled */}
+      {/*
       <DebugWeekControls
         debugWeekOverride={debugWeekOverride}
         onWeekChange={setDebugWeekOverride}
       />
+      */}
 
       {/* Questions grouped by module */}
       {Object.entries(questionsByModule).map(([modulId, moduleQuestions], index) => {
