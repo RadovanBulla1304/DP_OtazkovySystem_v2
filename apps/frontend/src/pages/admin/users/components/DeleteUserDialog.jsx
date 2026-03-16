@@ -74,4 +74,3 @@ DeleteUserDialog.propTypes = {
 };
 
 export default DeleteUserDialog;
-

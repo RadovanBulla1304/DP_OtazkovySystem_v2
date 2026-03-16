@@ -74,4 +74,3 @@ ConfirmationDialog.propTypes = {
 };
 
 export default ConfirmationDialog;
-

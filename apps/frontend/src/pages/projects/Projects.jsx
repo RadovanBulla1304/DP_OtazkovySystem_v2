@@ -272,7 +272,12 @@ const Projects = () => {
                     gap={1}
                     mb={2}
                   >
-                    <Typography gutterBottom variant="h5" component="div" sx={{ wordBreak: 'break-word' }}>
+                    <Typography
+                      gutterBottom
+                      variant="h5"
+                      component="div"
+                      sx={{ wordBreak: 'break-word' }}
+                    >
                       {project.name}
                     </Typography>
                     <Chip
@@ -335,7 +340,12 @@ const Projects = () => {
                 </CardContent>
                 {isTeacher && (
                   <Box p={2} pt={0}>
-                    <Box display="flex" justifyContent="flex-end" alignItems="center" flexWrap="wrap">
+                    <Box
+                      display="flex"
+                      justifyContent="flex-end"
+                      alignItems="center"
+                      flexWrap="wrap"
+                    >
                       <Box>
                         <Tooltip title="Priradiť používateľov">
                           <IconButton

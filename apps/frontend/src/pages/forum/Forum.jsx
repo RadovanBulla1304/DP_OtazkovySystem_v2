@@ -152,7 +152,11 @@ const Forum = () => {
         <Box
           sx={{
             display: 'grid',
-            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))', lg: '2fr 1fr 1fr 1fr' },
+            gridTemplateColumns: {
+              xs: '1fr',
+              sm: 'repeat(2, minmax(0, 1fr))',
+              lg: '2fr 1fr 1fr 1fr'
+            },
             gap: 1.5,
             alignItems: 'end'
           }}

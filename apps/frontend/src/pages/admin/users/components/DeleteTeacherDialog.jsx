@@ -74,4 +74,3 @@ DeleteTeacherDialog.propTypes = {
 };
 
 export default DeleteTeacherDialog;
-

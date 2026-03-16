@@ -173,4 +173,3 @@ AssignUsersToProject.propTypes = {
 };
 
 export default AssignUsersToProject;
-
