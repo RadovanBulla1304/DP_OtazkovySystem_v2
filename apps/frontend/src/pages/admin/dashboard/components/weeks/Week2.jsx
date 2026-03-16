@@ -142,7 +142,11 @@ const Week2 = ({
                   </Box>
                 )}
                 {canValidateInWeek2 && (
-                  <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ mt: 1, display: 'block' }}
+                  >
                     {validated ? 'Kliknite pre zmenu validácie' : 'Kliknite pre validáciu'}
                   </Typography>
                 )}

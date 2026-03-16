@@ -8,10 +8,12 @@ const User = require("../models/user");
 const Teacher = require("../models/teacher");
 const Project = require("../models/project");
 const Point = require("../models/point");
+const Module = require("../models/modul");
 const TestAttempt = require("../models/testAttempt");
 const Question = require("../models/question");
 const ForumQuestion = require("../models/forumQuestion");
 const Comment = require("../models/comment");
+const mongoose = require("mongoose");
 
 const { validate, validated } = require("../util/validation");
 const { createUserSchema, updateUserSchema } = require("../schemas/user.schema");
@@ -303,6 +305,160 @@ exports.removeTeacher = async (req, res) => {
     }
   } else {
     throwError(req.t("messages.record_not_exists"), 404);
+  }
+};
+
+exports.getUserDetails = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const user = await User.findById(id)
+      .select("-password -salt -__v")
+      .populate("assignedSubjects", "name title")
+      .populate({
+        path: "assignedProjects",
+        select: "name status due_date max_points subject",
+        populate: { path: "subject", select: "name title" },
+      });
+
+    if (!user) {
+      return res.status(404).json({ message: req.t("messages.user_not_found") });
+    }
+
+    const userObjectId = new mongoose.Types.ObjectId(id);
+
+    const userProjects = await Project.find({ assigned_users: userObjectId })
+      .select("name status due_date max_points subject")
+      .populate("subject", "name title")
+      .sort({ createdAt: -1 });
+
+    const pointsAgg = await Point.aggregate([
+      { $match: { student: userObjectId } },
+      {
+        $group: {
+          _id: "$subject",
+          totalPoints: { $sum: "$points" },
+          itemsCount: { $sum: 1 },
+        },
+      },
+      { $sort: { totalPoints: -1 } },
+    ]);
+
+    const subjectIds = pointsAgg.map((row) => row._id).filter(Boolean);
+    const subjects = await Subject.find({ _id: { $in: subjectIds } }).select("name title");
+    const subjectMap = subjects.reduce((acc, s) => {
+      acc[String(s._id)] = s.name || s.title || "Bez názvu";
+      return acc;
+    }, {});
+
+    const pointsBySubject = pointsAgg.map((row) => ({
+      subjectId: row._id,
+      subjectName: row._id ? subjectMap[String(row._id)] || "Bez názvu" : "Bez predmetu",
+      totalPoints: row.totalPoints,
+      itemsCount: row.itemsCount,
+    }));
+
+    const assignedSubjectIds = (user.assignedSubjects || []).map((s) => s._id);
+    const modules = await Module.find({ subject: { $in: assignedSubjectIds } })
+      .select("title week_number date_start date_end subject")
+      .populate("subject", "name title")
+      .sort({ date_start: 1 });
+
+    const moduleIds = modules.map((m) => m._id);
+
+    const createdQuestionsByModule = await Question.aggregate([
+      { $match: { createdBy: userObjectId, modul: { $in: moduleIds } } },
+      { $group: { _id: "$modul", count: { $sum: 1 } } },
+    ]);
+
+    const validatedByUserByModule = await Question.aggregate([
+      { $match: { validated_by: userObjectId, modul: { $in: moduleIds } } },
+      { $group: { _id: "$modul", count: { $sum: 1 } } },
+    ]);
+
+    const userResponsesByModule = await Question.aggregate([
+      {
+        $match: {
+          createdBy: userObjectId,
+          modul: { $in: moduleIds },
+          "user_agreement.agreed": { $in: [true, false] },
+        },
+      },
+      { $group: { _id: "$modul", count: { $sum: 1 } } },
+    ]);
+
+    const createdMap = createdQuestionsByModule.reduce((acc, row) => {
+      acc[String(row._id)] = row.count;
+      return acc;
+    }, {});
+    const validatedMap = validatedByUserByModule.reduce((acc, row) => {
+      acc[String(row._id)] = row.count;
+      return acc;
+    }, {});
+    const responsesMap = userResponsesByModule.reduce((acc, row) => {
+      acc[String(row._id)] = row.count;
+      return acc;
+    }, {});
+
+    const modulesOverview = modules.map((m) => ({
+      _id: m._id,
+      title: m.title,
+      week_number: m.week_number,
+      date_start: m.date_start,
+      date_end: m.date_end,
+      subjectName: m.subject?.name || m.subject?.title || "Bez názvu",
+      createdQuestions: createdMap[String(m._id)] || 0,
+      validatedQuestions: validatedMap[String(m._id)] || 0,
+      responseCount: responsesMap[String(m._id)] || 0,
+    }));
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        user,
+        pointsBySubject,
+        projects: userProjects,
+        modulesOverview,
+      },
+    });
+  } catch (error) {
+    throwError(`${req.t("messages.database_error")}: ${error.message}`, 500);
+  }
+};
+
+exports.updateUserAcademicProfile = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { adminNotes, isRepetent, isPostZapis } = req.body;
+
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: req.t("messages.user_not_found") });
+    }
+
+    if (adminNotes !== undefined) {
+      user.adminNotes = String(adminNotes || "").trim();
+    }
+    if (isRepetent !== undefined) {
+      user.isRepetent = Boolean(isRepetent);
+    }
+    if (isPostZapis !== undefined) {
+      user.isPostZapis = Boolean(isPostZapis);
+    }
+
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        _id: user._id,
+        adminNotes: user.adminNotes || "",
+        isRepetent: !!user.isRepetent,
+        isPostZapis: !!user.isPostZapis,
+      },
+    });
+  } catch (error) {
+    throwError(`${req.t("messages.database_error")}: ${error.message}`, 500);
   }
 };
 

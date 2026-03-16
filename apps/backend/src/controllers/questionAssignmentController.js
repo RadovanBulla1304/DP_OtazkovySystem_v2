@@ -3,6 +3,7 @@ const QuestionAssignment = require("../models/questionAssignment");
 const Question = require("../models/question");
 const Point = require("../models/point");
 const User = require("../models/user");
+const Module = require("../models/modul");
 const mongoose = require("mongoose");
 
 /**
@@ -14,6 +15,8 @@ exports.bulkAssignQuestionsForModule = async (req, res) => {
     try {
         const { modulId } = req.params;
         const weekNumber = 2;
+        const moduleRecord = await Module.findById(modulId).select("subject");
+        const moduleSubjectId = moduleRecord?.subject || null;
         // 1️⃣ Fetch all questions for the module
         const allQuestions = await Question.find({ modul: modulId });
 
@@ -109,6 +112,7 @@ exports.bulkAssignQuestionsForModule = async (req, res) => {
                 for (let i = 0; i < missing; i++) {
                     const point = new Point({
                         student: userId,
+                        subject: moduleSubjectId,
                         reason: `Automatic point - insufficient questions available (${i + 1}/${missing})`,
                         points: 1,
                         category: "question_validation",

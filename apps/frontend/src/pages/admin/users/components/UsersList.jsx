@@ -14,6 +14,7 @@ import AddUserModal from '../../dashboard/components/AddUserModal';
 import AssignToSubject from '../../dashboard/components/AssignToSubject';
 import EditUserModal from '../../dashboard/components/EditUserModal';
 import DeleteUserDialog from './DeleteUserDialog';
+import UserDetailsDialog from './UserDetailsDialog';
 
 const UsersList = () => {
   const { data, isLoading } = useGetUsersListQuery();
@@ -29,6 +30,8 @@ const UsersList = () => {
   // State for delete confirmation
   const [userToDelete, setUserToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [selectedUserForDetails, setSelectedUserForDetails] = useState(null);
 
   // Fetch points summary when users are loaded (filtered by current subject)
   useEffect(() => {
@@ -134,8 +137,8 @@ const UsersList = () => {
   ];
 
   const handleRowClick = (params) => {
-    // NOTE: ak chceme na dvojklik nejaku aktivitu
-    console.log(params);
+    setSelectedUserForDetails(params.row);
+    setDetailsOpen(true);
   };
 
   // Handler for opening assign modal
@@ -210,6 +213,15 @@ const UsersList = () => {
         isDeleting={isDeleting}
         onClose={() => setUserToDelete(null)}
         onConfirm={() => onRemoveHandler(userToDelete)}
+      />
+
+      <UserDetailsDialog
+        open={detailsOpen}
+        user={selectedUserForDetails}
+        onClose={() => {
+          setDetailsOpen(false);
+          setSelectedUserForDetails(null);
+        }}
       />
     </Box>
   );

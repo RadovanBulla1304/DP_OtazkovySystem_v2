@@ -107,15 +107,12 @@ const Week3 = ({
                 borderRadius: 1,
                 cursor: canRespondInWeek3 ? 'pointer' : 'default',
                 bgcolor: responded ? 'success.50' : hasValidation ? 'warning.50' : 'transparent',
-                '&:hover':
-                  !canRespondInWeek3
-                    ? {}
-                    : {
-                        backgroundColor: (theme) =>
-                          theme.palette.mode === 'dark'
-                            ? 'rgba(255, 255, 255, 0.08)'
-                            : 'action.hover'
-                      }
+                '&:hover': !canRespondInWeek3
+                  ? {}
+                  : {
+                      backgroundColor: (theme) =>
+                        theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'action.hover'
+                    }
               }}
               onClick={() => {
                 if (canRespondInWeek3) {
@@ -203,7 +200,11 @@ const Week3 = ({
                 </Typography>
               )}
               {canRespondInWeek3 && (
-                <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ mt: 1, display: 'block' }}
+                >
                   {responded ? 'Kliknite pre úpravu odpovede' : 'Kliknite pre odpoveď'}
                 </Typography>
               )}

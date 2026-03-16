@@ -50,7 +50,13 @@ const TeacherDashboard = () => {
   // Points
   const [
     getUsersPointsSummary,
-    { data: pointsData, isLoading: isPointsLoading, reset: resetPointsData }
+    {
+      data: pointsData,
+      isLoading: isPointsLoading,
+      isError: isPointsError,
+      error: pointsError,
+      reset: resetPointsData
+    }
   ] = useGetUsersPointsSummaryMutation();
   const [updatePoint] = useUpdatePointMutation();
 
@@ -74,15 +80,24 @@ const TeacherDashboard = () => {
     setSelectedModulId('');
     setPage(0);
     resetPointsData();
-  }, [subjectId, resetPointsData]);
+    // Intentionally run only when subject changes to avoid clearing points on every rerender.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [subjectId]);
+
+  // Normalize possible API payload shapes
+  const usersList = useMemo(() => {
+    if (Array.isArray(usersData)) return usersData;
+    if (Array.isArray(usersData?.data)) return usersData.data;
+    return [];
+  }, [usersData]);
 
   // Fetch points for all users in this subject
   useEffect(() => {
-    if (usersData && usersData.length > 0 && subjectId) {
-      const userIds = usersData.map((u) => u._id);
+    if (usersList.length > 0 && subjectId) {
+      const userIds = usersList.map((u) => u._id);
       getUsersPointsSummary({ userIds, subjectId });
     }
-  }, [usersData, subjectId, getUsersPointsSummary]);
+  }, [usersList, subjectId, getUsersPointsSummary]);
 
   const handleModulChange = (event) => {
     setSelectedModulId(event.target.value);
@@ -172,8 +187,8 @@ const TeacherDashboard = () => {
           `Body aktualizované: ${currentSum} → ${newValue} (${difference > 0 ? '+' : ''}${difference})`
         );
         // Refresh data
-        if (usersData && usersData.length > 0 && subjectId) {
-          const userIds = usersData.map((u) => u._id);
+        if (usersList.length > 0 && subjectId) {
+          const userIds = usersList.map((u) => u._id);
           getUsersPointsSummary({ userIds, subjectId });
         }
       } catch (error) {
@@ -270,8 +285,24 @@ const TeacherDashboard = () => {
 
   // Memoized data rows
   const dataRows = useMemo(() => {
-    return pointsData?.data || [];
-  }, [pointsData]);
+    if (Array.isArray(pointsData?.data) && pointsData.data.length > 0) {
+      return pointsData.data;
+    }
+
+    // Fallback rows so table is visible even when points summary fails/returns empty
+    return usersList.map((user) => ({
+      user: {
+        _id: user._id,
+        name: user.name,
+        surname: user.surname,
+        studentNumber: user.studentNumber
+      },
+      points: {
+        totalPoints: 0,
+        details: []
+      }
+    }));
+  }, [pointsData, usersList]);
 
   if (!subjectId) {
     return (
@@ -325,8 +356,14 @@ const TeacherDashboard = () => {
         </Box>
       )}
 
-      {!isUsersLoading && !isPointsLoading && pointsData && usersData.length > 0 && (
+      {!isUsersLoading && !isPointsLoading && usersList.length > 0 && (
         <>
+          {isPointsError && (
+            <Typography color="warning.main" sx={{ mb: 2 }}>
+              Body sa nepodarilo načítať, zobrazujem tabuľku bez bodov.
+              {pointsError?.data?.message ? ` (${pointsError.data.message})` : ''}
+            </Typography>
+          )}
           <Box
             sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, alignItems: 'center' }}
           >
@@ -757,7 +794,7 @@ const TeacherDashboard = () => {
         </>
       )}
 
-      {!isUsersLoading && !isPointsLoading && usersData.length === 0 && (
+      {!isUsersLoading && !isPointsLoading && usersList.length === 0 && (
         <Typography color="text.secondary" sx={{ mt: 2 }}>
           Pre tento predmet nie sú priradení žiadni používatelia.
         </Typography>

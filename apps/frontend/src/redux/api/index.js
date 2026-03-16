@@ -118,6 +118,21 @@ export const api = createApi({
       },
       providesTags: ['Users'],
     }),
+    getAdminUserDetails: builder.query({
+      query: (userId) => ({
+        url: `/admin/user/${userId}/details`,
+        method: 'GET'
+      }),
+      providesTags: (result, error, userId) => [{ type: 'Users', id: userId }, 'Users']
+    }),
+    updateUserAcademicProfile: builder.mutation({
+      query: ({ userId, data }) => ({
+        url: `/admin/user/${userId}/academic-profile`,
+        method: 'PATCH',
+        body: data
+      }),
+      invalidatesTags: (result, error, { userId }) => [{ type: 'Users', id: userId }, 'Users']
+    }),
     // SUBJECTS
     createSubject: builder.mutation({
       query: (data) => ({
@@ -1154,6 +1169,8 @@ export const {
   useCreateTeacherMutation,
   useRemoveTeacherMutation,
   useUpdateUserMutation,
+  useGetAdminUserDetailsQuery,
+  useUpdateUserAcademicProfileMutation,
   useUpdateTeacherMutation,
   useRemoveUserMutation,
   useGetUsersListQuery,

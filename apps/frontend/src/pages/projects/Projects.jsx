@@ -42,7 +42,7 @@ const Projects = () => {
   const storedUser = authService.getUserFromStorage();
   const isTeacherFromStorage = storedUser?.isTeacher === true;
 
-  const { data: user, isLoading: isUserLoading } = useGetUserMeQuery(undefined, {
+  const { isLoading: isUserLoading } = useGetUserMeQuery(undefined, {
     skip: isTeacherFromStorage
   });
   const { data: teacher, isLoading: isTeacherLoading } = useGetTeacherMeQuery(undefined, {

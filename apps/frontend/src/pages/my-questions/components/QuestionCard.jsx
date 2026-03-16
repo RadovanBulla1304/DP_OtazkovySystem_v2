@@ -129,12 +129,13 @@ const QuestionCard = ({
               : 'transparent'
           : undefined,
         cursor: canEditByClickInWeek1 || canRespondInWeek3 ? 'pointer' : 'default',
-        '&:hover': canEditByClickInWeek1 || canRespondInWeek3
-          ? {
-              backgroundColor: (theme) =>
-                theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'action.hover'
-            }
-          : {}
+        '&:hover':
+          canEditByClickInWeek1 || canRespondInWeek3
+            ? {
+                backgroundColor: (theme) =>
+                  theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'action.hover'
+              }
+            : {}
       }}
       onClick={() => {
         if (canEditByClickInWeek1 && onEdit) {

@@ -121,7 +121,11 @@ const Week1 = ({
                     ))}
                 </Box>
                 {isCurrent && (
-                  <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ mt: 1, display: 'block' }}
+                  >
                     Kliknite pre úpravu otázky
                   </Typography>
                 )}

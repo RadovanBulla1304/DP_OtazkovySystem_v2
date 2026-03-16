@@ -72,6 +72,19 @@ const UserSchema = new mongoose.Schema(
         moduleId: { type: mongoose.Schema.Types.ObjectId, ref: "Module" },
       },
     ],
+    adminNotes: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    isRepetent: {
+      type: Boolean,
+      default: false,
+    },
+    isPostZapis: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
