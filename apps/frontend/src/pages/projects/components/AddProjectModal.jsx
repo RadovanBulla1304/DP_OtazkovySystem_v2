@@ -10,7 +10,8 @@ import {
   DialogContent,
   DialogTitle,
   Stack,
-  TextField
+  TextField,
+  Typography
 } from '@mui/material';
 import PropTypes from 'prop-types';
 import { useState } from 'react';
@@ -143,7 +144,11 @@ const AddProjectModal = ({ open, onClose, onSuccess }) => {
           }
         }}
       >
-        <DialogTitle sx={{ fontWeight: 600 }}>Pridať nový projekt</DialogTitle>
+        <DialogTitle>
+          <Typography variant="h6" component="span" sx={{ fontWeight: 600 }}>
+            Pridať nový projekt
+          </Typography>
+        </DialogTitle>
         <DialogContent sx={{ px: { xs: 2, sm: 3 } }}>
           <Box component="form" onSubmit={handleSubmit} sx={{ mt: { xs: 1.5, sm: 2 } }}>
             <Stack spacing={3}>

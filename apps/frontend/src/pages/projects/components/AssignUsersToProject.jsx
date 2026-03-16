@@ -89,7 +89,9 @@ const AssignUsersToProject = ({ open, onClose, projectId, onSuccess }) => {
           flexWrap="wrap"
           gap={1}
         >
-          <DialogTitle sx={{ fontWeight: 600, p: 0 }}>Priradiť používateľov k projektu</DialogTitle>
+          <Typography variant="h6" component="span" sx={{ fontWeight: 600, p: 0 }}>
+            Priradiť používateľov k projektu
+          </Typography>
           {selectedUsers.length > 0 && (
             <Typography variant="body2" color="primary">
               {selectedUsers.length} používateľ(ov) vybratých

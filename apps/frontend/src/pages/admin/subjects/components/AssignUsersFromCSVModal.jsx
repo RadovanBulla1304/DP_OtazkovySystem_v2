@@ -254,7 +254,9 @@ const AssignUsersFromCSVModal = ({ open, onClose, subjectId, onSuccess }) => {
     >
       <DialogTitle>
         <Box display="flex" justifyContent="space-between" alignItems="center">
-          <DialogTitle sx={{ fontWeight: 600, p: 0 }}>Priradiť používateľov z CSV</DialogTitle>
+          <Typography variant="h6" component="span" sx={{ fontWeight: 600, p: 0 }}>
+            Priradiť používateľov z CSV
+          </Typography>
           <IconButton onClick={handleClose} size="small">
             <CloseIcon />
           </IconButton>

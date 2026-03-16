@@ -18,7 +18,8 @@ const style = {
   transform: 'translate(-50%, -50%)',
   width: 'calc(100% - 24px)',
   maxWidth: 420,
-  bgcolor: 'background.paper',
+  backgroundColor: (theme) =>
+    theme.palette.mode === 'dark' ? theme.palette.background.default : 'background.paper',
   boxShadow: 24,
   p: { xs: 2, sm: 4 },
   borderRadius: 2

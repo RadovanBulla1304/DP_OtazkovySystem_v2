@@ -12,7 +12,8 @@ import {
   DialogContent,
   DialogTitle,
   Grid,
-  TextField
+  TextField,
+  Typography
 } from '@mui/material';
 import PropTypes from 'prop-types';
 import React from 'react';
@@ -91,7 +92,11 @@ const AddSubjectModal = ({ open, onClose, onSuccess }) => {
         }
       }}
     >
-      <DialogTitle sx={{ fontWeight: 600 }}>Vytvoriť nový predmet</DialogTitle>
+      <DialogTitle>
+        <Typography variant="h6" component="span" sx={{ fontWeight: 600 }}>
+          Vytvoriť nový predmet
+        </Typography>
+      </DialogTitle>
       <DialogContent sx={{ pt: 2, px: { xs: 2, sm: 3 } }}>
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>

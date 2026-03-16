@@ -104,7 +104,11 @@ const AssignPointsToProject = ({ open, onClose, project, onSuccess }) => {
         }
       }}
     >
-      <DialogTitle sx={{ fontWeight: 600 }}>Priradiť body za projekt</DialogTitle>
+      <DialogTitle>
+        <Typography variant="h6" component="span" sx={{ fontWeight: 600 }}>
+          Priradiť body za projekt
+        </Typography>
+      </DialogTitle>
       <DialogContent sx={{ px: { xs: 2, sm: 3 } }}>
         <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
           {project && (

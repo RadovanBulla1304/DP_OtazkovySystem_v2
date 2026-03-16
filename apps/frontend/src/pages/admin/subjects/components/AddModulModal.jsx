@@ -9,7 +9,8 @@ import {
   DialogContent,
   DialogTitle,
   Stack,
-  TextField
+  TextField,
+  Typography
 } from '@mui/material';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -109,8 +110,10 @@ const AddModulModal = ({ open, onClose, subjectId, onSuccess }) => {
         onSubmit={handleSubmit(onSubmit)}
         sx={{ p: { xs: 1.5, sm: 2 }, width: '100%' }}
       >
-        <DialogTitle id="modal-modal-title" sx={{ fontWeight: 600, p: 0, pb: 2 }}>
-          Pridať nový modul
+        <DialogTitle id="modal-modal-title">
+          <Typography variant="h6" component="span" sx={{ fontWeight: 600, p: 0, pb: 2 }}>
+            Pridať nový modul
+          </Typography>
         </DialogTitle>
 
         <DialogContent sx={{ p: 0 }}>

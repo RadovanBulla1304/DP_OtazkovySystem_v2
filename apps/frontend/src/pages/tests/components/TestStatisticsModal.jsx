@@ -70,13 +70,15 @@ const TestStatisticsModal = ({ testId, open, onClose }) => {
     >
       <DialogTitle>
         <Box display="flex" justifyContent="space-between" alignItems="center" gap={1}>
-          <DialogTitle sx={{ p: 0, fontWeight: 600 }}>Štatistiky testu</DialogTitle>
+          <Typography variant="h6" component="span" sx={{ p: 0, fontWeight: 600 }}>
+            Štatistiky testu
+          </Typography>
           <IconButton onClick={onClose} size="small">
             <CancelIcon />
           </IconButton>
         </Box>
         {stats?.test && (
-          <Typography variant="subtitle2" color="text.secondary" sx={{ mt: 1 }}>
+          <Typography variant="subtitle2" component="span" color="text.secondary" sx={{ mt: 1 }}>
             {stats.test.title}
           </Typography>
         )}
@@ -432,8 +434,10 @@ const TestStatisticsModal = ({ testId, open, onClose }) => {
           }
         }}
       >
-        <DialogTitle id="delete-attempt-dialog-title" sx={{ fontWeight: 600 }}>
-          Vymazať pokus o test?
+        <DialogTitle id="delete-attempt-dialog-title">
+          <Typography variant="h6" component="span" sx={{ fontWeight: 600 }}>
+            Vymazať pokus o test?
+          </Typography>
         </DialogTitle>
         <DialogContent>
           <Typography>Naozaj chcete vymazať tento pokus o test? Táto akcia je nevratná.</Typography>
@@ -470,4 +474,3 @@ TestStatisticsModal.propTypes = {
 };
 
 export default TestStatisticsModal;
-
