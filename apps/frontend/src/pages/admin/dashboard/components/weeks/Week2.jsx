@@ -1,4 +1,4 @@
-import { useGetQuestionAssignmentsQuery, useGetUserPointsQuery } from '@app/redux/api';
+import { useGetQuestionAssignmentsQuery } from '@app/redux/api';
 import { Box, Chip, Stack, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
 
@@ -12,11 +12,6 @@ const Week2 = ({
   setValidateOpen,
   selectedModul
 }) => {
-  // Get points data for the current user
-  const { data: pointsData } = useGetUserPointsQuery(userId, {
-    skip: !userId
-  });
-
   // Get question assignments for this user in this module
   const { data: assignmentsData, isLoading: assignmentsLoading } = useGetQuestionAssignmentsQuery(
     { userId, modulId: selectedModul?._id },
@@ -25,13 +20,6 @@ const Week2 = ({
 
   const assignments = assignmentsData?.data || [];
   const automaticPoints = assignmentsData?.automaticPoints || 0;
-
-  // Calculate points for Week 2 - validation (1 point per validation, max 2)
-  const validationPoints =
-    pointsData?.data?.filter((point) => point.category === 'question_validation') || [];
-
-  const earnedPoints = validationPoints.length;
-  const maxPoints = 2;
 
   // Get the assigned questions, filtering out any null/undefined questions
   const assignedQuestions = assignments
@@ -42,6 +30,10 @@ const Week2 = ({
   const questionsValidatedByUser = assignedQuestions.filter(
     (q) => q && q.validated_by && String(q.validated_by) === String(userId)
   ).length;
+
+  // Week 2 points are module-specific: 1 point per validated assigned question (max 2)
+  const earnedPoints = questionsValidatedByUser;
+  const maxPoints = 2;
   const isCompleted = questionsValidatedByUser >= 2;
 
   return (

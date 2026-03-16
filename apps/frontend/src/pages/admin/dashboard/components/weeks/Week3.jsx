@@ -1,4 +1,4 @@
-import { useGetUserPointsQuery, useUpdateQuestionMutation } from '@app/redux/api';
+import { useUpdateQuestionMutation } from '@app/redux/api';
 import { Box, Button, Chip, Stack, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
 import { useState } from 'react';
@@ -14,11 +14,6 @@ const Week3 = ({
   setQuestionToRespond,
   setRespondOpen
 }) => {
-  // Get points data for the current user
-  const { data: pointsData } = useGetUserPointsQuery(userId, {
-    skip: !userId
-  });
-
   // Mutation for updating questions (only available during Week 3)
   const [updateQuestion] = useUpdateQuestionMutation();
 
@@ -48,11 +43,8 @@ const Week3 = ({
   const questionsWithResponses = questionsWithValidations.filter((q) => q.user_agreement).length;
   const isCompleted = questionsWithResponses >= 2;
 
-  // Calculate points for Week 3 - reparation (1 point per response, max 2)
-  const reparationPoints =
-    pointsData?.data?.filter((point) => point.category === 'question_reparation') || [];
-
-  const earnedPoints = reparationPoints.length;
+  // Week 3 points are module-specific: 1 point per response in this module (max 2)
+  const earnedPoints = Math.min(questionsWithResponses, 2);
   const maxPoints = 2;
 
   return (
