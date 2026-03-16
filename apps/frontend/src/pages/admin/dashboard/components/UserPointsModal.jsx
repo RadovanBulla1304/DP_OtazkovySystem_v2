@@ -55,7 +55,7 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
       // Reset pagination when modal opens with new data
       setPage(0);
     }
-  }, [open, userIds, getUsersPointsSummary]);
+  }, [open, userIds, getUsersPointsSummary, subjectId]);
 
   // Pagination handlers
   const handleChangePage = (event, newPage) => {

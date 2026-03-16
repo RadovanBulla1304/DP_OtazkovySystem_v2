@@ -1,7 +1,7 @@
 import { Box, Card, CardContent, Chip, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
 
-const QuestionCard = ({ question, currentWeek, isValidatedByUser = false, userId }) => {
+const QuestionCard = ({ question, currentWeek, isValidatedByUser = false, userId, onValidate }) => {
   const isInWeek3OrLater = currentWeek >= 3;
 
   // For Week 2 validation questions, use different styling and behavior
@@ -17,7 +17,19 @@ const QuestionCard = ({ question, currentWeek, isValidatedByUser = false, userId
           borderColor: validated ? 'success.main' : 'grey.300',
           bgcolor: validated ? 'success.50' : 'transparent',
           cursor: validated ? 'default' : 'pointer',
-          '&:hover': validated ? {} : { backgroundColor: 'grey.50' }
+          '&:hover': validated
+            ? {}
+            : {
+                backgroundColor: (theme) =>
+                  theme.palette.mode === 'dark'
+                    ? 'rgba(255, 255, 255, 0.08)'
+                    : 'action.hover'
+              }
+        }}
+        onClick={() => {
+          if (!validated && onValidate) {
+            onValidate(question);
+          }
         }}
       >
         <CardContent>
@@ -67,7 +79,7 @@ const QuestionCard = ({ question, currentWeek, isValidatedByUser = false, userId
           {/* Creation date */}
           <Typography variant="caption" color="text.secondary" sx={{ mt: 2, display: 'block' }}>
             Vytvorené: {new Date(question.createdAt).toLocaleDateString()}
-            {!validated && <span> • Kliknite pre validáciu</span>}
+            {!validated && onValidate && <span> • Kliknite pre validáciu</span>}
           </Typography>
         </CardContent>
       </Card>
@@ -181,7 +193,8 @@ QuestionCard.propTypes = {
   }).isRequired,
   currentWeek: PropTypes.number.isRequired,
   isValidatedByUser: PropTypes.bool,
-  userId: PropTypes.string.isRequired
+  userId: PropTypes.string.isRequired,
+  onValidate: PropTypes.func
 };
 
 export default QuestionCard;

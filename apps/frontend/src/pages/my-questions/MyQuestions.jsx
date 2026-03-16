@@ -4,8 +4,10 @@ import {
   useGetModulsBySubjectQuery,
   useGetQuestionByUserIdQuery,
   useGetQuestionsByModulQuery,
-  useGetQuestionsBySubjectIdQuery
+  useGetQuestionsBySubjectIdQuery,
+  useValidateQuestionMutation
 } from '@app/redux/api';
+import ValidateQuestionModal from '@app/pages/admin/subjects/components/ValidateQuestionModal';
 import { Box, Typography } from '@mui/material';
 import React from 'react';
 import DebugWeekControls from './components/DebugWeekControls';
@@ -28,6 +30,11 @@ const MyQuestions = () => {
 
   // Debug: manual week override
   const [debugWeekOverride, setDebugWeekOverride] = React.useState(null);
+
+  // Validation modal state
+  const [validateOpen, setValidateOpen] = React.useState(false);
+  const [questionToValidate, setQuestionToValidate] = React.useState(null);
+  const [validateQuestion] = useValidateQuestionMutation();
 
   // Fetch modules for the selected subject
   const { data: subjectModuls = [] } = useGetModulsBySubjectQuery(subjectId, {
@@ -308,9 +315,30 @@ const MyQuestions = () => {
             currentWeek={currentWeek}
             userId={userId}
             showDivider={index > 0}
+            onValidate={(q) => {
+              setQuestionToValidate(q);
+              setValidateOpen(true);
+            }}
           />
         );
       })}
+
+      <ValidateQuestionModal
+        open={validateOpen}
+        question={questionToValidate}
+        onClose={() => setValidateOpen(false)}
+        onSubmit={async (questionId, payload) => {
+          try {
+            await validateQuestion({
+              questionId,
+              valid: payload.valid,
+              comment: payload.comment
+            }).unwrap();
+          } catch (error) {
+            console.error('Error submitting validation:', error);
+          }
+        }}
+      />
     </Box>
   );
 };
