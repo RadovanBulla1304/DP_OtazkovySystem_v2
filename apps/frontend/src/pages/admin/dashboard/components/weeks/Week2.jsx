@@ -81,6 +81,7 @@ const Week2 = ({
           if (q) {
             // Check if current user has validated this question
             const validated = q.validated_by && String(q.validated_by) === String(userId);
+            const canValidateInWeek2 = isCurrent;
             return (
               <Box
                 key={`ext-${i}`}
@@ -89,9 +90,9 @@ const Week2 = ({
                   border: '1px solid',
                   borderColor: validated ? 'success.main' : 'grey.300',
                   borderRadius: 1,
-                  cursor: validated ? 'default' : 'pointer',
+                  cursor: canValidateInWeek2 ? 'pointer' : 'default',
                   bgcolor: validated ? 'success.50' : 'transparent',
-                  '&:hover': validated
+                  '&:hover': !canValidateInWeek2
                     ? {}
                     : {
                         backgroundColor: (theme) =>
@@ -101,7 +102,7 @@ const Week2 = ({
                       }
                 }}
                 onClick={() => {
-                  if (!validated) {
+                  if (canValidateInWeek2) {
                     setQuestionToValidate(q);
                     setValidateOpen(true);
                   }
@@ -139,6 +140,11 @@ const Week2 = ({
                       </Typography>
                     )}
                   </Box>
+                )}
+                {canValidateInWeek2 && (
+                  <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                    {validated ? 'Kliknite pre zmenu validácie' : 'Kliknite pre validáciu'}
+                  </Typography>
                 )}
               </Box>
             );

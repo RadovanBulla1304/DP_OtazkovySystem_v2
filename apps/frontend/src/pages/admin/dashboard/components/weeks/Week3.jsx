@@ -91,6 +91,7 @@ const Week3 = ({
           const responded = q.user_agreement; // Use database field instead of localStorage
           // Check if the question has actually been validated by someone
           const hasValidation = q.validated_by !== undefined && q.validated_by !== null;
+          const canRespondInWeek3 = isCurrent && hasValidation;
 
           return (
             <Box
@@ -104,10 +105,10 @@ const Week3 = ({
                     ? 'warning.main'
                     : '#000000', // Black border for unvalidated questions
                 borderRadius: 1,
-                cursor: responded || !hasValidation ? 'default' : 'pointer',
+                cursor: canRespondInWeek3 ? 'pointer' : 'default',
                 bgcolor: responded ? 'success.50' : hasValidation ? 'warning.50' : 'transparent',
                 '&:hover':
-                  responded || !hasValidation
+                  !canRespondInWeek3
                     ? {}
                     : {
                         backgroundColor: (theme) =>
@@ -117,7 +118,7 @@ const Week3 = ({
                       }
               }}
               onClick={() => {
-                if (!responded && hasValidation) {
+                if (canRespondInWeek3) {
                   setQuestionToRespond(q);
                   setRespondOpen(true);
                 }
@@ -199,6 +200,11 @@ const Week3 = ({
                   sx={{ mt: 1, fontStyle: 'italic', color: 'text.primary' }}
                 >
                   Tvoja odpoveď: {responded.comment}
+                </Typography>
+              )}
+              {canRespondInWeek3 && (
+                <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                  {responded ? 'Kliknite pre úpravu odpovede' : 'Kliknite pre odpoveď'}
                 </Typography>
               )}
             </Box>

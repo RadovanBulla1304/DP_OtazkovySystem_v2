@@ -12,10 +12,13 @@ const QuestionCard = ({
 }) => {
   const isInWeek3OrLater = currentWeek >= 3;
   const isWeek3 = currentWeek === 3;
+  const isWeek2 = currentWeek === 2;
+  const isWeek1 = currentWeek === 1;
 
   // For Week 2 validation questions, use different styling and behavior
   if (isValidatedByUser) {
     const validated = question.validated_by && String(question.validated_by) === String(userId);
+    const canValidateInWeek2 = isWeek2 && !!onValidate;
 
     return (
       <Card
@@ -25,8 +28,8 @@ const QuestionCard = ({
           border: '1px solid',
           borderColor: validated ? 'success.main' : 'grey.300',
           bgcolor: validated ? 'success.50' : 'transparent',
-          cursor: validated ? 'default' : 'pointer',
-          '&:hover': validated
+          cursor: canValidateInWeek2 ? 'pointer' : 'default',
+          '&:hover': !canValidateInWeek2
             ? {}
             : {
                 backgroundColor: (theme) =>
@@ -34,7 +37,7 @@ const QuestionCard = ({
               }
         }}
         onClick={() => {
-          if (!validated && onValidate) {
+          if (canValidateInWeek2 && onValidate) {
             onValidate(question);
           }
         }}
@@ -86,7 +89,12 @@ const QuestionCard = ({
           {/* Creation date */}
           <Typography variant="caption" color="text.secondary" sx={{ mt: 2, display: 'block' }}>
             Vytvorené: {new Date(question.createdAt).toLocaleDateString()}
-            {!validated && onValidate && <span> • Kliknite pre validáciu</span>}
+            {canValidateInWeek2 && (
+              <span>
+                {' '}
+                • {validated ? 'Kliknite pre zmenu validácie' : 'Kliknite pre validáciu'}
+              </span>
+            )}
           </Typography>
         </CardContent>
       </Card>
@@ -96,7 +104,9 @@ const QuestionCard = ({
   // Original rendering for user's own questions
   const responded = question.user_agreement;
   const hasValidation = question.validated_by !== undefined && question.validated_by !== null;
-  const canRespondInWeek3 = isWeek3 && !responded && hasValidation && !!onRespond;
+  const canRespondInWeek3 = isWeek3 && hasValidation && !!onRespond;
+  const canEditNow = !!onEdit;
+  const canEditByClickInWeek1 = isWeek1 && canEditNow;
 
   return (
     <Card
@@ -111,9 +121,15 @@ const QuestionCard = ({
               ? 'warning.main'
               : '#000000'
           : undefined,
-        bgcolor: isWeek3 ? (responded ? 'success.50' : hasValidation ? 'warning.50' : 'transparent') : undefined,
-        cursor: canRespondInWeek3 ? 'pointer' : 'default',
-        '&:hover': canRespondInWeek3
+        bgcolor: isWeek3
+          ? responded
+            ? 'success.50'
+            : hasValidation
+              ? 'warning.50'
+              : 'transparent'
+          : undefined,
+        cursor: canEditByClickInWeek1 || canRespondInWeek3 ? 'pointer' : 'default',
+        '&:hover': canEditByClickInWeek1 || canRespondInWeek3
           ? {
               backgroundColor: (theme) =>
                 theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'action.hover'
@@ -121,6 +137,11 @@ const QuestionCard = ({
           : {}
       }}
       onClick={() => {
+        if (canEditByClickInWeek1 && onEdit) {
+          onEdit(question);
+          return;
+        }
+
         if (canRespondInWeek3 && onRespond) {
           onRespond(question);
         }
@@ -183,21 +204,6 @@ const QuestionCard = ({
                   size="small"
                 />
               )}
-
-              {isWeek3 && onEdit && (
-                <Button
-                  size="small"
-                  variant="outlined"
-                  color="primary"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onEdit(question);
-                  }}
-                  sx={{ ml: 'auto' }}
-                >
-                  Upraviť
-                </Button>
-              )}
             </Box>
 
             {/* Validation comment */}
@@ -222,9 +228,29 @@ const QuestionCard = ({
           </Box>
         )}
 
+        {canEditNow && (
+          <Box sx={{ mt: 1, display: 'flex', justifyContent: 'flex-end' }}>
+            <Button
+              size="small"
+              variant="outlined"
+              color="primary"
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit(question);
+              }}
+            >
+              Upraviť
+            </Button>
+          </Box>
+        )}
+
         {/* Creation date */}
         <Typography variant="caption" color="text.secondary" sx={{ mt: 2, display: 'block' }}>
           Vytvorené: {new Date(question.createdAt).toLocaleDateString()}
+          {isWeek1 && canEditNow && <span> • Kliknite pre úpravu otázky</span>}
+          {canRespondInWeek3 && (
+            <span> • {responded ? 'Kliknite pre úpravu odpovede' : 'Kliknite pre odpoveď'}</span>
+          )}
         </Typography>
       </CardContent>
     </Card>

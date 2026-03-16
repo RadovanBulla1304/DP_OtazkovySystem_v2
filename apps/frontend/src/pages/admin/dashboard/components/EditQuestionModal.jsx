@@ -112,7 +112,7 @@ const EditQuestionModal = ({ open, question, onClose, onSubmit }) => {
         <DialogTitle>
           <Typography variant="h6">Upraviť otázku</Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            Môžete upravovať otázku iba počas 3. týždňa
+            Môžete upravovať otázku počas povoleného týždňa
           </Typography>
         </DialogTitle>
 

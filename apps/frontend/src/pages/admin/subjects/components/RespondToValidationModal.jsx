@@ -29,8 +29,18 @@ const RespondToValidationModal = ({
     if (!open) {
       setAgreed(false);
       setComment('');
+      return;
     }
-  }, [open]);
+
+    const existingResponse = question?.user_agreement;
+    if (existingResponse) {
+      setAgreed(!!existingResponse.agreed);
+      setComment(existingResponse.comment || '');
+    } else {
+      setAgreed(false);
+      setComment('');
+    }
+  }, [open, question]);
 
   if (!question) return null;
 
@@ -154,6 +164,10 @@ RespondToValidationModal.propTypes = {
     options: PropTypes.object,
     validated: PropTypes.bool,
     validation_comment: PropTypes.string,
+    user_agreement: PropTypes.shape({
+      agreed: PropTypes.bool,
+      comment: PropTypes.string
+    }),
     validated_by: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     validated_at: PropTypes.string
   }),

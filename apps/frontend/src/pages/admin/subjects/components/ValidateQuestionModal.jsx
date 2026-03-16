@@ -28,8 +28,20 @@ const ValidateQuestionModal = ({
     if (!open) {
       setValid('valid');
       setComment('');
+      return;
     }
-  }, [open]);
+
+    const hasExistingValidation =
+      question?.validated_by !== undefined && question?.validated_by !== null;
+
+    if (hasExistingValidation) {
+      setValid(question?.validated ? 'valid' : 'invalid');
+      setComment(question?.validation_comment || '');
+    } else {
+      setValid('valid');
+      setComment('');
+    }
+  }, [open, question]);
 
   if (!question) return null;
 

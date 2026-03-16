@@ -328,10 +328,14 @@ const MyQuestions = () => {
             currentWeek={currentWeek}
             userId={userId}
             showDivider={index > 0}
-            onValidate={(q) => {
-              setQuestionToValidate(q);
-              setValidateOpen(true);
-            }}
+            onValidate={
+              currentWeek === 2
+                ? (q) => {
+                    setQuestionToValidate(q);
+                    setValidateOpen(true);
+                  }
+                : undefined
+            }
             onRespond={
               currentWeek === 3
                 ? (q) => {
@@ -341,7 +345,7 @@ const MyQuestions = () => {
                 : undefined
             }
             onEdit={
-              currentWeek === 3
+              currentWeek === 1 || currentWeek === 3
                 ? (q) => {
                     setQuestionToEdit(q);
                     setEditModalOpen(true);
