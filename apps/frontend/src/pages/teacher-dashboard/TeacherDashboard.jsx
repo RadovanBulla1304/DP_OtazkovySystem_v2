@@ -1,20 +1,19 @@
 import { useCurrentSubjectId } from '@app/hooks/useCurrentSubjectId';
 import {
   useGetModulsBySubjectQuery,
+  useGetUsersAssignedToSubjectQuery,
   useGetUsersPointsSummaryMutation,
   useUpdatePointMutation
 } from '@app/redux/api';
-import CloseIcon from '@mui/icons-material/Close';
 import EditIcon from '@mui/icons-material/Edit';
 import {
   Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  IconButton,
+  CircularProgress,
+  FormControl,
+  InputLabel,
+  MenuItem,
   Paper,
+  Select,
   Table,
   TableBody,
   TableCell,
@@ -27,35 +26,82 @@ import {
   Typography
 } from '@mui/material';
 import PropTypes from 'prop-types';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 
-const UserPointsModal = ({ open, onClose, userIds }) => {
-  const [getUsersPointsSummary, { data: pointsData, isLoading, error }] =
-    useGetUsersPointsSummaryMutation();
-  const [updatePoint] = useUpdatePointMutation();
-  const [editingCell, setEditingCell] = useState(null); // { userId, category, moduleId }
-  const [editValue, setEditValue] = useState('');
-
-  // Get current subject ID and fetch modules
+const TeacherDashboard = () => {
   const subjectId = useCurrentSubjectId();
-  const { data: modules = [] } = useGetModulsBySubjectQuery(subjectId, {
-    skip: !subjectId
-  });
 
-  // Pagination states
+  // Fetch modules for current subject
+  const { data: modules = [], isFetching: isModulesFetching } = useGetModulsBySubjectQuery(
+    subjectId,
+    { skip: !subjectId }
+  );
+
+  // Selected module
+  const [selectedModulId, setSelectedModulId] = useState('');
+
+  // Fetch users assigned to this subject
+  const { data: usersData = [], isLoading: isUsersLoading } = useGetUsersAssignedToSubjectQuery(
+    { subjectId },
+    { skip: !subjectId }
+  );
+
+  // Points
+  const [
+    getUsersPointsSummary,
+    {
+      data: pointsData,
+      isLoading: isPointsLoading,
+      isError: isPointsError,
+      error: pointsError,
+      reset: resetPointsData
+    }
+  ] = useGetUsersPointsSummaryMutation();
+  const [updatePoint] = useUpdatePointMutation();
+
+  // Pagination
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  useEffect(() => {
-    if (open && userIds.length > 0) {
-      // Get real data (filtered by current subject)
-      getUsersPointsSummary({ userIds, subjectId: subjectId || undefined });
+  // Editing state
+  const [editingCell, setEditingCell] = useState(null);
+  const [editValue, setEditValue] = useState('');
 
-      // Reset pagination when modal opens with new data
-      setPage(0);
+  // Auto-select first module
+  useEffect(() => {
+    if (!isModulesFetching && modules.length > 0 && !selectedModulId) {
+      setSelectedModulId(modules[0]._id);
     }
-  }, [open, userIds, getUsersPointsSummary, subjectId]);
+  }, [modules, isModulesFetching, selectedModulId]);
+
+  // Reset module selection and clear stale points data when subject changes
+  useEffect(() => {
+    setSelectedModulId('');
+    setPage(0);
+    resetPointsData();
+    // Intentionally run only when subject changes to avoid clearing points on every rerender.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [subjectId]);
+
+  // Normalize possible API payload shapes
+  const usersList = useMemo(() => {
+    if (Array.isArray(usersData)) return usersData;
+    if (Array.isArray(usersData?.data)) return usersData.data;
+    return [];
+  }, [usersData]);
+
+  // Fetch points for all users in this subject
+  useEffect(() => {
+    if (usersList.length > 0 && subjectId) {
+      const userIds = usersList.map((u) => u._id);
+      getUsersPointsSummary({ userIds, subjectId });
+    }
+  }, [usersList, subjectId, getUsersPointsSummary]);
+
+  const handleModulChange = (event) => {
+    setSelectedModulId(event.target.value);
+  };
 
   // Pagination handlers
   const handleChangePage = (event, newPage) => {
@@ -69,12 +115,10 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
 
   // Edit cell handlers
   const handleCellClick = (userId, category, moduleId, currentValue, pointDetails) => {
-    // Check if there are any points for this category
     if (!pointDetails || pointDetails.length === 0) {
       toast.info('Používateľ nemá žiadne body v tejto kategórii na úpravu');
       return;
     }
-
     setEditingCell({ userId, category, moduleId, pointDetails });
     setEditValue(currentValue || '0');
   };
@@ -85,25 +129,20 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
     const newValue = parseInt(editValue) || 0;
     const { userId, category, moduleId } = editingCell;
 
-    // Find the specific point record to update
     const userData = pointsData?.data?.find((u) => u.user._id === userId);
     if (!userData) {
       setEditingCell(null);
       return;
     }
 
-    // Find matching point details for this category and module
-    // First, try strict matching (module + category)
     let matchingPoints = userData.points.details.filter((detail) => {
       if (category === 'test_performance') return detail.category === 'test_performance';
       if (category === 'forum_participation') return detail.category === 'forum_participation';
       if (category === 'project_work') return detail.category === 'project_work';
       if (category === 'other') return detail.category === 'other';
 
-      // For module-based categories
       if (!moduleId || moduleId.startsWith('empty-')) return false;
 
-      // Check if this detail belongs to the module
       if (detail.question_id) {
         const module = modules.find((m) => m._id === moduleId);
         return module?.questions?.includes(detail.question_id) && detail.category === category;
@@ -112,8 +151,6 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
       return false;
     });
 
-    // If no strict match found, try relaxed matching (just category for module-based)
-    // This allows editing any point record of that category type
     if (
       matchingPoints.length === 0 &&
       !['test_performance', 'forum_participation', 'project_work', 'other'].includes(category)
@@ -122,23 +159,17 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
     }
 
     if (matchingPoints.length > 0) {
-      // Calculate current sum of all matching points
       const currentSum = matchingPoints.reduce((sum, p) => sum + p.points, 0);
 
-      // If the displayed value matches the sum, proceed
       if (currentSum === newValue) {
         setEditingCell(null);
         return;
       }
 
-      // Calculate the difference to apply
       const difference = newValue - currentSum;
-
-      // Update the first matching point by adding the difference
       const pointToUpdate = matchingPoints[0];
       const updatedPointValue = pointToUpdate.points + difference;
 
-      // Don't allow negative points
       if (updatedPointValue < 0) {
         toast.error('Body nemôžu byť záporné');
         setEditingCell(null);
@@ -156,13 +187,15 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
           `Body aktualizované: ${currentSum} → ${newValue} (${difference > 0 ? '+' : ''}${difference})`
         );
         // Refresh data
-        getUsersPointsSummary({ userIds, subjectId: subjectId || undefined });
+        if (usersList.length > 0 && subjectId) {
+          const userIds = usersList.map((u) => u._id);
+          getUsersPointsSummary({ userIds, subjectId });
+        }
       } catch (error) {
         console.error('Error updating point:', error);
         toast.error('Chyba pri aktualizácii bodov');
       }
     } else {
-      // No existing point records for this category at all
       toast.info('Používateľ nemá žiadne body v tejto kategórii na úpravu');
     }
 
@@ -184,7 +217,6 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
       editingCell?.category === category &&
       editingCell?.moduleId === moduleId;
 
-    // Check if cell has points and is editable
     const hasPoints = pointDetails && pointDetails.length > 0;
     const cursorStyle = hasPoints ? 'pointer' : 'default';
 
@@ -251,73 +283,102 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
     sx: PropTypes.object
   };
 
-  return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      maxWidth={false}
-      PaperProps={{
-        sx: {
-          width: '95vw',
-          maxWidth: '95vw',
-          maxHeight: '95vh',
-          borderRadius: '8px',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
-        }
-      }}
-    >
-      <DialogTitle
-        sx={{
-          borderBottom: '1px solid',
-          borderColor: 'divider',
-          fontWeight: 'bold',
-          fontSize: '1.2rem',
-          color: 'text.primary'
-        }}
-      >
-        Body používateľov
-        <IconButton
-          aria-label="close"
-          onClick={onClose}
-          sx={{
-            position: 'absolute',
-            right: 8,
-            top: 8
-          }}
-        >
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
-      <DialogContent sx={{ padding: '16px' }}>
-        {isLoading && (
-          <Box sx={{ textAlign: 'center', padding: '20px' }}>
-            <Typography color="text.primary">Načítavanie bodov...</Typography>
-          </Box>
-        )}
+  // Memoized data rows
+  const dataRows = useMemo(() => {
+    if (Array.isArray(pointsData?.data) && pointsData.data.length > 0) {
+      return pointsData.data;
+    }
 
-        {error && (
-          <Box sx={{ textAlign: 'center', padding: '20px' }}>
-            <Typography color="error" sx={{ fontWeight: 'bold' }}>
-              Chyba pri načítavaní: {error.message}
+    // Fallback rows so table is visible even when points summary fails/returns empty
+    return usersList.map((user) => ({
+      user: {
+        _id: user._id,
+        name: user.name,
+        surname: user.surname,
+        studentNumber: user.studentNumber
+      },
+      points: {
+        totalPoints: 0,
+        details: []
+      }
+    }));
+  }, [pointsData, usersList]);
+
+  if (!subjectId) {
+    return (
+      <Box sx={{ pt: 2, px: 2 }}>
+        <Typography variant="h4" sx={{ mb: 2 }}>
+          Dashboard učiteľa
+        </Typography>
+        <Typography color="text.secondary">Vyberte predmet v prepínači predmetov.</Typography>
+      </Box>
+    );
+  }
+
+  return (
+    <Box sx={{ pt: 2, px: 2 }}>
+      <Typography variant="h4" sx={{ mb: 2 }}>
+        Dashboard učiteľa
+      </Typography>
+
+      {/* Module selector */}
+      {isModulesFetching ? (
+        <CircularProgress />
+      ) : modules.length > 0 ? (
+        <FormControl fullWidth sx={{ maxWidth: 400, mb: 3 }}>
+          <InputLabel id="teacher-modul-select-label">Modul</InputLabel>
+          <Select
+            labelId="teacher-modul-select-label"
+            value={selectedModulId}
+            label="Modul"
+            onChange={handleModulChange}
+          >
+            {modules.map((modul) => (
+              <MenuItem key={modul._id} value={modul._id}>
+                {modul.name || modul.title || modul._id}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      ) : (
+        <Typography color="text.secondary" sx={{ mb: 2 }}>
+          Pre tento predmet nie sú žiadne moduly.
+        </Typography>
+      )}
+
+      {/* Points table */}
+      {(isUsersLoading || isPointsLoading) && (
+        <Box sx={{ textAlign: 'center', py: 4 }}>
+          <CircularProgress />
+          <Typography sx={{ mt: 1 }} color="text.secondary">
+            Načítavanie bodov...
+          </Typography>
+        </Box>
+      )}
+
+      {!isUsersLoading && !isPointsLoading && usersList.length > 0 && (
+        <>
+          {isPointsError && (
+            <Typography color="warning.main" sx={{ mb: 2 }}>
+              Body sa nepodarilo načítať, zobrazujem tabuľku bez bodov.
+              {pointsError?.data?.message ? ` (${pointsError.data.message})` : ''}
+            </Typography>
+          )}
+          <Box
+            sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, alignItems: 'center' }}
+          >
+            <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: 'text.primary' }}>
+              Celkom používateľov: {dataRows.length}
             </Typography>
           </Box>
-        )}
 
-        {pointsData && (
-          <>
-            <Box
-              sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, alignItems: 'center' }}
-            >
-              <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: 'text.primary' }}>
-                Celkom používateľov: {pointsData ? pointsData.data.length : 0}
-              </Typography>
-            </Box>
+          <Paper sx={{ width: '100%', overflow: 'hidden' }}>
             <TableContainer
-              component={Paper}
               sx={{
                 overflowX: 'auto',
+                maxHeight: 'calc(100vh - 320px)',
                 '& .MuiTable-root': {
-                  minWidth: '150%', // Makes the table wide enough to require scrolling
+                  minWidth: modules.length > 4 ? '150%' : '100%',
                   borderCollapse: 'separate',
                   borderSpacing: 0
                 }
@@ -348,7 +409,7 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
                 }}
               >
                 <TableHead sx={{ borderBottom: '3px solid', borderColor: 'divider' }}>
-                  {/* Main header row with column groups */}
+                  {/* Main header row */}
                   <TableRow>
                     <TableCell
                       rowSpan={2}
@@ -356,7 +417,11 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
                         borderRight: '2px solid',
                         borderColor: 'divider',
                         fontWeight: 'bold',
-                        color: 'text.primary'
+                        color: 'text.primary',
+                        position: 'sticky',
+                        left: 0,
+                        zIndex: 3,
+                        backgroundColor: 'background.paper'
                       }}
                     >
                       Používateľ
@@ -372,30 +437,23 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
                     >
                       Celkové body
                     </TableCell>
-                    {/* Dynamic module columns - show up to 12 columns */}
-                    {Array.from({ length: 12 }, (_, i) => {
-                      const moduleIndex = i;
-                      const module = modules[moduleIndex];
-                      const moduleName = module ? module.title : `Modul ${i + 1}`;
-                      const displayName = module ? moduleName : '-';
-
-                      return (
-                        <TableCell
-                          key={`module-${i + 1}`}
-                          colSpan={3}
-                          align="center"
-                          sx={{
-                            borderRight: '2px solid',
-                            borderColor: 'divider',
-                            bgcolor: 'action.hover',
-                            fontWeight: 'bold',
-                            color: 'text.primary'
-                          }}
-                        >
-                          {displayName}
-                        </TableCell>
-                      );
-                    })}
+                    {/* Dynamic module columns */}
+                    {modules.map((module, i) => (
+                      <TableCell
+                        key={`module-${module._id}`}
+                        colSpan={3}
+                        align="center"
+                        sx={{
+                          borderRight: '2px solid',
+                          borderColor: 'divider',
+                          bgcolor: 'action.hover',
+                          fontWeight: 'bold',
+                          color: 'text.primary'
+                        }}
+                      >
+                        {module.title || module.name || `Modul ${i + 1}`}
+                      </TableCell>
+                    ))}
                     <TableCell
                       align="center"
                       sx={{
@@ -445,11 +503,10 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
                       Iné
                     </TableCell>
                   </TableRow>
-                  {/* Activity type row */}
+                  {/* Activity type sub-header row */}
                   <TableRow>
-                    {/* Dynamic module activity columns - 12 modules x 3 activities each */}
-                    {Array.from({ length: 12 }, (_, i) => (
-                      <React.Fragment key={`module-activities-${i + 1}`}>
+                    {modules.map((module) => (
+                      <React.Fragment key={`module-activities-${module._id}`}>
                         <TableCell
                           align="center"
                           sx={{
@@ -482,7 +539,7 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
                         </TableCell>
                       </React.Fragment>
                     ))}
-                    {/* Extra columns */}
+                    {/* Extra columns sub-headers */}
                     <TableCell
                       sx={{ borderRight: '1px solid', borderColor: 'divider' }}
                     ></TableCell>
@@ -498,26 +555,20 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {/* Use real data if available, otherwise fallback to mock data, with pagination */}
-                  {(pointsData ? pointsData.data : [])
+                  {dataRows
                     .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                     .map((userData) => {
                       // Group points by module and category
                       const pointsByModule = {};
 
-                      // Initialize all modules (up to 12) with available modules, others as empty
-                      for (let i = 0; i < 12; i++) {
-                        const moduleId = modules[i]?._id || `empty-${i}`;
-                        pointsByModule[moduleId] = {
+                      modules.forEach((mod) => {
+                        pointsByModule[mod._id] = {
                           question_creation: 0,
                           question_validation: 0,
-                          question_reparation: 0,
-                          moduleIndex: i, // Keep track of module position for display
-                          moduleName: modules[i]?.title || null
+                          question_reparation: 0
                         };
-                      }
+                      });
 
-                      // Additional categories
                       const extraPoints = {
                         test_performance: 0,
                         forum_participation: 0,
@@ -525,9 +576,7 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
                         other: 0
                       };
 
-                      // Process details to calculate points by module and extra categories
                       userData.points.details.forEach((detail) => {
-                        // Special categories first
                         if (detail.category === 'test_performance') {
                           extraPoints.test_performance += detail.points;
                           return;
@@ -544,7 +593,6 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
 
                         let targetModuleId;
 
-                        // First priority: try to find by question_id in modules
                         if (detail.question_id) {
                           const moduleWithQuestion = modules.find(
                             (module) =>
@@ -555,7 +603,6 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
                           }
                         }
 
-                        // Second priority: try to extract week from reason and map intelligently
                         if (!targetModuleId) {
                           const weekMatch =
                             detail.reason?.match(/týždni (\d+)/i) ||
@@ -563,28 +610,19 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
 
                           if (weekMatch && weekMatch[1]) {
                             const week = parseInt(weekMatch[1]);
-                            // Intelligent mapping: distribute weeks across available modules
-                            // If we have modules, distribute weeks among them cyclically
                             if (modules.length > 0) {
-                              // Distribute weeks across available modules
-                              // Week 1-3 -> Module 1, Week 4-6 -> Module 2, etc.
                               const moduleIndex = Math.floor((week - 1) / 3) % modules.length;
                               targetModuleId = modules[moduleIndex]._id;
-                            } else {
-                              // Fallback to empty slots if no modules available
-                              const moduleIndex = Math.min(Math.floor((week - 1) / 3), 11);
-                              targetModuleId = `empty-${moduleIndex}`;
                             }
                           }
                         }
 
-                        // Fallback: put in first available module or first empty slot
                         if (!targetModuleId) {
-                          targetModuleId = modules[0]?._id || 'empty-0';
+                          targetModuleId = modules[0]?._id;
                         }
 
-                        // Add points to the target module
                         if (
+                          targetModuleId &&
                           pointsByModule[targetModuleId] &&
                           detail.category &&
                           pointsByModule[targetModuleId][detail.category] !== undefined
@@ -594,158 +632,150 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
                       });
 
                       return (
-                        <React.Fragment key={userData.user._id}>
-                          <TableRow>
-                            <TableCell sx={{ borderRight: '2px solid', borderColor: 'divider' }}>
-                              <Typography variant="subtitle2" color="text.primary">
-                                {userData.user.name} {userData.user.surname}
-                              </Typography>
-                              <Typography variant="caption" color="text.secondary">
-                                {userData.user.studentNumber || 'N/A'}
-                              </Typography>
-                            </TableCell>
-                            <TableCell
-                              align="center"
-                              sx={{
-                                borderRight: '2px solid',
-                                borderColor: 'divider',
-                                fontWeight: 'bold',
-                                color: 'text.primary'
-                              }}
-                            >
-                              {userData.points.totalPoints || 0}
-                            </TableCell>
-                            {/* Modules 1-12 */}
-                            {Array.from({ length: 12 }, (_, moduleIndex) => {
-                              const moduleId = modules[moduleIndex]?._id || `empty-${moduleIndex}`;
-                              const modulePoints = pointsByModule[moduleId] || {
-                                question_creation: 0,
-                                question_validation: 0,
-                                question_reparation: 0
-                              };
+                        <TableRow key={userData.user._id}>
+                          <TableCell
+                            sx={{
+                              borderRight: '2px solid',
+                              borderColor: 'divider',
+                              position: 'sticky',
+                              left: 0,
+                              zIndex: 1,
+                              backgroundColor: 'background.paper'
+                            }}
+                          >
+                            <Typography variant="subtitle2" color="text.primary">
+                              {userData.user.name} {userData.user.surname}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {userData.user.studentNumber || 'N/A'}
+                            </Typography>
+                          </TableCell>
+                          <TableCell
+                            align="center"
+                            sx={{
+                              borderRight: '2px solid',
+                              borderColor: 'divider',
+                              fontWeight: 'bold',
+                              color: 'text.primary'
+                            }}
+                          >
+                            {userData.points.totalPoints || 0}
+                          </TableCell>
+                          {/* Module columns */}
+                          {modules.map((mod, moduleIndex) => {
+                            const modulePoints = pointsByModule[mod._id] || {
+                              question_creation: 0,
+                              question_validation: 0,
+                              question_reparation: 0
+                            };
 
-                              return (
-                                <React.Fragment key={`module-${moduleIndex}`}>
-                                  <EditableCell
-                                    userId={userData.user._id}
-                                    category="question_creation"
-                                    moduleId={moduleId}
-                                    value={modulePoints.question_creation}
-                                    pointDetails={userData.points.details}
-                                    sx={{
-                                      borderRight: '1px solid',
-                                      borderColor: 'divider',
-                                      bgcolor: moduleIndex % 2 === 0 ? 'action.hover' : 'inherit'
-                                    }}
-                                  />
-                                  <EditableCell
-                                    userId={userData.user._id}
-                                    category="question_validation"
-                                    moduleId={moduleId}
-                                    value={modulePoints.question_validation}
-                                    pointDetails={userData.points.details}
-                                    sx={{
-                                      borderRight: '1px solid',
-                                      borderColor: 'divider',
-                                      bgcolor: moduleIndex % 2 === 0 ? 'action.hover' : 'inherit'
-                                    }}
-                                  />
-                                  <EditableCell
-                                    userId={userData.user._id}
-                                    category="question_reparation"
-                                    moduleId={moduleId}
-                                    value={modulePoints.question_reparation}
-                                    pointDetails={userData.points.details}
-                                    sx={{
-                                      borderRight: '2px solid',
-                                      borderColor: 'divider',
-                                      bgcolor: moduleIndex % 2 === 0 ? 'action.hover' : 'inherit'
-                                    }}
-                                  />
-                                </React.Fragment>
-                              );
-                            })}
+                            return (
+                              <React.Fragment key={`module-${mod._id}`}>
+                                <EditableCell
+                                  userId={userData.user._id}
+                                  category="question_creation"
+                                  moduleId={mod._id}
+                                  value={modulePoints.question_creation}
+                                  pointDetails={userData.points.details}
+                                  sx={{
+                                    borderRight: '1px solid',
+                                    borderColor: 'divider',
+                                    bgcolor: moduleIndex % 2 === 0 ? 'action.hover' : 'inherit'
+                                  }}
+                                />
+                                <EditableCell
+                                  userId={userData.user._id}
+                                  category="question_validation"
+                                  moduleId={mod._id}
+                                  value={modulePoints.question_validation}
+                                  pointDetails={userData.points.details}
+                                  sx={{
+                                    borderRight: '1px solid',
+                                    borderColor: 'divider',
+                                    bgcolor: moduleIndex % 2 === 0 ? 'action.hover' : 'inherit'
+                                  }}
+                                />
+                                <EditableCell
+                                  userId={userData.user._id}
+                                  category="question_reparation"
+                                  moduleId={mod._id}
+                                  value={modulePoints.question_reparation}
+                                  pointDetails={userData.points.details}
+                                  sx={{
+                                    borderRight: '2px solid',
+                                    borderColor: 'divider',
+                                    bgcolor: moduleIndex % 2 === 0 ? 'action.hover' : 'inherit'
+                                  }}
+                                />
+                              </React.Fragment>
+                            );
+                          })}
 
-                            {/* Extra categories */}
-                            <EditableCell
-                              userId={userData.user._id}
-                              category="test_performance"
-                              moduleId={null}
-                              value={extraPoints.test_performance}
-                              pointDetails={userData.points.details}
-                              sx={{
-                                borderRight: '1px solid',
-                                borderColor: 'divider',
-                                bgcolor: 'action.selected',
-                                fontWeight: 'bold'
-                              }}
-                            />
-                            <EditableCell
-                              userId={userData.user._id}
-                              category="forum_participation"
-                              moduleId={null}
-                              value={extraPoints.forum_participation}
-                              pointDetails={userData.points.details}
-                              sx={{
-                                borderRight: '1px solid',
-                                borderColor: 'divider',
-                                bgcolor: 'action.selected',
-                                fontWeight: 'bold'
-                              }}
-                            />
-                            <EditableCell
-                              userId={userData.user._id}
-                              category="project_work"
-                              moduleId={null}
-                              value={extraPoints.project_work}
-                              pointDetails={userData.points.details}
-                              sx={{
-                                borderRight: '1px solid',
-                                borderColor: 'divider',
-                                bgcolor: 'action.selected',
-                                fontWeight: 'bold'
-                              }}
-                            />
-                            <EditableCell
-                              userId={userData.user._id}
-                              category="other"
-                              moduleId={null}
-                              value={extraPoints.other}
-                              pointDetails={userData.points.details}
-                              sx={{
-                                borderRight: '2px solid',
-                                borderColor: 'divider',
-                                bgcolor: 'action.selected',
-                                fontWeight: 'bold'
-                              }}
-                            />
-                          </TableRow>
-                        </React.Fragment>
+                          {/* Extra categories */}
+                          <EditableCell
+                            userId={userData.user._id}
+                            category="test_performance"
+                            moduleId={null}
+                            value={extraPoints.test_performance}
+                            pointDetails={userData.points.details}
+                            sx={{
+                              borderRight: '1px solid',
+                              borderColor: 'divider',
+                              bgcolor: 'action.selected',
+                              fontWeight: 'bold'
+                            }}
+                          />
+                          <EditableCell
+                            userId={userData.user._id}
+                            category="forum_participation"
+                            moduleId={null}
+                            value={extraPoints.forum_participation}
+                            pointDetails={userData.points.details}
+                            sx={{
+                              borderRight: '1px solid',
+                              borderColor: 'divider',
+                              bgcolor: 'action.selected',
+                              fontWeight: 'bold'
+                            }}
+                          />
+                          <EditableCell
+                            userId={userData.user._id}
+                            category="project_work"
+                            moduleId={null}
+                            value={extraPoints.project_work}
+                            pointDetails={userData.points.details}
+                            sx={{
+                              borderRight: '1px solid',
+                              borderColor: 'divider',
+                              bgcolor: 'action.selected',
+                              fontWeight: 'bold'
+                            }}
+                          />
+                          <EditableCell
+                            userId={userData.user._id}
+                            category="other"
+                            moduleId={null}
+                            value={extraPoints.other}
+                            pointDetails={userData.points.details}
+                            sx={{
+                              borderRight: '2px solid',
+                              borderColor: 'divider',
+                              bgcolor: 'action.selected',
+                              fontWeight: 'bold'
+                            }}
+                          />
+                        </TableRow>
                       );
                     })}
                 </TableBody>
               </Table>
             </TableContainer>
-          </>
-        )}
-      </DialogContent>
-      <DialogActions
-        sx={{
-          padding: '16px',
-          borderTop: '1px solid',
-          borderColor: 'divider',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center'
-        }}
-      >
-        {/* Pagination controls in the footer */}
-        {pointsData && (
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+
+            {/* Pagination */}
             <TablePagination
               rowsPerPageOptions={[5, 10, 25, 50]}
               component="div"
-              count={pointsData.data.length}
+              count={dataRows.length}
               rowsPerPage={rowsPerPage}
               page={page}
               onPageChange={handleChangePage}
@@ -753,27 +783,24 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
               labelRowsPerPage="Riadkov na stránku:"
               labelDisplayedRows={({ from, to, count }) => `${from}-${to} z ${count}`}
               sx={{
-                border: 'none',
+                borderTop: '1px solid',
+                borderColor: 'divider',
                 '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
                   fontWeight: 'bold'
                 }
               }}
             />
-          </Box>
-        )}
+          </Paper>
+        </>
+      )}
 
-        <Button onClick={onClose} variant="outlined" color="error">
-          Zrušiť
-        </Button>
-      </DialogActions>
-    </Dialog>
+      {!isUsersLoading && !isPointsLoading && usersList.length === 0 && (
+        <Typography color="text.secondary" sx={{ mt: 2 }}>
+          Pre tento predmet nie sú priradení žiadni používatelia.
+        </Typography>
+      )}
+    </Box>
   );
 };
 
-UserPointsModal.propTypes = {
-  open: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired,
-  userIds: PropTypes.array.isRequired
-};
-
-export default UserPointsModal;
+export default TeacherDashboard;

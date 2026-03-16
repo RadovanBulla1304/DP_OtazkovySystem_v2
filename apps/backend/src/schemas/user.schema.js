@@ -95,6 +95,15 @@ const updateUserSchema = Joi.object({
   }),
   isActive: Joi.boolean().messages({
     'boolean.base': 'isActive musí byť boolean hodnota',
+  }),
+  adminNotes: Joi.string().allow('').max(5000).messages({
+    'string.max': 'Poznámka nesmie presiahnuť 5000 znakov',
+  }),
+  isRepetent: Joi.boolean().messages({
+    'boolean.base': 'isRepetent musí byť boolean hodnota',
+  }),
+  isPostZapis: Joi.boolean().messages({
+    'boolean.base': 'isPostZapis musí byť boolean hodnota',
   })
 });
 

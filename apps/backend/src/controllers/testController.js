@@ -619,6 +619,7 @@ const submitTestAttempt = async (req, res) => {
 
             const point = new Point({
                 student: userId,
+                subject: testAttempt.test?.subject || null,
                 reason: `Dokončenie testu: ${testAttempt.test.title}`,
                 points: pointsEarned,
                 category: 'test_performance',

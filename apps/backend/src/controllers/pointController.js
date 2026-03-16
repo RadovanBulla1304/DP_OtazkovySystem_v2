@@ -2,14 +2,116 @@ const { throwError } = require("../util/universal");
 const Point = require("../models/point");
 const Question = require("../models/question");
 const User = require("../models/user"); // Assuming you have a User model
+const Module = require("../models/modul");
+const Project = require("../models/project");
+const Test = require("../models/test");
+const TestAttempt = require("../models/testAttempt");
+const ForumQuestion = require("../models/forumQuestion");
+
+const getPointSubjectId = async (point, caches = {}) => {
+    if (point.subject) return point.subject.toString();
+
+    const rel = point.related_entity;
+    if (!rel || !rel.entity_type || !rel.entity_id) return null;
+
+    const entityType = rel.entity_type;
+    const entityId = rel.entity_id.toString();
+
+    if (entityType === "Question") {
+        caches.questionToSubject = caches.questionToSubject || new Map();
+        if (caches.questionToSubject.has(entityId)) {
+            return caches.questionToSubject.get(entityId);
+        }
+
+        const question = await Question.findById(entityId).select("modul");
+        if (!question || !question.modul) {
+            caches.questionToSubject.set(entityId, null);
+            return null;
+        }
+
+        const mod = await Module.findById(question.modul).select("subject");
+        const subjectId = mod?.subject ? mod.subject.toString() : null;
+        caches.questionToSubject.set(entityId, subjectId);
+        return subjectId;
+    }
+
+    if (entityType === "Project") {
+        caches.projectToSubject = caches.projectToSubject || new Map();
+        if (caches.projectToSubject.has(entityId)) {
+            return caches.projectToSubject.get(entityId);
+        }
+
+        const project = await Project.findById(entityId).select("subject");
+        const subjectId = project?.subject ? project.subject.toString() : null;
+        caches.projectToSubject.set(entityId, subjectId);
+        return subjectId;
+    }
+
+    if (entityType === "Test") {
+        caches.testToSubject = caches.testToSubject || new Map();
+        if (caches.testToSubject.has(entityId)) {
+            return caches.testToSubject.get(entityId);
+        }
+
+        const test = await Test.findById(entityId).select("subject");
+        const subjectId = test?.subject ? test.subject.toString() : null;
+        caches.testToSubject.set(entityId, subjectId);
+        return subjectId;
+    }
+
+    if (entityType === "TestAttempt") {
+        caches.testAttemptToSubject = caches.testAttemptToSubject || new Map();
+        if (caches.testAttemptToSubject.has(entityId)) {
+            return caches.testAttemptToSubject.get(entityId);
+        }
+
+        const attempt = await TestAttempt.findById(entityId).select("test");
+        if (!attempt || !attempt.test) {
+            caches.testAttemptToSubject.set(entityId, null);
+            return null;
+        }
+
+        const test = await Test.findById(attempt.test).select("subject");
+        const subjectId = test?.subject ? test.subject.toString() : null;
+        caches.testAttemptToSubject.set(entityId, subjectId);
+        return subjectId;
+    }
+
+    if (entityType === "ForumQuestion") {
+        caches.forumToSubject = caches.forumToSubject || new Map();
+        if (caches.forumToSubject.has(entityId)) {
+            return caches.forumToSubject.get(entityId);
+        }
+
+        const forum = await ForumQuestion.findById(entityId).select("modul");
+        if (!forum || !forum.modul) {
+            caches.forumToSubject.set(entityId, null);
+            return null;
+        }
+
+        const mod = await Module.findById(forum.modul).select("subject");
+        const subjectId = mod?.subject ? mod.subject.toString() : null;
+        caches.forumToSubject.set(entityId, subjectId);
+        return subjectId;
+    }
+
+    return null;
+};
 
 /**
- * Get all points for a user
+ * Get all points for a user (optionally filtered by subject)
  */
 exports.getUserPoints = async (req, res) => {
     try {
         const userId = req.params.userId;
-        const points = await Point.find({ student: userId }).sort({ createdAt: -1 });
+        const { subjectId } = req.query;
+
+        const filter = { student: userId };
+        if (subjectId) {
+            filter.subject = subjectId;
+        }
+
+        const points = await Point.find(filter).sort({ createdAt: -1 });
 
         res.status(200).json({
             success: true,
@@ -21,12 +123,19 @@ exports.getUserPoints = async (req, res) => {
 };
 
 /**
- * Get summary of points by category for a user
+ * Get summary of points by category for a user (optionally filtered by subject)
  */
 exports.getUserPointsSummary = async (req, res) => {
     try {
         const userId = req.params.userId;
-        const points = await Point.find({ student: userId });
+        const { subjectId } = req.query;
+
+        const filter = { student: userId };
+        if (subjectId) {
+            filter.subject = subjectId;
+        }
+
+        const points = await Point.find(filter);
 
         // Group and sum points by category
         const summary = {};
@@ -53,18 +162,53 @@ exports.getUserPointsSummary = async (req, res) => {
 };
 
 /**
- * Get points summary for multiple users
+ * Get points summary for multiple users (optionally filtered by subject)
  */
 exports.getUsersPointsSummary = async (req, res) => {
     try {
-        const { userIds } = req.body;
+        const { userIds, subjectId } = req.body;
 
         if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
             return throwError("Valid array of user IDs is required", 400);
         }
 
-        // Find all points for the specified users
-        const allPoints = await Point.find({ student: { $in: userIds } }).sort({ createdAt: -1 });
+        // Fetch all points for users, then apply subject filtering with fallback derivation
+        // for legacy points that do not have point.subject filled.
+        const allPointsRaw = await Point.find({ student: { $in: userIds } }).sort({ createdAt: -1 });
+
+        let allPoints = allPointsRaw;
+        if (subjectId) {
+            const subjectIdStr = subjectId.toString();
+            const caches = {};
+
+            // Fallback set for legacy points that have neither subject nor resolvable related entity.
+            // If a student is assigned to this subject, we treat such points as belonging to it.
+            const usersAssignedToSubject = await User.find({
+                _id: { $in: userIds },
+                assignedSubjects: subjectId,
+            }).select("_id");
+            const usersAssignedSet = new Set(usersAssignedToSubject.map((u) => u._id.toString()));
+
+            const resolved = await Promise.all(
+                allPointsRaw.map(async (point) => {
+                    const resolvedSubject = await getPointSubjectId(point, caches);
+                    return {
+                        point,
+                        resolvedSubject,
+                    };
+                })
+            );
+
+            allPoints = resolved
+                .filter(({ point, resolvedSubject }) => {
+                    const pointSubject = point.subject ? point.subject.toString() : resolvedSubject;
+                    if (!pointSubject) {
+                        return usersAssignedSet.has(point.student.toString());
+                    }
+                    return pointSubject === subjectIdStr;
+                })
+                .map(({ point }) => point);
+        }
 
         // Group points by user
         const userSummaries = {};
@@ -107,6 +251,12 @@ exports.getUsersPointsSummary = async (req, res) => {
                     points: point.points,
                     reason: point.reason,
                     category: point.category,
+                    question_id:
+                        point.related_entity?.entity_type === "Question"
+                            ? point.related_entity?.entity_id
+                            : null,
+                    related_entity: point.related_entity || null,
+                    subject: point.subject || null,
                     createdAt: point.createdAt
                 });
             }
@@ -177,9 +327,19 @@ exports.awardPointsForQuestionCreation = async (req, res) => {
         for (const [studentId, studentQuestions] of Object.entries(questionsByStudent)) {
             // Award 1 point per question
             for (const question of studentQuestions) {
+                // Derive subject from question's module
+                let subjectId = null;
+                if (question.modul) {
+                    const mod = await Module.findById(question.modul);
+                    if (mod && mod.subject) {
+                        subjectId = mod.subject;
+                    }
+                }
+
                 // Create point record
                 const point = new Point({
                     student: studentId,
+                    subject: subjectId,
                     reason: `Vytvorenie otázky v týždni ${week}`,
                     points: 1, // 1 point per question
                     category: "question_creation",
@@ -259,9 +419,19 @@ exports.awardPointsForQuestionValidation = async (req, res) => {
         for (const [validatorId, validatedQuestions] of Object.entries(validationsByStudent)) {
             // Award 1 point per validation
             for (const question of validatedQuestions) {
+                // Derive subject from question's module
+                let subjectId = null;
+                if (question.modul) {
+                    const mod = await Module.findById(question.modul);
+                    if (mod && mod.subject) {
+                        subjectId = mod.subject;
+                    }
+                }
+
                 // Create point record
                 const point = new Point({
                     student: validatorId,
+                    subject: subjectId,
                     reason: `Validácia otázky v týždni ${week}`,
                     points: 1, // 1 point per validation
                     category: "question_validation",
@@ -331,9 +501,19 @@ exports.awardPointsForQuestionReparation = async (req, res) => {
             // The question creator is the one who responded to validation
             const studentId = question.createdBy.toString();
 
+            // Derive subject from question's module
+            let subjectId = null;
+            if (question.modul) {
+                const mod = await Module.findById(question.modul);
+                if (mod && mod.subject) {
+                    subjectId = mod.subject;
+                }
+            }
+
             // Create point record
             const point = new Point({
                 student: studentId,
+                subject: subjectId,
                 reason: `Reakcia na validáciu v týždni ${week}`,
                 points: 1, // 1 point per response
                 category: "question_reparation",
@@ -376,7 +556,7 @@ exports.awardPointsForQuestionReparation = async (req, res) => {
  */
 exports.awardCustomPoints = async (req, res) => {
     try {
-        const { studentId, points, reason, category = "other" } = req.body;
+        const { studentId, points, reason, category = "other", subjectId } = req.body;
 
         // Validate input
         if (!studentId || !points || !reason) {
@@ -398,6 +578,7 @@ exports.awardCustomPoints = async (req, res) => {
         // Create the point record
         const point = new Point({
             student: studentId,
+            subject: subjectId || null,
             reason,
             points,
             category

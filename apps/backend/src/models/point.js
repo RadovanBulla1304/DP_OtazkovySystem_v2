@@ -7,6 +7,10 @@ const PointSchema = new mongoose.Schema(
             ref: "User",
             required: true,
         },
+        subject: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Subject",
+        },
         assigned_by: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Teacher",
@@ -50,7 +54,9 @@ const PointSchema = new mongoose.Schema(
 
 // Indexes
 PointSchema.index({ student: 1, createdAt: -1 })
+PointSchema.index({ student: 1, subject: 1, createdAt: -1 })
 PointSchema.index({ assigned_by: 1 })
 PointSchema.index({ category: 1 })
+PointSchema.index({ subject: 1 })
 
 module.exports = mongoose.model("Point", PointSchema)

@@ -5,6 +5,7 @@ import {
   useDeleteSubjectMutation,
   useGetAllTeachersQuery,
   useGetModulsBySubjectQuery,
+  useGetPendingAssignmentsQuery,
   useGetSubjectByIdQuery,
   useGetTeacherMeQuery,
   useGetUsersListQuery,
@@ -12,10 +13,12 @@ import {
 } from '@app/redux/api';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
+import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import PeopleIcon from '@mui/icons-material/People';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import {
+  Badge,
   Box,
   Breadcrumbs,
   Button,
@@ -43,6 +46,7 @@ import DeleteModulDialog from './components/DeleteModulDialog';
 import DeleteSubjectDialog from './components/DeleteSubjectDialog';
 import EditModulModal from './components/EditModulModal';
 import EditSubjectModal from './components/EditSubjectModal';
+import PendingAssignmentsModal from './components/PendingAssignmentsModal';
 import UnassignUsersDialog from './components/UnassignUsersDialog';
 
 const SubjectDetail = () => {
@@ -77,6 +81,9 @@ const SubjectDetail = () => {
   // CSV upload modal state
   const [isCSVModalOpen, setIsCSVModalOpen] = useState(false);
 
+  // Pending assignments modal state
+  const [isPendingModalOpen, setIsPendingModalOpen] = useState(false);
+
   // Unassign users dialog state
   const [isUnassignDialogOpen, setIsUnassignDialogOpen] = useState(false);
 
@@ -90,6 +97,9 @@ const SubjectDetail = () => {
 
   // Fetch teachers
   const { data: allTeachers = [] } = useGetAllTeachersQuery();
+
+  // Fetch pending assignments count for badge
+  const { data: pendingAssignments = [] } = useGetPendingAssignmentsQuery(subjectId);
 
   // Get current teacher to check permissions
   const storedUser = authService.getUserFromStorage();
@@ -406,6 +416,20 @@ const SubjectDetail = () => {
                       <UploadFileIcon />
                     </IconButton>
                   </Tooltip>
+                  <Tooltip title="Čakajúce priradenia">
+                    <IconButton
+                      color="warning"
+                      onClick={() => setIsPendingModalOpen(true)}
+                    >
+                      <Badge
+                        badgeContent={pendingAssignments?.length || 0}
+                        color="warning"
+                        max={99}
+                      >
+                        <HourglassEmptyIcon />
+                      </Badge>
+                    </IconButton>
+                  </Tooltip>
                   <Tooltip title="Upraviť predmet">
                     <IconButton color="primary" onClick={handleEditSubject}>
                       <EditIcon />
@@ -615,6 +639,13 @@ const SubjectDetail = () => {
         onClose={handleCloseCSVModal}
         subjectId={subjectId}
         onSuccess={handleCSVAssignSuccess}
+      />
+
+      {/* Pending Assignments Modal */}
+      <PendingAssignmentsModal
+        open={isPendingModalOpen}
+        onClose={() => setIsPendingModalOpen(false)}
+        subjectId={subjectId}
       />
 
       {/* Edit Modul Modal */}

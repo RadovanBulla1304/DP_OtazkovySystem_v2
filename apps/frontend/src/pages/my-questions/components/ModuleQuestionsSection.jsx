@@ -9,7 +9,10 @@ const ModuleQuestionsSection = ({
   validatedQuestions,
   currentWeek,
   userId,
-  showDivider = false
+  showDivider = false,
+  onValidate,
+  onRespond,
+  onEdit
 }) => {
   return (
     <Box>
@@ -50,6 +53,8 @@ const ModuleQuestionsSection = ({
               currentWeek={currentWeek}
               isValidatedByUser={false}
               userId={userId}
+              onRespond={onRespond}
+              onEdit={onEdit}
             />
           ))}
         </Box>
@@ -86,6 +91,7 @@ const ModuleQuestionsSection = ({
                     currentWeek={currentWeek}
                     isValidatedByUser={true}
                     userId={userId}
+                    onValidate={onValidate}
                   />
                 );
               } else {
@@ -124,7 +130,10 @@ ModuleQuestionsSection.propTypes = {
   validatedQuestions: PropTypes.array.isRequired,
   currentWeek: PropTypes.number.isRequired,
   userId: PropTypes.string.isRequired,
-  showDivider: PropTypes.bool
+  showDivider: PropTypes.bool,
+  onValidate: PropTypes.func,
+  onRespond: PropTypes.func,
+  onEdit: PropTypes.func
 };
 
 export default ModuleQuestionsSection;

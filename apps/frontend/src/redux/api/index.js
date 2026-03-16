@@ -16,7 +16,7 @@ const baseQuery = fetchBaseQuery({
 export const api = createApi({
   reducerPath: 'api',
   baseQuery,
-  tagTypes: ['Users', 'Subjects', 'Moduls', 'Questions', 'QuestionRatings', 'ForumQuestions', 'Comments', 'Tests', 'Points', 'Projects', 'ProjectRatings'],
+  tagTypes: ['Users', 'Subjects', 'Moduls', 'Questions', 'QuestionRatings', 'ForumQuestions', 'Comments', 'Tests', 'Points', 'Projects', 'ProjectRatings', 'PendingAssignments'],
   endpoints: (builder) => ({
     // USERS
     getUserMe: builder.query({
@@ -118,6 +118,21 @@ export const api = createApi({
       },
       providesTags: ['Users'],
     }),
+    getAdminUserDetails: builder.query({
+      query: (userId) => ({
+        url: `/admin/user/${userId}/details`,
+        method: 'GET'
+      }),
+      providesTags: (result, error, userId) => [{ type: 'Users', id: userId }, 'Users']
+    }),
+    updateUserAcademicProfile: builder.mutation({
+      query: ({ userId, data }) => ({
+        url: `/admin/user/${userId}/academic-profile`,
+        method: 'PATCH',
+        body: data
+      }),
+      invalidatesTags: (result, error, { userId }) => [{ type: 'Users', id: userId }, 'Users']
+    }),
     // SUBJECTS
     createSubject: builder.mutation({
       query: (data) => ({
@@ -217,6 +232,39 @@ export const api = createApi({
         method: 'GET'
       }),
       providesTags: ['Subjects']
+    }),
+    // PENDING SUBJECT ASSIGNMENTS
+    createPendingAssignments: builder.mutation({
+      query: (data) => ({
+        url: '/subject/pending-assignments',
+        method: 'POST',
+        body: data
+      }),
+      invalidatesTags: ['PendingAssignments']
+    }),
+    getPendingAssignments: builder.query({
+      query: (subjectId) => ({
+        url: `/subject/pending-assignments/${subjectId}`,
+        method: 'GET'
+      }),
+      providesTags: (result, error, subjectId) => [
+        { type: 'PendingAssignments', id: subjectId },
+        'PendingAssignments'
+      ]
+    }),
+    deletePendingAssignment: builder.mutation({
+      query: (id) => ({
+        url: `/subject/pending-assignment/${id}`,
+        method: 'DELETE'
+      }),
+      invalidatesTags: ['PendingAssignments']
+    }),
+    deleteAllPendingAssignments: builder.mutation({
+      query: (subjectId) => ({
+        url: `/subject/pending-assignments/${subjectId}/all`,
+        method: 'DELETE'
+      }),
+      invalidatesTags: ['PendingAssignments']
     }),
     // MODULES
     createModul: builder.mutation({
@@ -950,10 +998,10 @@ export const api = createApi({
       ]
     }),
     getUsersPointsSummary: builder.mutation({
-      query: (userIds) => ({
+      query: ({ userIds, subjectId }) => ({
         url: `/point/users/summary`,
         method: 'POST',
-        body: { userIds }
+        body: { userIds, subjectId }
       }),
       invalidatesTags: ['Points']
     }),
@@ -1121,6 +1169,8 @@ export const {
   useCreateTeacherMutation,
   useRemoveTeacherMutation,
   useUpdateUserMutation,
+  useGetAdminUserDetailsQuery,
+  useUpdateUserAcademicProfileMutation,
   useUpdateTeacherMutation,
   useRemoveUserMutation,
   useGetUsersListQuery,
@@ -1138,6 +1188,11 @@ export const {
   useUnassignTeacherFromSubjectMutation,
   useTriggerYearlyUnassignmentMutation,
   useGetTeacherSubjectsQuery,
+  // PENDING ASSIGNMENTS
+  useCreatePendingAssignmentsMutation,
+  useGetPendingAssignmentsQuery,
+  useDeletePendingAssignmentMutation,
+  useDeleteAllPendingAssignmentsMutation,
   // MODULS
   useCreateModulMutation,
   useGetAllModulsQuery,

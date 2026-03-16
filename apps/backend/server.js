@@ -4,6 +4,7 @@ const cron = require('node-cron');
 
 const mongoose = require('mongoose');
 const Teacher = require('./src/models/teacher');
+const { backfillUserAcademicProfile } = require('./src/migrations/backfillUserAcademicProfile');
 
 const app = require('./app');
 
@@ -40,6 +41,8 @@ const start = async () => {
     try {
         await mongoose.connect(process.env.MONGO_DATABASE_URL);
         console.log('Mongoose connected');
+        const migrationResult = await backfillUserAcademicProfile();
+        console.log('User academic profile migration finished:', migrationResult);
         await createDefaultUser();
 
         app.listen(5000, () => {

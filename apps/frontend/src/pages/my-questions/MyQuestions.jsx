@@ -1,14 +1,19 @@
 import { useCurrentSubject } from '@app/hooks/useCurrentSubject'; // adjust path as needed
+import EditQuestionModal from '@app/pages/admin/dashboard/components/EditQuestionModal';
+import RespondToValidationModal from '@app/pages/admin/subjects/components/RespondToValidationModal';
+import ValidateQuestionModal from '@app/pages/admin/subjects/components/ValidateQuestionModal';
 import * as authService from '@app/pages/auth/authService';
 import {
   useGetModulsBySubjectQuery,
   useGetQuestionByUserIdQuery,
   useGetQuestionsByModulQuery,
-  useGetQuestionsBySubjectIdQuery
+  useGetQuestionsBySubjectIdQuery,
+  useRespondToValidationMutation,
+  useUpdateQuestionMutation,
+  useValidateQuestionMutation
 } from '@app/redux/api';
 import { Box, Typography } from '@mui/material';
 import React from 'react';
-import DebugWeekControls from './components/DebugWeekControls';
 import FilterControls from './components/FilterControls';
 import ModuleQuestionsSection from './components/ModuleQuestionsSection';
 
@@ -26,8 +31,22 @@ const MyQuestions = () => {
     modulId: ''
   });
 
-  // Debug: manual week override
-  const [debugWeekOverride, setDebugWeekOverride] = React.useState(null);
+  // Debug: manual week override is disabled
+  // const [debugWeekOverride, setDebugWeekOverride] = React.useState(null);
+
+  // Validation modal state
+  const [validateOpen, setValidateOpen] = React.useState(false);
+  const [questionToValidate, setQuestionToValidate] = React.useState(null);
+  const [validateQuestion] = useValidateQuestionMutation();
+
+  // Week 3 respond/edit modal states
+  const [respondOpen, setRespondOpen] = React.useState(false);
+  const [questionToRespond, setQuestionToRespond] = React.useState(null);
+  const [respondToValidation] = useRespondToValidationMutation();
+
+  const [editModalOpen, setEditModalOpen] = React.useState(false);
+  const [questionToEdit, setQuestionToEdit] = React.useState(null);
+  const [updateQuestion] = useUpdateQuestionMutation();
 
   // Fetch modules for the selected subject
   const { data: subjectModuls = [] } = useGetModulsBySubjectQuery(subjectId, {
@@ -88,10 +107,10 @@ const MyQuestions = () => {
 
   // Helper to determine current week for a module
   const getCurrentWeek = (modul) => {
-    // Debug override takes precedence
-    if (debugWeekOverride !== null) {
-      return debugWeekOverride;
-    }
+    // Manual debug override disabled: always use module dates.
+    // if (debugWeekOverride !== null) {
+    //   return debugWeekOverride;
+    // }
 
     if (!modul || !modul.date_start || !modul.date_end) return 1;
 
@@ -283,11 +302,13 @@ const MyQuestions = () => {
         subjectModuls={subjectModuls}
       />
 
-      {/* Debug controls */}
+      {/* Debug controls disabled */}
+      {/*
       <DebugWeekControls
         debugWeekOverride={debugWeekOverride}
         onWeekChange={setDebugWeekOverride}
       />
+      */}
 
       {/* Questions grouped by module */}
       {Object.entries(questionsByModule).map(([modulId, moduleQuestions], index) => {
@@ -308,9 +329,84 @@ const MyQuestions = () => {
             currentWeek={currentWeek}
             userId={userId}
             showDivider={index > 0}
+            onValidate={
+              currentWeek === 2
+                ? (q) => {
+                    setQuestionToValidate(q);
+                    setValidateOpen(true);
+                  }
+                : undefined
+            }
+            onRespond={
+              currentWeek === 3
+                ? (q) => {
+                    setQuestionToRespond(q);
+                    setRespondOpen(true);
+                  }
+                : undefined
+            }
+            onEdit={
+              currentWeek === 1 || currentWeek === 3
+                ? (q) => {
+                    setQuestionToEdit(q);
+                    setEditModalOpen(true);
+                  }
+                : undefined
+            }
           />
         );
       })}
+
+      <ValidateQuestionModal
+        open={validateOpen}
+        question={questionToValidate}
+        onClose={() => setValidateOpen(false)}
+        onSubmit={async (questionId, payload) => {
+          try {
+            await validateQuestion({
+              questionId,
+              valid: payload.valid,
+              comment: payload.comment
+            }).unwrap();
+          } catch (error) {
+            console.error('Error submitting validation:', error);
+          }
+        }}
+      />
+
+      <RespondToValidationModal
+        open={respondOpen}
+        question={questionToRespond}
+        onClose={() => setRespondOpen(false)}
+        onSubmit={async (questionId, payload) => {
+          try {
+            await respondToValidation({
+              questionId,
+              agreed: payload.agreed,
+              comment: payload.comment
+            }).unwrap();
+          } catch (error) {
+            console.error('Error submitting response:', error);
+          }
+        }}
+      />
+
+      <EditQuestionModal
+        open={editModalOpen}
+        question={questionToEdit}
+        onClose={() => {
+          setEditModalOpen(false);
+          setQuestionToEdit(null);
+        }}
+        onSubmit={async (questionId, updatedData) => {
+          try {
+            await updateQuestion({ questionId, ...updatedData }).unwrap();
+          } catch (error) {
+            console.error('Error updating question:', error);
+            throw error;
+          }
+        }}
+      />
     </Box>
   );
 };

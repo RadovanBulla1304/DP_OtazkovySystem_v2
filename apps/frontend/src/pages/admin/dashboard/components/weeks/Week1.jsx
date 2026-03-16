@@ -1,7 +1,9 @@
-import { useGetUserPointsQuery } from '@app/redux/api';
+import { useGetUserPointsQuery, useUpdateQuestionMutation } from '@app/redux/api';
 import { Box, Chip, Stack, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
+import { useState } from 'react';
 import AddQuestionModal from '../AddQuestionModal';
+import EditQuestionModal from '../EditQuestionModal';
 
 const Week1 = ({
   week,
@@ -17,6 +19,10 @@ const Week1 = ({
   const { data: pointsData } = useGetUserPointsQuery(userId, {
     skip: !userId
   });
+  const [updateQuestion] = useUpdateQuestionMutation();
+
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [questionToEdit, setQuestionToEdit] = useState(null);
 
   const userQuestions =
     (questionsByWeekMerged[selectedModul._id] &&
@@ -80,7 +86,21 @@ const Week1 = ({
                   border: '1px solid',
                   borderColor: 'success.main',
                   borderRadius: 1,
-                  bgcolor: 'success.50'
+                  bgcolor: 'success.50',
+                  cursor: isCurrent ? 'pointer' : 'default',
+                  '&:hover': !isCurrent
+                    ? {}
+                    : {
+                        backgroundColor: (theme) =>
+                          theme.palette.mode === 'dark'
+                            ? 'rgba(255, 255, 255, 0.08)'
+                            : 'action.hover'
+                      }
+                }}
+                onClick={() => {
+                  if (!isCurrent) return;
+                  setQuestionToEdit(q);
+                  setEditModalOpen(true);
                 }}
               >
                 <Typography sx={{ fontWeight: 600 }}>{q.text}</Typography>
@@ -100,6 +120,15 @@ const Week1 = ({
                       </Typography>
                     ))}
                 </Box>
+                {isCurrent && (
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ mt: 1, display: 'block' }}
+                  >
+                    Kliknite pre úpravu otázky
+                  </Typography>
+                )}
               </Box>
             );
           } else {
@@ -128,6 +157,23 @@ const Week1 = ({
           }
         })}
       </Box>
+
+      <EditQuestionModal
+        open={editModalOpen}
+        question={questionToEdit}
+        onClose={() => {
+          setEditModalOpen(false);
+          setQuestionToEdit(null);
+        }}
+        onSubmit={async (questionId, updatedData) => {
+          try {
+            await updateQuestion({ questionId, ...updatedData }).unwrap();
+          } catch (error) {
+            console.error('Error updating question:', error);
+            throw error;
+          }
+        }}
+      />
     </Box>
   );
 };

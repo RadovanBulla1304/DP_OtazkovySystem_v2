@@ -52,7 +52,8 @@ const AssignPointsToProject = ({ open, onClose, project, onSuccess }) => {
             studentId: user._id,
             points: pointsValue,
             reason: `Projektová práca: ${project.name}`,
-            category: 'project_work'
+            category: 'project_work',
+            subjectId: project?.subject?._id || project?.subject || undefined
           }).unwrap();
           successCount++;
         } catch (err) {

@@ -84,8 +84,10 @@ exports.createQuestion = [
 
             // Award point immediately for question creation
             try {
+                const modulRecord = await Module.findById(question.modul).select('subject');
                 const point = new Point({
                     student: question.createdBy,
+                    subject: modulRecord?.subject || null,
                     reason: `Question created: ${question.text.substring(0, 50)}...`,
                     points: 1,
                     category: 'question_creation',
@@ -194,8 +196,10 @@ exports.validateQuestion = async (req, res) => {
         // Award point immediately for question validation
         if (validatorId && !question.pointsAwarded.validation) {
             try {
+                const modulRecord = await Module.findById(question.modul).select('subject');
                 const point = new Point({
                     student: validatorId,
+                    subject: modulRecord?.subject || null,
                     reason: `Question validated: ${question.text.substring(0, 50)}...`,
                     points: 1,
                     category: 'question_validation',
@@ -259,8 +263,10 @@ exports.respondToValidation = async (req, res) => {
         // Award point immediately for question reparation (responding to validation)
         if (!question.pointsAwarded.reparation) {
             try {
+                const modulRecord = await Module.findById(question.modul).select('subject');
                 const point = new Point({
                     student: question.createdBy,
+                    subject: modulRecord?.subject || null,
                     reason: `Responded to validation: ${question.text.substring(0, 50)}...`,
                     points: 1,
                     category: 'question_reparation',

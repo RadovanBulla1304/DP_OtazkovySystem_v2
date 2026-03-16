@@ -1,3 +1,4 @@
+import { useCurrentSubjectId } from '@app/hooks/useCurrentSubjectId';
 import {
   useGetAllSubjectsQuery,
   useGetUsersListQuery,
@@ -12,32 +13,33 @@ import { toast } from 'react-toastify';
 import AddUserModal from '../../dashboard/components/AddUserModal';
 import AssignToSubject from '../../dashboard/components/AssignToSubject';
 import EditUserModal from '../../dashboard/components/EditUserModal';
-import UserPointsModal from '../../dashboard/components/UserPointsModal';
 import DeleteUserDialog from './DeleteUserDialog';
+import UserDetailsDialog from './UserDetailsDialog';
 
 const UsersList = () => {
   const { data, isLoading } = useGetUsersListQuery();
   const [removeUser] = useRemoveUserMutation();
   const [getUsersPointsSummary, { data: pointsSummaryData }] = useGetUsersPointsSummaryMutation();
   const { data: subjects = [] } = useGetAllSubjectsQuery();
+  const currentSubjectId = useCurrentSubjectId();
 
   // State for selected users
   const [selectedUserIds, setSelectedUserIds] = useState([]);
   // State for assign modal
   const [assignModalOpen, setAssignModalOpen] = useState(false);
-  // State for points modal
-  const [pointsModalOpen, setPointsModalOpen] = useState(false);
   // State for delete confirmation
   const [userToDelete, setUserToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [selectedUserForDetails, setSelectedUserForDetails] = useState(null);
 
-  // Fetch points summary when users are loaded
+  // Fetch points summary when users are loaded (filtered by current subject)
   useEffect(() => {
     if (data && data.length > 0) {
       const userIds = data.map((user) => user._id);
-      getUsersPointsSummary(userIds);
+      getUsersPointsSummary({ userIds, subjectId: currentSubjectId || undefined });
     }
-  }, [data, getUsersPointsSummary]);
+  }, [data, getUsersPointsSummary, currentSubjectId]);
 
   // Merge users with their points data
   const usersWithPoints = useMemo(() => {
@@ -135,8 +137,8 @@ const UsersList = () => {
   ];
 
   const handleRowClick = (params) => {
-    // NOTE: ak chceme na dvojklik nejaku aktivitu
-    console.log(params);
+    setSelectedUserForDetails(params.row);
+    setDetailsOpen(true);
   };
 
   // Handler for opening assign modal
@@ -150,24 +152,6 @@ const UsersList = () => {
 
   const handleAssignSuccess = () => {
     setSelectedUserIds([]);
-  };
-
-  // Handler for opening points modal
-  const handleOpenPointsModal = () => {
-    if (selectedUserIds.length === 0) {
-      toast.warn('Vyberte aspoň jedného používateľa');
-      return;
-    }
-    setPointsModalOpen(true);
-  };
-
-  const handleClosePointsModal = () => {
-    setPointsModalOpen(false);
-    // Refetch points data when modal closes to update the table
-    if (data && data.length > 0) {
-      const userIds = data.map((user) => user._id);
-      getUsersPointsSummary(userIds);
-    }
   };
 
   return (
@@ -185,14 +169,6 @@ const UsersList = () => {
               onClick={handleOpenAssignModal}
             >
               Priraď k predmetu
-            </Button>
-            <Button
-              variant="outlined"
-              color="secondary"
-              disabled={selectedUserIds.length === 0}
-              onClick={handleOpenPointsModal}
-            >
-              Zobraziť body
             </Button>
             <AddUserModal />
           </Grid2>
@@ -229,11 +205,6 @@ const UsersList = () => {
         userIds={selectedUserIds}
         onSuccess={handleAssignSuccess}
       />
-      <UserPointsModal
-        open={pointsModalOpen}
-        onClose={handleClosePointsModal}
-        userIds={selectedUserIds}
-      />
 
       {/* Confirmation Dialog for Delete User */}
       <DeleteUserDialog
@@ -242,6 +213,15 @@ const UsersList = () => {
         isDeleting={isDeleting}
         onClose={() => setUserToDelete(null)}
         onConfirm={() => onRemoveHandler(userToDelete)}
+      />
+
+      <UserDetailsDialog
+        open={detailsOpen}
+        user={selectedUserForDetails}
+        onClose={() => {
+          setDetailsOpen(false);
+          setSelectedUserForDetails(null);
+        }}
       />
     </Box>
   );

@@ -4,17 +4,12 @@ import * as authService from '@app/pages/auth/authService';
 import {
   useBulkAssignQuestionsMutation,
   useGetQuestionsByModulQuery,
-  useGetTeacherMeQuery,
-  useGetUserMeQuery,
   useLazyGetModulsBySubjectQuery,
   useRespondToValidationMutation,
   useValidateQuestionMutation
 } from '@app/redux/api';
 import {
   Box,
-  Button,
-  ButtonGroup,
-  Chip,
   CircularProgress,
   FormControl,
   InputLabel,
@@ -36,17 +31,6 @@ const Dashboard = () => {
   const [selectedModulId, setSelectedModulId] = useState('');
   const [trigger, { data: moduls = [], isFetching }] = useLazyGetModulsBySubjectQuery();
   const [selectedModul, setSelectedModul] = useState(null);
-
-  // Determine if user is admin for debug controls
-  const storedUser = authService.getUserFromStorage();
-  const isTeacherFromStorage = storedUser?.isTeacher === true;
-  const { data: userData } = useGetUserMeQuery(undefined, {
-    skip: isTeacherFromStorage
-  });
-  const { data: teacherData } = useGetTeacherMeQuery(undefined, {
-    skip: !isTeacherFromStorage
-  });
-  const isAdmin = isTeacherFromStorage ? teacherData?.isAdmin : userData?.isAdmin;
 
   // RTK Query mutations for validation and responses
   const [validateQuestion] = useValidateQuestionMutation();
@@ -152,8 +136,8 @@ const Dashboard = () => {
   const [respondOpen, setRespondOpen] = useState(false);
   const [questionToRespond, setQuestionToRespond] = useState(null);
 
-  // Debug: manual week override (only for admin users)
-  const [debugWeekOverride, setDebugWeekOverride] = useState(null);
+  // Debug: manual week override disabled
+  // const [debugWeekOverride, setDebugWeekOverride] = useState(null);
 
   // When selected module changes, reset selectedWeekNumber to the current week (or 1)
   useEffect(() => {
@@ -222,9 +206,10 @@ const Dashboard = () => {
 
   // Get effective current week (considering debug override)
   const getEffectiveCurrentWeek = (weeks, now) => {
-    if (debugWeekOverride !== null && weeks[debugWeekOverride - 1]) {
-      return weeks[debugWeekOverride - 1];
-    }
+    // Manual debug override disabled: always use date-based current week.
+    // if (debugWeekOverride !== null && weeks[debugWeekOverride - 1]) {
+    //   return weeks[debugWeekOverride - 1];
+    // }
     return weeks.find((w) => isDateInRange(now, w.start, w.end)) || weeks[0] || null;
   };
 
@@ -259,7 +244,7 @@ const Dashboard = () => {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedModul, debugWeekOverride]);
+  }, [selectedModul]);
 
   return (
     <Box sx={{ pt: 2 }}>
@@ -283,7 +268,8 @@ const Dashboard = () => {
             </Select>
           </FormControl>
 
-          {/* Debug controls - only for admin users */}
+          {/* Debug controls disabled */}
+          {/*
           {isAdmin && (
             <Box
               sx={{
@@ -323,6 +309,7 @@ const Dashboard = () => {
               )}
             </Box>
           )}
+          */}
         </>
       ) : (
         <Typography color="text.secondary">Pre tento predmet nie sú žiadne moduly.</Typography>

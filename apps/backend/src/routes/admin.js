@@ -8,6 +8,8 @@ const {
   createTeacher,
   getAllTeachers,
   removeTeacher,
+  getUserDetails,
+  updateUserAcademicProfile,
 } = require("../controllers/adminController");
 
 
@@ -20,6 +22,8 @@ router.post("/teacher", createTeacher);
 router.post("/user", createUser);
 router.put("/user/:id", editUser);
 router.put("/teacher/:id", editTeacher);
+router.get("/user/:id/details", getUserDetails);
+router.patch("/user/:id/academic-profile", updateUserAcademicProfile);
 router.delete("/user/:id", removeUser);
 router.delete("/teacher/:id", removeTeacher);
 
