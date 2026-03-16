@@ -1,4 +1,10 @@
 {
+  "scripts": {
+    "migrate:user-academic-profile": "docker compose exec backend node scripts/runUserAcademicProfileMigration.js",
+    "db:backup": "node scripts/db-backup.js",
+    "db:restore": "node scripts/db-restore.js",
+    "db:list-backups": "node scripts/db-list-backups.js"
+  },
   "dependencies": {
     "@mui/x-date-pickers": "^8.3.1",
     "date-fns": "^4.1.0",
