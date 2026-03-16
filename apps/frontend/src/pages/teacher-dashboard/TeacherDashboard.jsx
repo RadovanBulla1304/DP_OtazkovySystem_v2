@@ -306,8 +306,8 @@ const TeacherDashboard = () => {
 
   if (!subjectId) {
     return (
-      <Box sx={{ pt: 2, px: 2 }}>
-        <Typography variant="h4" sx={{ mb: 2 }}>
+      <Box sx={{ pt: { xs: 3, sm: 4 }, pb: { xs: 2, sm: 3 }, px: { xs: 1.5, sm: 2 } }}>
+        <Typography variant="h4" sx={{ mb: 2, fontSize: { xs: '1.75rem', sm: '2.125rem' } }}>
           Dashboard učiteľa
         </Typography>
         <Typography color="text.secondary">Vyberte predmet v prepínači predmetov.</Typography>
@@ -316,8 +316,8 @@ const TeacherDashboard = () => {
   }
 
   return (
-    <Box sx={{ pt: 2, px: 2 }}>
-      <Typography variant="h4" sx={{ mb: 2 }}>
+    <Box sx={{ pt: { xs: 3, sm: 4 }, pb: { xs: 2, sm: 3 }, px: { xs: 1.5, sm: 2 } }}>
+      <Typography variant="h4" sx={{ mb: 2, fontSize: { xs: '1.75rem', sm: '2.125rem' } }}>
         Dashboard učiteľa
       </Typography>
 
@@ -365,7 +365,14 @@ const TeacherDashboard = () => {
             </Typography>
           )}
           <Box
-            sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, alignItems: 'center' }}
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              mb: 2,
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: 1
+            }}
           >
             <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: 'text.primary' }}>
               Celkom používateľov: {dataRows.length}
@@ -378,7 +385,7 @@ const TeacherDashboard = () => {
                 overflowX: 'auto',
                 maxHeight: 'calc(100vh - 320px)',
                 '& .MuiTable-root': {
-                  minWidth: modules.length > 4 ? '150%' : '100%',
+                  minWidth: { xs: modules.length > 2 ? 1200 : 900, md: '100%' },
                   borderCollapse: 'separate',
                   borderSpacing: 0
                 }
@@ -785,6 +792,11 @@ const TeacherDashboard = () => {
               sx={{
                 borderTop: '1px solid',
                 borderColor: 'divider',
+                '& .MuiTablePagination-toolbar': {
+                  flexWrap: 'wrap',
+                  justifyContent: { xs: 'flex-start', sm: 'flex-end' },
+                  px: { xs: 1, sm: 2 }
+                },
                 '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
                   fontWeight: 'bold'
                 }

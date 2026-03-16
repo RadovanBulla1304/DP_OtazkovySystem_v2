@@ -174,7 +174,18 @@ const PeerEvaluationModal = ({ open, onClose, subjectId }) => {
 
   if (isLoading) {
     return (
-      <Dialog open={open} onClose={onClose} maxWidth="xl" fullWidth>
+      <Dialog
+        open={open}
+        onClose={onClose}
+        maxWidth="xl"
+        fullWidth
+        PaperProps={{
+          sx: {
+            mx: { xs: 1, sm: 2 },
+            width: { xs: 'calc(100% - 16px)', sm: 'auto' }
+          }
+        }}
+      >
         <DialogContent>
           <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
             <CircularProgress />
@@ -185,10 +196,21 @@ const PeerEvaluationModal = ({ open, onClose, subjectId }) => {
   }
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="xl" fullWidth>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="xl"
+      fullWidth
+      PaperProps={{
+        sx: {
+          mx: { xs: 1, sm: 2 },
+          width: { xs: 'calc(100% - 16px)', sm: 'auto' }
+        }
+      }}
+    >
       <DialogTitle sx={{ fontWeight: 600 }}>Vzájomné hodnotenie projektov</DialogTitle>
-      <DialogContent>
-        <TableContainer component={Paper} sx={{ maxHeight: 600 }}>
+      <DialogContent sx={{ px: { xs: 2, sm: 3 } }}>
+        <TableContainer component={Paper} sx={{ maxHeight: 600, overflowX: 'auto' }}>
           <Table stickyHeader size="small">
             <TableHead>
               <TableRow>
@@ -363,8 +385,23 @@ const PeerEvaluationModal = ({ open, onClose, subjectId }) => {
           </Box>
         )}
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} disabled={isSaving} variant="outlined" color="error">
+      <DialogActions
+        disableSpacing
+        sx={{
+          flexWrap: 'wrap',
+          gap: 1,
+          px: { xs: 2, sm: 3 },
+          pb: 2,
+          justifyContent: { xs: 'stretch', sm: 'flex-end' }
+        }}
+      >
+        <Button
+          onClick={onClose}
+          disabled={isSaving}
+          variant="outlined"
+          color="error"
+          sx={{ width: { xs: '100%', sm: 'auto' } }}
+        >
           Zrušiť
         </Button>
       </DialogActions>

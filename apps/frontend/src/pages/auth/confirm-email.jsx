@@ -32,11 +32,15 @@ const ConfirmEmail = () => {
   }, [token]);
 
   return (
-    <Container component="main" maxWidth="sm">
-      <Typography align="center" sx={{ mt: '10%' }} variant="h4">
+    <Container
+      component="main"
+      maxWidth="sm"
+      sx={{ minHeight: '100dvh', px: { xs: 2, sm: 3 }, py: { xs: 3, sm: 4 } }}
+    >
+      <Typography align="center" sx={{ mt: { xs: 1, sm: 2 } }} variant="h4">
         Potvrdenie emailu
       </Typography>
-      <Card sx={{ mt: '5%', mb: '20%', p: 4 }}>
+      <Card sx={{ mt: { xs: 2, sm: 3 }, mb: { xs: 2, sm: 4 }, p: { xs: 2, sm: 4 } }}>
         {status === 'loading' && (
           <Box display="flex" flexDirection="column" alignItems="center" gap={2}>
             <CircularProgress />

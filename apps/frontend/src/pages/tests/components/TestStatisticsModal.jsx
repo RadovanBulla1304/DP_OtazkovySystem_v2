@@ -56,9 +56,20 @@ const TestStatisticsModal = ({ testId, open, onClose }) => {
   if (!open) return null;
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="lg"
+      fullWidth
+      PaperProps={{
+        sx: {
+          mx: { xs: 1, sm: 2 },
+          width: { xs: 'calc(100% - 16px)', sm: 'auto' }
+        }
+      }}
+    >
       <DialogTitle>
-        <Box display="flex" justifyContent="space-between" alignItems="center">
+        <Box display="flex" justifyContent="space-between" alignItems="center" gap={1}>
           <DialogTitle sx={{ p: 0, fontWeight: 600 }}>Štatistiky testu</DialogTitle>
           <IconButton onClick={onClose} size="small">
             <CancelIcon />
@@ -70,7 +81,7 @@ const TestStatisticsModal = ({ testId, open, onClose }) => {
           </Typography>
         )}
       </DialogTitle>
-      <DialogContent dividers>
+      <DialogContent dividers sx={{ p: { xs: 1.25, sm: 2 } }}>
         {isLoading ? (
           <Box display="flex" justifyContent="center" py={4}>
             <CircularProgress />
@@ -151,7 +162,7 @@ const TestStatisticsModal = ({ testId, open, onClose }) => {
                 <Typography variant="h6" gutterBottom sx={{ mt: 3 }}>
                   Otázky s najvačsou neúspešnosťou
                 </Typography>
-                <Paper variant="outlined" sx={{ mb: 3, height: 400 }}>
+                <Paper variant="outlined" sx={{ mb: 3, height: 400, overflowX: 'auto' }}>
                   <DataGrid
                     rows={stats.mostWrongQuestions.map((q, idx) => ({
                       id: idx,
@@ -205,6 +216,7 @@ const TestStatisticsModal = ({ testId, open, onClose }) => {
                         )
                       }
                     ]}
+                    sx={{ minWidth: { xs: 760, md: '100%' } }}
                     pageSizeOptions={[1, 5, 10, 20]}
                     initialState={{
                       pagination: {
@@ -227,7 +239,7 @@ const TestStatisticsModal = ({ testId, open, onClose }) => {
             {stats.userAttempts.length === 0 ? (
               <Alert severity="info">žiadne hotové testy.</Alert>
             ) : (
-              <Paper variant="outlined" sx={{ height: 500 }}>
+              <Paper variant="outlined" sx={{ height: 500, overflowX: 'auto' }}>
                 <DataGrid
                   rows={stats.userAttempts.map((attempt) => ({
                     id: attempt._id,
@@ -373,6 +385,13 @@ const TestStatisticsModal = ({ testId, open, onClose }) => {
                       )
                     }
                   ]}
+                  sx={{
+                    minWidth: { xs: 980, md: '100%' },
+                    '& .MuiDataGrid-cell': {
+                      display: 'flex',
+                      alignItems: 'center'
+                    }
+                  }}
                   pageSizeOptions={[1, 5, 10, 20, 50]}
                   initialState={{
                     pagination: {
@@ -384,20 +403,19 @@ const TestStatisticsModal = ({ testId, open, onClose }) => {
                   slotProps={{ toolbar: { showQuickFilter: true } }}
                   disableRowSelectionOnClick
                   getRowHeight={() => 'auto'}
-                  sx={{
-                    '& .MuiDataGrid-cell': {
-                      display: 'flex',
-                      alignItems: 'center'
-                    }
-                  }}
                 />
               </Paper>
             )}
           </Box>
         )}
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} variant="outlined" color="error">
+      <DialogActions disableSpacing sx={{ flexWrap: 'wrap', gap: 1 }}>
+        <Button
+          onClick={onClose}
+          variant="outlined"
+          color="error"
+          sx={{ width: { xs: '100%', sm: 'auto' } }}
+        >
           Zrušiť
         </Button>
       </DialogActions>
@@ -407,6 +425,12 @@ const TestStatisticsModal = ({ testId, open, onClose }) => {
         open={!!deleteAttemptId}
         onClose={() => setDeleteAttemptId(null)}
         aria-labelledby="delete-attempt-dialog-title"
+        PaperProps={{
+          sx: {
+            mx: { xs: 1, sm: 2 },
+            width: { xs: 'calc(100% - 16px)', sm: 'auto' }
+          }
+        }}
       >
         <DialogTitle id="delete-attempt-dialog-title" sx={{ fontWeight: 600 }}>
           Vymazať pokus o test?
@@ -414,12 +438,13 @@ const TestStatisticsModal = ({ testId, open, onClose }) => {
         <DialogContent>
           <Typography>Naozaj chcete vymazať tento pokus o test? Táto akcia je nevratná.</Typography>
         </DialogContent>
-        <DialogActions>
+        <DialogActions disableSpacing sx={{ flexWrap: 'wrap', gap: 1 }}>
           <Button
             onClick={() => setDeleteAttemptId(null)}
             variant="outlined"
             disabled={isDeleting}
             color="error"
+            sx={{ width: { xs: '100%', sm: 'auto' } }}
           >
             Zrušiť
           </Button>
@@ -428,6 +453,7 @@ const TestStatisticsModal = ({ testId, open, onClose }) => {
             color="error"
             variant="contained"
             disabled={isDeleting}
+            sx={{ width: { xs: '100%', sm: 'auto' } }}
           >
             {isDeleting ? 'Mazanie...' : 'Vymazať'}
           </Button>
@@ -444,3 +470,4 @@ TestStatisticsModal.propTypes = {
 };
 
 export default TestStatisticsModal;
+

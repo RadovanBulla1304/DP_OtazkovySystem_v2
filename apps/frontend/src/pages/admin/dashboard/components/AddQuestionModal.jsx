@@ -103,7 +103,11 @@ const AddQuestionModal = ({ disabled = false, modulId, onCreated }) => {
         component="form"
         onSubmit={handleSubmit(onSubmit)}
         PaperProps={{
-          sx: { borderRadius: 3 }
+          sx: {
+            borderRadius: 3,
+            mx: { xs: 1, sm: 2 },
+            width: { xs: 'calc(100% - 16px)', sm: 'auto' }
+          }
         }}
       >
         <DialogTitle sx={{ pb: 0, fontWeight: 600, marginBottom: 2 }}>Pridaj otázku</DialogTitle>
@@ -113,7 +117,8 @@ const AddQuestionModal = ({ disabled = false, modulId, onCreated }) => {
             flexDirection: 'column',
             gap: 3,
             mx: 'auto',
-            minWidth: { md: '30rem', xs: '90vw' }
+            px: { xs: 2, sm: 3 },
+            minWidth: { md: '30rem', xs: '100%' }
           }}
         >
           <TextField
@@ -158,11 +163,30 @@ const AddQuestionModal = ({ disabled = false, modulId, onCreated }) => {
             ))}
           </RadioGroup>
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={handleClose} color="error" variant="outlined">
-            Zruš
+        <DialogActions
+          disableSpacing
+          sx={{
+            px: { xs: 2, sm: 3 },
+            pb: 2,
+            gap: 1,
+            flexWrap: 'wrap',
+            justifyContent: { xs: 'stretch', sm: 'flex-end' }
+          }}
+        >
+          <Button
+            onClick={handleClose}
+            color="error"
+            variant="outlined"
+            sx={{ width: { xs: '100%', sm: 'auto' } }}
+          >
+            Zrušiť
           </Button>
-          <Button type="submit" variant="contained" disabled={isLoading}>
+          <Button
+            type="submit"
+            variant="contained"
+            disabled={isLoading}
+            sx={{ width: { xs: '100%', sm: 'auto' } }}
+          >
             Pridaj
           </Button>
         </DialogActions>

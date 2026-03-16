@@ -155,7 +155,18 @@ const BulkAssignTeachers = ({ open, onClose, subjects }) => {
 
   if (loadingTeachers) {
     return (
-      <Dialog open={open} onClose={handleClose} maxWidth="xl" fullWidth>
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        maxWidth="xl"
+        fullWidth
+        PaperProps={{
+          sx: {
+            mx: { xs: 1, sm: 2 },
+            width: { xs: 'calc(100% - 16px)', sm: 'auto' }
+          }
+        }}
+      >
         <DialogContent>
           <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
             <CircularProgress />
@@ -167,13 +178,34 @@ const BulkAssignTeachers = ({ open, onClose, subjects }) => {
 
   if (!subjects || subjects.length === 0) {
     return (
-      <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            mx: { xs: 1, sm: 2 },
+            width: { xs: 'calc(100% - 16px)', sm: 'auto' }
+          }
+        }}
+      >
         <DialogTitle>Priradenie učiteľov</DialogTitle>
         <DialogContent>
           <Typography>Žiadne predmety k dispozícii</Typography>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Zavrieť</Button>
+        <DialogActions
+          disableSpacing
+          sx={{ flexWrap: 'wrap', gap: 1, justifyContent: { xs: 'stretch', sm: 'flex-end' } }}
+        >
+          <Button
+            onClick={handleClose}
+            variant="outlined"
+            color="error"
+            sx={{ width: { xs: '100%', sm: 'auto' } }}
+          >
+            Zavrieť
+          </Button>
         </DialogActions>
       </Dialog>
     );
@@ -181,20 +213,52 @@ const BulkAssignTeachers = ({ open, onClose, subjects }) => {
 
   if (teachers.length === 0) {
     return (
-      <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            mx: { xs: 1, sm: 2 },
+            width: { xs: 'calc(100% - 16px)', sm: 'auto' }
+          }
+        }}
+      >
         <DialogTitle>Priradenie učiteľov</DialogTitle>
         <DialogContent>
           <Typography>Žiadni učitelia k dispozícii</Typography>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Zavrieť</Button>
+        <DialogActions
+          disableSpacing
+          sx={{ flexWrap: 'wrap', gap: 1, justifyContent: { xs: 'stretch', sm: 'flex-end' } }}
+        >
+          <Button
+            onClick={handleClose}
+            variant="outlined"
+            color="error"
+            sx={{ width: { xs: '100%', sm: 'auto' } }}
+          >
+            Zavrieť
+          </Button>
         </DialogActions>
       </Dialog>
     );
   }
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="xl" fullWidth>
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      maxWidth="xl"
+      fullWidth
+      PaperProps={{
+        sx: {
+          mx: { xs: 1, sm: 2 },
+          width: { xs: 'calc(100% - 16px)', sm: 'auto' }
+        }
+      }}
+    >
       <DialogTitle sx={{ fontWeight: 600 }}>Hromadné priradenie učiteľov k predmetom</DialogTitle>
       <DialogContent>
         <Box sx={{ mb: 2 }}>
@@ -208,11 +272,12 @@ const BulkAssignTeachers = ({ open, onClose, subjects }) => {
           component={Paper}
           sx={{
             maxHeight: 500,
+            overflowX: 'auto',
             border: 1,
             borderColor: 'divider'
           }}
         >
-          <Table stickyHeader size="small">
+          <Table stickyHeader size="small" sx={{ minWidth: 720 }}>
             <TableHead>
               <TableRow>
                 <StyledHeaderCell>Učiteľ</StyledHeaderCell>
@@ -253,11 +318,25 @@ const BulkAssignTeachers = ({ open, onClose, subjects }) => {
           </Table>
         </TableContainer>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={handleClose} disabled={isSaving}>
+      <DialogActions
+        disableSpacing
+        sx={{ flexWrap: 'wrap', gap: 1, justifyContent: { xs: 'stretch', sm: 'flex-end' } }}
+      >
+        <Button
+          onClick={handleClose}
+          disabled={isSaving}
+          variant="outlined"
+          color="error"
+          sx={{ width: { xs: '100%', sm: 'auto' } }}
+        >
           Zrušiť
         </Button>
-        <Button onClick={handleSave} variant="contained" disabled={isSaving}>
+        <Button
+          onClick={handleSave}
+          variant="contained"
+          disabled={isSaving}
+          sx={{ width: { xs: '100%', sm: 'auto' } }}
+        >
           {isSaving ? 'Ukladá sa...' : 'Uložiť'}
         </Button>
       </DialogActions>

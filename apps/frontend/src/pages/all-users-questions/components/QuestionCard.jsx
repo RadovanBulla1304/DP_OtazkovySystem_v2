@@ -17,7 +17,7 @@ const QuestionCard = ({ question, isTeacher, onValidateClick }) => {
     <Paper
       elevation={2}
       sx={{
-        p: 2,
+        p: { xs: 1.5, sm: 2 },
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
@@ -25,7 +25,11 @@ const QuestionCard = ({ question, isTeacher, onValidateClick }) => {
       }}
     >
       {/* Question Text */}
-      <Typography variant="h6" gutterBottom sx={{ fontSize: '1rem', mb: 2 }}>
+      <Typography
+        variant="h6"
+        gutterBottom
+        sx={{ fontSize: { xs: '0.95rem', sm: '1rem' }, mb: 2, wordBreak: 'break-word' }}
+      >
         {question.text}
       </Typography>
 
@@ -39,7 +43,7 @@ const QuestionCard = ({ question, isTeacher, onValidateClick }) => {
             <ListItem key={key} sx={{ py: 0.25, px: 0 }}>
               <ListItemText
                 primary={
-                  <Box display="flex" alignItems="center">
+                  <Box display="flex" alignItems="flex-start">
                     <Chip
                       label={key.toUpperCase()}
                       size="small"
@@ -50,7 +54,8 @@ const QuestionCard = ({ question, isTeacher, onValidateClick }) => {
                       variant="body2"
                       sx={{
                         fontWeight: question.correct === key ? 'bold' : 'normal',
-                        fontSize: '0.875rem'
+                        fontSize: '0.875rem',
+                        wordBreak: 'break-word'
                       }}
                     >
                       {value}

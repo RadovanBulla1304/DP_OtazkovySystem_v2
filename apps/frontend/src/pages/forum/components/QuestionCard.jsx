@@ -149,7 +149,7 @@ const QuestionCard = ({ question, onQuestionClick }) => {
         {/* Header with title and pin icon */}
         <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 2 }}>
           <Box sx={{ flexGrow: 1 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1, flexWrap: 'wrap', gap: 1 }}>
               {question.is_pinned && <PushPin color="primary" sx={{ mr: 1, fontSize: 20 }} />}
               <Typography
                 variant="h6"
@@ -161,9 +161,7 @@ const QuestionCard = ({ question, onQuestionClick }) => {
               >
                 {question.header}
               </Typography>
-              {question.is_closed && (
-                <Chip label="Uzavretá" size="small" color="default" sx={{ ml: 1 }} />
-              )}
+              {question.is_closed && <Chip label="Uzavretá" size="small" color="default" />}
             </Box>
           </Box>
         </Box>
@@ -201,9 +199,17 @@ const QuestionCard = ({ question, onQuestionClick }) => {
         <Divider sx={{ my: 2 }} />
 
         {/* Footer with author, date, and interaction buttons */}
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: { xs: 'flex-start', sm: 'center' },
+            flexDirection: { xs: 'column', sm: 'row' },
+            gap: 1.5
+          }}
+        >
           {/* Author and date */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
             <Avatar
               sx={{
                 width: 32,
@@ -214,7 +220,7 @@ const QuestionCard = ({ question, onQuestionClick }) => {
             >
               <Typography>{authorInitial}</Typography>
             </Avatar>
-            <Box>
+            <Box sx={{ minWidth: 0 }}>
               <Typography variant="body2" color="text.secondary">
                 {authorLabel} • {formatDate(question.createdAt)}
               </Typography>
@@ -222,7 +228,7 @@ const QuestionCard = ({ question, onQuestionClick }) => {
           </Box>
 
           {/* Interaction buttons */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <IconButton
                 size="small"

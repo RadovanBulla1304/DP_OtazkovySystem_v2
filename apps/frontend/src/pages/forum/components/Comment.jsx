@@ -108,9 +108,9 @@ const Comment = ({ comment, questionId, level = 0 }) => {
   const replies = comment.replies || [];
 
   return (
-    <Box sx={{ ml: level * 3 }}>
+    <Box sx={{ ml: { xs: level === 0 ? 0 : 1, sm: level * 3 } }}>
       {/* Comment content */}
-      <Box sx={{ display: 'flex', gap: 1.5 }}>
+      <Box sx={{ display: 'flex', gap: { xs: 1, sm: 1.5 } }}>
         {/* Avatar */}
         <Avatar
           sx={{ width: level === 0 ? 40 : 32, height: level === 0 ? 40 : 32 }}
@@ -122,7 +122,7 @@ const Comment = ({ comment, questionId, level = 0 }) => {
         {/* Comment body */}
         <Box sx={{ flexGrow: 1 }}>
           {/* Author and date */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5, flexWrap: 'wrap' }}>
             <Typography variant="subtitle2" fontWeight={600}>
               {comment.createdBy?.username}
             </Typography>
@@ -144,7 +144,7 @@ const Comment = ({ comment, questionId, level = 0 }) => {
           </Typography>
 
           {/* Interaction buttons */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
             {/* Like/Dislike */}
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <IconButton
@@ -233,7 +233,15 @@ const Comment = ({ comment, questionId, level = 0 }) => {
                 </Alert>
               )}
 
-              <Box sx={{ display: 'flex', gap: 1, mt: 1, justifyContent: 'flex-end' }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  gap: 1,
+                  mt: 1,
+                  justifyContent: { xs: 'stretch', sm: 'flex-end' },
+                  flexWrap: 'wrap'
+                }}
+              >
                 <Button
                   size="small"
                   onClick={() => {
@@ -243,6 +251,7 @@ const Comment = ({ comment, questionId, level = 0 }) => {
                   disabled={addingReply}
                   variant="outlined"
                   color="error"
+                  sx={{ width: { xs: '100%', sm: 'auto' } }}
                 >
                   Zrušiť
                 </Button>
@@ -252,6 +261,7 @@ const Comment = ({ comment, questionId, level = 0 }) => {
                   onClick={handleReply}
                   disabled={!replyText.trim() || addingReply}
                   startIcon={addingReply ? <CircularProgress size={14} /> : <Send />}
+                  sx={{ width: { xs: '100%', sm: 'auto' } }}
                 >
                   {addingReply ? 'Pridávam...' : 'Odpovedať'}
                 </Button>

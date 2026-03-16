@@ -56,7 +56,7 @@ const TestCard = ({
   };
 
   return (
-    <Grid item xs={12} md={6} lg={4}>
+    <Grid item xs={12} sm={6} lg={4}>
       <Card
         sx={{
           height: '100%',
@@ -75,8 +75,23 @@ const TestCard = ({
         onClick={handleCardClick}
       >
         <CardContent sx={{ flexGrow: 1 }}>
-          <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
-            <Typography variant="h6" component="h3" sx={{ fontWeight: 'bold' }}>
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="flex-start"
+            mb={2}
+            gap={1}
+            flexWrap="wrap"
+          >
+            <Typography
+              variant="h6"
+              component="h3"
+              sx={{
+                fontWeight: 'bold',
+                wordBreak: 'break-word',
+                fontSize: { xs: '1rem', sm: '1.25rem' }
+              }}
+            >
               {test.title}
             </Typography>
             <Chip label={status.label} color={status.color} size="small" icon={status.icon} />
@@ -145,7 +160,7 @@ const TestCard = ({
         {isTeacher && (
           <Box p={2} pt={0}>
             <Box display="flex" justifyContent="space-between" alignItems="center">
-              <Box>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap' }}>
                 <Tooltip title="Zobraziť Štatistiky">
                   <IconButton
                     size="small"

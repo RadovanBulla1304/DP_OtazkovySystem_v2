@@ -15,6 +15,12 @@ const UnassignUsersDialog = ({ open, userCount, isUnassigning, onClose, onConfir
       onClose={onClose}
       aria-labelledby="unassign-users-dialog-title"
       aria-describedby="unassign-users-dialog-description"
+      PaperProps={{
+        sx: {
+          mx: { xs: 1, sm: 2 },
+          width: { xs: 'calc(100% - 16px)', sm: 'auto' }
+        }
+      }}
     >
       <DialogTitle id="unassign-users-dialog-title" sx={{ fontWeight: 600 }}>
         Odstrániť priradenie študentov?
@@ -28,11 +34,26 @@ const UnassignUsersDialog = ({ open, userCount, isUnassigning, onClose, onConfir
           z tohto predmetu? Táto akcia je nevratná.
         </Typography>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} variant="outlined" disabled={isUnassigning} color="error">
+      <DialogActions
+        disableSpacing
+        sx={{ flexWrap: 'wrap', gap: 1, justifyContent: { xs: 'stretch', sm: 'flex-end' } }}
+      >
+        <Button
+          onClick={onClose}
+          variant="outlined"
+          disabled={isUnassigning}
+          color="error"
+          sx={{ width: { xs: '100%', sm: 'auto' } }}
+        >
           Zrušiť
         </Button>
-        <Button onClick={onConfirm} color="error" variant="contained" disabled={isUnassigning}>
+        <Button
+          onClick={onConfirm}
+          color="error"
+          variant="contained"
+          disabled={isUnassigning}
+          sx={{ width: { xs: '100%', sm: 'auto' } }}
+        >
           {isUnassigning ? 'Odstraňujem...' : 'Odstrániť'}
         </Button>
       </DialogActions>

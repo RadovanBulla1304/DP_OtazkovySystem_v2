@@ -24,13 +24,30 @@ const ConfirmationDialog = ({ onAccept, title, secondaryText, children }) => {
   return (
     <>
       <Box onClick={handleClickOpen}>{children}</Box>
-      <Dialog open={open} onClose={handleClose}>
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        PaperProps={{
+          sx: {
+            mx: { xs: 1, sm: 2 },
+            width: { xs: 'calc(100% - 16px)', sm: 'auto' }
+          }
+        }}
+      >
         <DialogContent>
           <DialogTitle>{title}</DialogTitle>
           <Typography>{secondaryText}</Typography>
-          <DialogActions>
-            <Button onClick={handleClose} color="error" variant="outlined">
-              Zruš
+          <DialogActions
+            disableSpacing
+            sx={{ flexWrap: 'wrap', gap: 1, justifyContent: { xs: 'stretch', sm: 'flex-end' } }}
+          >
+            <Button
+              onClick={handleClose}
+              color="error"
+              variant="outlined"
+              sx={{ width: { xs: '100%', sm: 'auto' } }}
+            >
+              Zrušiť
             </Button>
             <Button
               variant="outlined"
@@ -38,8 +55,9 @@ const ConfirmationDialog = ({ onAccept, title, secondaryText, children }) => {
                 onAccept();
                 handleClose();
               }}
+              sx={{ width: { xs: '100%', sm: 'auto' } }}
             >
-              Potvrd
+              Potvrdiť
             </Button>
           </DialogActions>
         </DialogContent>

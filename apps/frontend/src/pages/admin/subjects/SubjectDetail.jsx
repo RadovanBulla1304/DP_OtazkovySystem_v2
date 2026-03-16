@@ -352,7 +352,7 @@ const SubjectDetail = () => {
 
   if (isSubjectLoading || isModulesLoading || isDeleting || isUsersLoading) {
     return (
-      <Box display="flex" justifyContent="center" mt={4}>
+      <Box display="flex" justifyContent="center" mt={{ xs: 3, sm: 4 }} px={{ xs: 2, sm: 0 }}>
         <CircularProgress />
       </Box>
     );
@@ -360,7 +360,7 @@ const SubjectDetail = () => {
 
   if (isSubjectError || isModulesError || isUsersError) {
     return (
-      <Box display="flex" justifyContent="center" mt={4}>
+      <Box display="flex" justifyContent="center" mt={{ xs: 3, sm: 4 }} px={{ xs: 2, sm: 0 }}>
         <Typography color="error">Chyba pri načítaní údajov</Typography>
       </Box>
     );
@@ -368,19 +368,19 @@ const SubjectDetail = () => {
 
   if (!subject) {
     return (
-      <Box display="flex" justifyContent="center" mt={4}>
+      <Box display="flex" justifyContent="center" mt={{ xs: 3, sm: 4 }} px={{ xs: 2, sm: 0 }}>
         <Typography>Predmet nebol nájdený</Typography>
       </Box>
     );
   }
 
   return (
-    <Box sx={{ paddingBlock: '24px' }}>
+    <Box sx={{ pt: { xs: 3, sm: 4 }, pb: { xs: 2, sm: 3 }, px: { xs: 1.5, sm: 2, md: 0 } }}>
       {/* Breadcrumbs navigation */}
       <Breadcrumbs
         separator={<NavigateNextIcon fontSize="small" />}
         aria-label="breadcrumb"
-        sx={{ mb: 3 }}
+        sx={{ mb: { xs: 2, sm: 3 }, flexWrap: 'wrap' }}
       >
         <Link component={RouterLink} to="/subjects" underline="hover" color="inherit">
           Predmety
@@ -395,15 +395,21 @@ const SubjectDetail = () => {
             sx={{
               display: 'flex',
               justifyContent: 'space-between',
-              alignItems: 'center',
+              alignItems: { xs: 'stretch', sm: 'center' },
+              flexDirection: { xs: 'column', sm: 'row' },
+              gap: { xs: 1.5, sm: 1 },
               mb: 2
             }}
           >
-            <Typography variant="h4" component="h1">
+            <Typography
+              variant="h4"
+              component="h1"
+              sx={{ fontSize: { xs: '1.75rem', sm: '2.125rem' } }}
+            >
               {subject.name}
             </Typography>
 
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
               {canManageSubject && (
                 <>
                   <Tooltip title="Spravovať učiteľov">
@@ -417,10 +423,7 @@ const SubjectDetail = () => {
                     </IconButton>
                   </Tooltip>
                   <Tooltip title="Čakajúce priradenia">
-                    <IconButton
-                      color="warning"
-                      onClick={() => setIsPendingModalOpen(true)}
-                    >
+                    <IconButton color="warning" onClick={() => setIsPendingModalOpen(true)}>
                       <Badge
                         badgeContent={pendingAssignments?.length || 0}
                         color="warning"
@@ -550,17 +553,32 @@ const SubjectDetail = () => {
 
       {/* Modules table */}
       <Box sx={{ mb: 4 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: { xs: 'stretch', sm: 'center' },
+            flexDirection: { xs: 'column', sm: 'row' },
+            gap: { xs: 1.5, sm: 1 },
+            mb: 2
+          }}
+        >
           <Typography variant="h5">Moduly predmetu</Typography>
-          <Button variant="contained" color="primary" onClick={handleOpenModulModal}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleOpenModulModal}
+            sx={{ width: { xs: '100%', sm: 'auto' } }}
+          >
             + Nový Modul
           </Button>
         </Box>
 
-        <Paper sx={{ height: 400, width: '100%' }}>
+        <Paper sx={{ height: 400, width: '100%', overflowX: 'auto' }}>
           <DataGrid
             rows={modules}
             columns={columns}
+            sx={{ minWidth: { xs: 760, md: '100%' } }}
             density="compact"
             getRowId={(row) => row._id || Math.random().toString()}
             pageSizeOptions={[5, 10, 25]}
@@ -586,21 +604,32 @@ const SubjectDetail = () => {
 
       {/* Assigned Users Table */}
       <Box sx={{ mb: 4 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: { xs: 'stretch', sm: 'center' },
+            flexDirection: { xs: 'column', sm: 'row' },
+            gap: { xs: 1.5, sm: 1 },
+            mb: 2
+          }}
+        >
           <Typography variant="h5">Priradení používatelia</Typography>
           <Button
             variant="contained"
             color="error"
             disabled={selectedAssignedUserIds.length === 0 || isUnassigning}
             onClick={handleOpenUnassignDialog}
+            sx={{ width: { xs: '100%', sm: 'auto' } }}
           >
             Odstrániť priradenie používateľov
           </Button>
         </Box>
-        <Paper sx={{ height: 400, width: '100%' }}>
+        <Paper sx={{ height: 400, width: '100%', overflowX: 'auto' }}>
           <DataGrid
             rows={assignedUsersInfo}
             columns={assignedUsersColumns}
+            sx={{ minWidth: { xs: 760, md: '100%' } }}
             density="compact"
             getRowId={(row) => row._id}
             checkboxSelection

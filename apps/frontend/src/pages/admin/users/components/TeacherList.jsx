@@ -82,14 +82,18 @@ const TeacherList = () => {
 
   return (
     <>
-      <Typography variant="h4" sx={{ mt: 4, mb: 2 }}>
+      <Typography
+        variant="h4"
+        sx={{ mt: { xs: 3, sm: 4 }, mb: 2, fontSize: { xs: '1.75rem', sm: '2.125rem' } }}
+      >
         Učitelia
       </Typography>
-      <Paper>
+      <Paper sx={{ overflowX: 'auto' }}>
         <DataGrid
           loading={isLoading}
           rows={data}
           columns={columns}
+          sx={{ minWidth: { xs: 760, md: '100%' } }}
           getRowId={(row) => row._id}
           pageSizeOptions={[10, 20, 50]}
           initialState={{

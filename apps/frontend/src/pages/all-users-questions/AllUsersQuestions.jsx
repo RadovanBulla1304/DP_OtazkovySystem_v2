@@ -99,7 +99,7 @@ const AllUsersQuestions = () => {
 
   if (!subjectId) {
     return (
-      <Box p={3}>
+      <Box sx={{ px: { xs: 1.5, sm: 2 }, py: { xs: 2, sm: 3 } }}>
         <Alert severity="warning">
           Prosím vyberte predmet pre zobrazenie otázok všetkých používateľov.
         </Alert>
@@ -141,7 +141,7 @@ const AllUsersQuestions = () => {
 
   if (questionsError) {
     return (
-      <Box p={3}>
+      <Box sx={{ px: { xs: 1.5, sm: 2 }, py: { xs: 2, sm: 3 } }}>
         <Alert severity="error">Chyba pri načítaní otázok: {questionsError.message}</Alert>
       </Box>
     );
@@ -149,22 +149,22 @@ const AllUsersQuestions = () => {
 
   if (modulesError) {
     return (
-      <Box sx={{ pb: 3, pt: 3 }}>
+      <Box sx={{ px: { xs: 1.5, sm: 2 }, pb: { xs: 2, sm: 3 }, pt: { xs: 2, sm: 3 } }}>
         <Alert severity="error">Chyba pri načítaní modulov: {modulesError.message}</Alert>
       </Box>
     );
   }
 
   return (
-    <Box sx={{ pb: 3, pt: 3 }}>
-      <Typography variant="h4" gutterBottom>
+    <Box sx={{ pb: { xs: 2, sm: 3 }, pt: { xs: 3, sm: 4 }, px: { xs: 1.5, sm: 2, md: 0 } }}>
+      <Typography variant="h4" gutterBottom sx={{ fontSize: { xs: '1.6rem', sm: '2.125rem' } }}>
         Validované otázky všetkých používateľov
       </Typography>
       {/* Filters */}
       <Card sx={{ mb: 3 }}>
         <CardContent>
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={4}>
+          <Grid container spacing={{ xs: 2, sm: 3 }}>
+            <Grid item xs={12} sm={6} lg={3}>
               <FormControl fullWidth>
                 <InputLabel>Filtrovať podľa modulu</InputLabel>
                 <Select
@@ -183,7 +183,7 @@ const AllUsersQuestions = () => {
               </FormControl>
             </Grid>
 
-            <Grid item xs={12} md={4}>
+            <Grid item xs={12} sm={6} lg={3}>
               <FormControl fullWidth>
                 <InputLabel>Vytvorené</InputLabel>
                 <Select
@@ -198,7 +198,7 @@ const AllUsersQuestions = () => {
               </FormControl>
             </Grid>
 
-            <Grid item xs={12} md={4}>
+            <Grid item xs={12} sm={6} lg={3}>
               <FormControl fullWidth>
                 <InputLabel>Stav validácie učiteľom</InputLabel>
                 <Select
@@ -213,7 +213,7 @@ const AllUsersQuestions = () => {
               </FormControl>
             </Grid>
 
-            <Grid item xs={12} md={4}>
+            <Grid item xs={12} sm={6} lg={3}>
               <FormControl fullWidth>
                 <InputLabel>Rok vytvorenia</InputLabel>
                 <Select
@@ -237,7 +237,7 @@ const AllUsersQuestions = () => {
 
       {/* Loading State */}
       {(questionsLoading || modulesLoading) && (
-        <Box display="flex" justifyContent="center" py={4}>
+        <Box display="flex" justifyContent="center" py={{ xs: 3, sm: 4 }}>
           <CircularProgress />
         </Box>
       )}
@@ -245,7 +245,7 @@ const AllUsersQuestions = () => {
       {/* Questions List */}
       {!questionsLoading && !modulesLoading && (
         <>
-          <Box display="flex" alignItems="center" gap={1} sx={{ mb: 2 }}>
+          <Box display="flex" alignItems="center" gap={1} sx={{ mb: 2, flexWrap: 'wrap' }}>
             <Typography variant="h6">Nájdených {filteredQuestions.length} otázok</Typography>
             {selectedModuleId !== 'all' && (
               <Chip
@@ -290,7 +290,7 @@ const AllUsersQuestions = () => {
               </CardContent>
             </Card>
           ) : (
-            <Grid container spacing={2}>
+            <Grid container spacing={{ xs: 1.5, sm: 2 }}>
               {filteredQuestions.map((question) => (
                 <Grid item xs={12} sm={6} md={4} key={question._id}>
                   <QuestionCard

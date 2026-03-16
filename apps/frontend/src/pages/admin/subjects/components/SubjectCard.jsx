@@ -35,7 +35,12 @@ const SubjectCard = ({
       onClick={() => onCardClick(subject._id)}
     >
       <CardContent sx={{ flexGrow: 1 }}>
-        <Typography gutterBottom variant="h5" component="div">
+        <Typography
+          gutterBottom
+          variant="h5"
+          component="div"
+          sx={{ fontSize: { xs: '1.1rem', sm: '1.5rem' }, wordBreak: 'break-word' }}
+        >
           {subject.name}
         </Typography>
         <Typography variant="body2" color="text.secondary">
@@ -130,7 +135,7 @@ const SubjectCard = ({
         </Box>
       </CardContent>
       <Box p={2} pt={0}>
-        <Box display="flex" justifyContent="end" alignItems="center" gap={1}>
+        <Box display="flex" justifyContent="end" alignItems="center" gap={1} flexWrap="wrap">
           {canManageTeachers && (
             <Tooltip title="Spravovať učiteľov">
               <IconButton

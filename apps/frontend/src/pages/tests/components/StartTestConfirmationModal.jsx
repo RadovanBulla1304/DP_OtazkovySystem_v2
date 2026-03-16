@@ -14,9 +14,20 @@ const StartTestConfirmationModal = ({ test, open, onClose, onConfirm }) => {
   if (!test) return null;
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="sm"
+      fullWidth
+      PaperProps={{
+        sx: {
+          mx: { xs: 1, sm: 2 },
+          width: { xs: 'calc(100% - 16px)', sm: 'auto' }
+        }
+      }}
+    >
       <DialogTitle sx={{ fontWeight: 600 }}>Spustiť test ?</DialogTitle>
-      <DialogContent>
+      <DialogContent sx={{ px: { xs: 2, sm: 3 } }}>
         <Box>
           <Typography variant="h6" gutterBottom>
             {test.title}
@@ -44,11 +55,30 @@ const StartTestConfirmationModal = ({ test, open, onClose, onConfirm }) => {
           </Alert>
         </Box>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} variant="outlined" color="error">
+      <DialogActions
+        disableSpacing
+        sx={{
+          flexWrap: 'wrap',
+          gap: 1,
+          px: { xs: 2, sm: 3 },
+          pb: 2,
+          justifyContent: { xs: 'stretch', sm: 'flex-end' }
+        }}
+      >
+        <Button
+          onClick={onClose}
+          variant="outlined"
+          color="error"
+          sx={{ width: { xs: '100%', sm: 'auto' } }}
+        >
           Zrušiť
         </Button>
-        <Button onClick={onConfirm} variant="contained" color="primary">
+        <Button
+          onClick={onConfirm}
+          variant="contained"
+          color="primary"
+          sx={{ width: { xs: '100%', sm: 'auto' } }}
+        >
           Spustiť Test
         </Button>
       </DialogActions>

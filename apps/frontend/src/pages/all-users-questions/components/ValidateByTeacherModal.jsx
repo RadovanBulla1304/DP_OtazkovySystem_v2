@@ -57,9 +57,20 @@ const ValidateByTeacherModal = ({ open, onClose, question, onSubmit, isSubmittin
   if (!question) return null;
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="md"
+      fullWidth
+      sx={{
+        '& .MuiDialog-paper': {
+          m: { xs: 1, sm: 2 },
+          width: { xs: 'calc(100% - 16px)', sm: 'auto' }
+        }
+      }}
+    >
       <DialogTitle>
-        <Box display="flex" alignItems="center" gap={1}>
+        <Box display="flex" alignItems="center" gap={1} flexWrap="wrap">
           <DialogTitle sx={{ fontWeight: 600, p: 0 }}>Validácia otázky učiteľom</DialogTitle>
           {question.validated_by_teacher && (
             <Chip label="Validované učiteľom" color="primary" size="small" />
@@ -67,7 +78,7 @@ const ValidateByTeacherModal = ({ open, onClose, question, onSubmit, isSubmittin
         </Box>
       </DialogTitle>
       <DialogContent>
-        <Grid container spacing={3} sx={{ mt: 0 }}>
+        <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ mt: 0 }}>
           {/* Left Column - Question Display */}
           <Grid item xs={12} md={6}>
             <Box>
@@ -181,8 +192,22 @@ const ValidateByTeacherModal = ({ open, onClose, question, onSubmit, isSubmittin
               />
 
               {/* Action Buttons */}
-              <Box sx={{ display: 'flex', gap: 2, mt: 3, justifyContent: 'flex-end' }}>
-                <Button onClick={onClose} disabled={isSubmitting} variant="outlined" color="error">
+              <Box
+                sx={{
+                  display: 'flex',
+                  gap: 1,
+                  mt: 3,
+                  justifyContent: 'flex-end',
+                  flexWrap: 'wrap'
+                }}
+              >
+                <Button
+                  onClick={onClose}
+                  disabled={isSubmitting}
+                  variant="outlined"
+                  color="error"
+                  sx={{ width: { xs: '100%', sm: 'auto' } }}
+                >
                   Zrušiť
                 </Button>
                 <Button
@@ -190,6 +215,7 @@ const ValidateByTeacherModal = ({ open, onClose, question, onSubmit, isSubmittin
                   variant="contained"
                   disabled={!validationComment.trim() || isSubmitting}
                   color={isValidated ? 'primary' : 'warning'}
+                  sx={{ width: { xs: '100%', sm: 'auto' } }}
                 >
                   {isSubmitting ? (
                     <>

@@ -275,7 +275,7 @@ const MyQuestions = () => {
 
   if (!subjectId) {
     return (
-      <Box sx={{ pb: 3, pt: 3 }}>
+      <Box sx={{ pb: { xs: 2, sm: 3 }, pt: { xs: 3, sm: 4 }, px: { xs: 1.5, sm: 2, md: 0 } }}>
         <Typography variant="h4" sx={{ mb: 3 }}>
           Moje otázky
         </Typography>
@@ -284,12 +284,30 @@ const MyQuestions = () => {
     );
   }
 
-  if (isLoading) return <Typography>Načítavam...</Typography>;
-  if (error) return <Typography color="error">Chyba pri načítaní otázok.</Typography>;
-  if (!questions.length) return <Typography>Nemáte žiadne otázky.</Typography>;
+  if (isLoading) {
+    return (
+      <Box sx={{ pb: { xs: 2, sm: 3 }, pt: { xs: 3, sm: 4 }, px: { xs: 1.5, sm: 2, md: 0 } }}>
+        <Typography>Načítavam...</Typography>
+      </Box>
+    );
+  }
+  if (error) {
+    return (
+      <Box sx={{ pb: { xs: 2, sm: 3 }, pt: { xs: 3, sm: 4 }, px: { xs: 1.5, sm: 2, md: 0 } }}>
+        <Typography color="error">Chyba pri načítaní otázok.</Typography>
+      </Box>
+    );
+  }
+  if (!questions.length) {
+    return (
+      <Box sx={{ pb: { xs: 2, sm: 3 }, pt: { xs: 3, sm: 4 }, px: { xs: 1.5, sm: 2, md: 0 } }}>
+        <Typography>Nemáte žiadne otázky.</Typography>
+      </Box>
+    );
+  }
 
   return (
-    <Box sx={{ pb: 3, pt: 3 }}>
+    <Box sx={{ pb: { xs: 2, sm: 3 }, pt: { xs: 3, sm: 4 }, px: { xs: 1.5, sm: 2, md: 0 } }}>
       <Typography variant="h4" sx={{ mb: 3 }}>
         Moje otázky
       </Typography>

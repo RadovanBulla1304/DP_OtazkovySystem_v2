@@ -143,13 +143,19 @@ const AddUserModal = () => {
         onSubmit={handleSubmit(onSubmit)}
         maxWidth="md"
         fullWidth
+        PaperProps={{
+          sx: {
+            mx: { xs: 1, sm: 2 },
+            width: { xs: 'calc(100% - 16px)', sm: 'auto' }
+          }
+        }}
       >
         <DialogContent
           sx={{
             display: 'flex',
             flexDirection: 'column',
             gap: 2,
-            p: 3,
+            p: { xs: 2, sm: 3 },
             minWidth: {
               md: '48rem',
               sm: '36rem',
@@ -162,7 +168,8 @@ const AddUserModal = () => {
             sx={{
               display: 'flex',
               width: '100%',
-              flexDirection: 'row',
+              flexDirection: { xs: 'column', sm: 'row' },
+              gap: { xs: 1.5, sm: 2 },
               justifyContent: 'space-between'
             }}
           >
@@ -174,7 +181,11 @@ const AddUserModal = () => {
               value={userType}
               exclusive
               onChange={handleUserTypeChange}
-              sx={{ mb: 2, alignSelf: 'center' }}
+              sx={{
+                mb: 2,
+                alignSelf: { xs: 'stretch', sm: 'center' },
+                width: { xs: '100%', sm: 'auto' }
+              }}
             >
               <ToggleButton value="user">Používateľ</ToggleButton>
               <ToggleButton value="teacher">Učiteľ</ToggleButton>
@@ -268,12 +279,21 @@ const AddUserModal = () => {
 
           <ErrorNotifier />
 
-          <DialogActions>
+          <DialogActions
+            disableSpacing
+            sx={{
+              px: 0,
+              flexWrap: 'wrap',
+              gap: 1,
+              justifyContent: { xs: 'stretch', sm: 'flex-end' }
+            }}
+          >
             <Button
               onClick={handleClose}
               variant="outlined"
               disabled={isUserLoading || isTeacherLoading}
               color="error"
+              sx={{ width: { xs: '100%', sm: 'auto' } }}
             >
               Zrušiť
             </Button>
@@ -281,6 +301,7 @@ const AddUserModal = () => {
               type="submit"
               variant="contained"
               disabled={isUserLoading || isTeacherLoading || !isFormValid()}
+              sx={{ width: { xs: '100%', sm: 'auto' } }}
             >
               Pridaj
             </Button>

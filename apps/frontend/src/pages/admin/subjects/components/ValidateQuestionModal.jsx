@@ -46,13 +46,29 @@ const ValidateQuestionModal = ({
   if (!question) return null;
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+    <Dialog
+      open={open}
+      onClose={onClose}
+      fullWidth
+      maxWidth="sm"
+      PaperProps={{
+        sx: {
+          mx: { xs: 1, sm: 2 },
+          width: { xs: 'calc(100% - 16px)', sm: 'auto' }
+        }
+      }}
+    >
       <DialogTitle>Overiť otázku</DialogTitle>
-      <DialogContent>
+      <DialogContent sx={{ px: { xs: 2, sm: 3 } }}>
         <Typography sx={{ mb: 2, fontWeight: 600 }}>{question.text}</Typography>
         <FormControl component="fieldset" sx={{ mb: 2 }}>
           <FormLabel component="legend">Validita</FormLabel>
-          <RadioGroup value={valid} onChange={(e) => setValid(e.target.value)} row>
+          <RadioGroup
+            value={valid}
+            onChange={(e) => setValid(e.target.value)}
+            row
+            sx={{ flexWrap: 'wrap' }}
+          >
             <FormControlLabel value="valid" control={<Radio />} label="Validná" />
             <FormControlLabel value="invalid" control={<Radio />} label="Nevalidná" />
           </RadioGroup>
@@ -67,12 +83,18 @@ const ValidateQuestionModal = ({
           onChange={(e) => setComment(e.target.value)}
         />
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} variant="outlined" color="error">
+      <DialogActions disableSpacing sx={{ flexWrap: 'wrap', gap: 1, px: { xs: 2, sm: 3 }, pb: 2 }}>
+        <Button
+          onClick={onClose}
+          variant="outlined"
+          color="error"
+          sx={{ width: { xs: '100%', sm: 'auto' } }}
+        >
           Zrušiť
         </Button>
         <Button
           variant="contained"
+          sx={{ width: { xs: '100%', sm: 'auto' } }}
           onClick={() => {
             if (onSubmit && question && question._id) {
               onSubmit(question._id, { valid: valid === 'valid', comment });
@@ -99,3 +121,4 @@ ValidateQuestionModal.propTypes = {
   onClose: PropTypes.func,
   onSubmit: PropTypes.func
 };
+

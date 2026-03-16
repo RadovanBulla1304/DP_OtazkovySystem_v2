@@ -28,7 +28,13 @@ const UserAttemptStatus = ({ testId, maxPoints }) => {
       borderRadius={1}
       sx={{ color: 'white' }}
     >
-      <Box display="flex" justifyContent="space-between" alignItems="center">
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems={{ xs: 'flex-start', sm: 'center' }}
+        flexDirection={{ xs: 'column', sm: 'row' }}
+        gap={{ xs: 1, sm: 0 }}
+      >
         <Box>
           <Typography variant="h6" fontWeight="bold" color="inherit">
             {latestAttempt.score}%
@@ -40,7 +46,7 @@ const UserAttemptStatus = ({ testId, maxPoints }) => {
             {pointsEarned}/{maxPoints} bodov
           </Typography>
         </Box>
-        <Box textAlign="right">
+        <Box textAlign={{ xs: 'left', sm: 'right' }}>
           <Typography variant="caption" color="inherit" display="block">
             Pokusy: {attempts.length}
           </Typography>

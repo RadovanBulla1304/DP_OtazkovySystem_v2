@@ -93,7 +93,18 @@ const AssignTeachersToSubject = ({ open, onClose, subject }) => {
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      maxWidth="md"
+      fullWidth
+      PaperProps={{
+        sx: {
+          mx: { xs: 1, sm: 2 },
+          width: { xs: 'calc(100% - 16px)', sm: 'auto' }
+        }
+      }}
+    >
       <DialogTitle sx={{ fontWeight: 600 }}>Priradenie učiteľov k predmetu</DialogTitle>
       <DialogContent>
         <Box sx={{ mb: 3, mt: 1 }}>
@@ -199,14 +210,21 @@ const AssignTeachersToSubject = ({ open, onClose, subject }) => {
           )}
         </Box>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={handleClose} disabled={isAssigning || isUnassigning}>
+      <DialogActions disableSpacing sx={{ flexWrap: 'wrap', gap: 1 }}>
+        <Button
+          onClick={handleClose}
+          disabled={isAssigning || isUnassigning}
+          variant="outlined"
+          color="error"
+          sx={{ width: { xs: '100%', sm: 'auto' } }}
+        >
           Zrušiť
         </Button>
         <Button
           onClick={handleAssign}
           variant="contained"
           disabled={selectedTeachers.length === 0 || isAssigning || isUnassigning}
+          sx={{ width: { xs: '100%', sm: 'auto' } }}
         >
           {isAssigning ? 'Priraďovanie...' : 'Priradiť'}
         </Button>

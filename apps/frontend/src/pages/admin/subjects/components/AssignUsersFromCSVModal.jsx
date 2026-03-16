@@ -240,7 +240,18 @@ const AssignUsersFromCSVModal = ({ open, onClose, subjectId, onSuccess }) => {
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="lg" fullWidth>
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      maxWidth="lg"
+      fullWidth
+      PaperProps={{
+        sx: {
+          mx: { xs: 1, sm: 2 },
+          width: { xs: 'calc(100% - 16px)', sm: 'auto' }
+        }
+      }}
+    >
       <DialogTitle>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <DialogTitle sx={{ fontWeight: 600, p: 0 }}>Priradiť používateľov z CSV</DialogTitle>
@@ -268,28 +279,24 @@ const AssignUsersFromCSVModal = ({ open, onClose, subjectId, onSuccess }) => {
               stĺpec), ktoré musí byť v databáze. Prvý riadok (hlavička) sa preskočí.
             </Alert>
 
-            <Button
-              variant="outlined"
-              component="label"
-              startIcon={<UploadFileIcon />}
-              sx={{ mt: 2 }}
-            >
-              Vybrať CSV súbor
-              <input type="file" accept=".csv" hidden onChange={handleFileChange} />
-            </Button>
+            <Box sx={{ mt: 2, display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
+              <Button variant="outlined" component="label" startIcon={<UploadFileIcon />}>
+                Vybrať CSV súbor
+                <input type="file" accept=".csv" hidden onChange={handleFileChange} />
+              </Button>
 
-            {csvFile && (
-              <Chip
-                label={csvFile.name}
-                onDelete={() => {
-                  setCsvFile(null);
-                  setParsedData([]);
-                  setMatchedUsers([]);
-                  setUnmatchedRows([]);
-                }}
-                sx={{ ml: 2 }}
-              />
-            )}
+              {csvFile && (
+                <Chip
+                  label={csvFile.name}
+                  onDelete={() => {
+                    setCsvFile(null);
+                    setParsedData([]);
+                    setMatchedUsers([]);
+                    setUnmatchedRows([]);
+                  }}
+                />
+              )}
+            </Box>
           </Box>
 
           {/* Loading State */}
@@ -315,8 +322,12 @@ const AssignUsersFromCSVModal = ({ open, onClose, subjectId, onSuccess }) => {
               <Typography variant="h6" gutterBottom>
                 Načítané údaje z CSV ({parsedData.length})
               </Typography>
-              <TableContainer component={Paper} variant="outlined" sx={{ maxHeight: 300 }}>
-                <Table size="small" stickyHeader>
+              <TableContainer
+                component={Paper}
+                variant="outlined"
+                sx={{ maxHeight: 300, overflowX: 'auto' }}
+              >
+                <Table size="small" stickyHeader sx={{ minWidth: 700 }}>
                   <TableHead>
                     <TableRow>
                       <TableCell>#</TableCell>
@@ -371,8 +382,8 @@ const AssignUsersFromCSVModal = ({ open, onClose, subjectId, onSuccess }) => {
               <Typography variant="h6" gutterBottom color="success.main">
                 Nájdení používatelia ({matchedUsers.length})
               </Typography>
-              <TableContainer component={Paper} variant="outlined">
-                <Table size="small">
+              <TableContainer component={Paper} variant="outlined" sx={{ overflowX: 'auto' }}>
+                <Table size="small" sx={{ minWidth: 700 }}>
                   <TableHead>
                     <TableRow>
                       <TableCell>Skupina z CSV</TableCell>
@@ -411,8 +422,8 @@ const AssignUsersFromCSVModal = ({ open, onClose, subjectId, onSuccess }) => {
                 Môžete uložiť čakajúce priradenia — keď sa títo študenti zaregistrujú a potvrdia
                 email, budú automaticky priradení k tomuto predmetu.
               </Alert>
-              <TableContainer component={Paper} variant="outlined">
-                <Table size="small">
+              <TableContainer component={Paper} variant="outlined" sx={{ overflowX: 'auto' }}>
+                <Table size="small" sx={{ minWidth: 700 }}>
                   <TableHead>
                     <TableRow>
                       <TableCell>Skupina</TableCell>
@@ -438,12 +449,20 @@ const AssignUsersFromCSVModal = ({ open, onClose, subjectId, onSuccess }) => {
         </Stack>
       </DialogContent>
 
-      <DialogActions sx={{ gap: 1, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+      <DialogActions
+        disableSpacing
+        sx={{
+          gap: 1,
+          flexWrap: 'wrap',
+          justifyContent: { xs: 'stretch', sm: 'flex-end' }
+        }}
+      >
         <Button
           onClick={handleClose}
           disabled={isAssigning || isSavingPending}
           variant="outlined"
           color="error"
+          sx={{ width: { xs: '100%', sm: 'auto' } }}
         >
           Zrušiť
         </Button>
@@ -453,10 +472,9 @@ const AssignUsersFromCSVModal = ({ open, onClose, subjectId, onSuccess }) => {
           color="warning"
           disabled={unmatchedRows.length === 0 || isSavingPending || isAssigning}
           startIcon={isSavingPending ? <CircularProgress size={20} /> : <SaveIcon />}
+          sx={{ width: { xs: '100%', sm: 'auto' } }}
         >
-          {isSavingPending
-            ? 'Ukladám...'
-            : `Uložiť ${unmatchedRows.length} čakajúcich priradení`}
+          {isSavingPending ? 'Ukladám...' : `Uložiť ${unmatchedRows.length} čakajúcich priradení`}
         </Button>
         <Button
           onClick={handleAssignUsers}
@@ -464,6 +482,7 @@ const AssignUsersFromCSVModal = ({ open, onClose, subjectId, onSuccess }) => {
           color="primary"
           disabled={matchedUsers.length === 0 || isAssigning || isSavingPending}
           startIcon={isAssigning ? <CircularProgress size={20} /> : null}
+          sx={{ width: { xs: '100%', sm: 'auto' } }}
         >
           {isAssigning ? 'Priraďujem...' : `Priradiť ${matchedUsers.length} študentov k predmetu`}
         </Button>

@@ -62,21 +62,38 @@ export const AuthPage = () => {
       component="main"
       maxWidth="sm"
       sx={{
+        minHeight: '100dvh',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
+        px: { xs: 2, sm: 3 },
+        pt: { xs: 3, sm: 4 },
+        pb: { xs: 4, sm: 6 },
         bgcolor: 'none'
       }}
     >
-      <Typography align="center" sx={{ mt: 2 }} variant="h6" color="text.secondary">
+      <Typography align="center" sx={{ mt: { xs: 1, sm: 2 } }} variant="h6" color="text.secondary">
         Prihláste sa pomocou svojho emailu
       </Typography>
-      <Card sx={{ mt: '10%', mb: '20%', p: 2 }}>
+      <Card
+        sx={{
+          mt: { xs: 2, sm: 3 },
+          mb: { xs: 2, sm: 4 },
+          width: '100%',
+          maxWidth: 600,
+          p: { xs: 1.5, sm: 2 }
+        }}
+      >
         <Box
           component="form"
           onSubmit={handleSubmit}
-          sx={{ mt: 1, width: '600px', paddingBlock: 2, paddingInline: 1 }}
+          sx={{
+            mt: 1,
+            width: '100%',
+            paddingBlock: { xs: 1, sm: 2 },
+            paddingInline: { xs: 0.5, sm: 1 }
+          }}
         >
           <Typography component="h1" variant="h4" sx={{ mb: 2 }}>
             Prihlásenie
@@ -90,7 +107,6 @@ export const AuthPage = () => {
             fullWidth
             required
           />
-          <Typography variant="h4" sx={{ mb: 2 }}></Typography>
           <TextField
             required
             type="password"
@@ -99,6 +115,7 @@ export const AuthPage = () => {
             variant="outlined"
             label="Heslo"
             fullWidth
+            sx={{ mt: 2 }}
           />
           <ErrorNotifier />
           <LoadingButton

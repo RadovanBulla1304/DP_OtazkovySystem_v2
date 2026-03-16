@@ -43,8 +43,7 @@ const PendingAssignmentsModal = ({ open, onClose, subjectId }) => {
     skip: !open || !subjectId
   });
 
-  const [deletePendingAssignment, { isLoading: isDeleting }] =
-    useDeletePendingAssignmentMutation();
+  const [deletePendingAssignment, { isLoading: isDeleting }] = useDeletePendingAssignmentMutation();
   const [deleteAllPendingAssignments, { isLoading: isDeletingAll }] =
     useDeleteAllPendingAssignmentsMutation();
 
@@ -79,7 +78,18 @@ const PendingAssignmentsModal = ({ open, onClose, subjectId }) => {
   const isAnyLoading = isDeleting || isDeletingAll;
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      maxWidth="md"
+      fullWidth
+      PaperProps={{
+        sx: {
+          mx: { xs: 1, sm: 2 },
+          width: { xs: 'calc(100% - 16px)', sm: 'auto' }
+        }
+      }}
+    >
       <DialogTitle>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Box display="flex" alignItems="center" gap={1}>
@@ -124,11 +134,7 @@ const PendingAssignmentsModal = ({ open, onClose, subjectId }) => {
                 severity="warning"
                 action={
                   <Box display="flex" gap={1}>
-                    <Button
-                      color="inherit"
-                      size="small"
-                      onClick={() => setConfirmDeleteAll(false)}
-                    >
+                    <Button color="inherit" size="small" onClick={() => setConfirmDeleteAll(false)}>
                       Nie
                     </Button>
                     <Button
@@ -147,7 +153,7 @@ const PendingAssignmentsModal = ({ open, onClose, subjectId }) => {
               </Alert>
             )}
 
-            <TableContainer component={Paper} variant="outlined">
+            <TableContainer component={Paper} variant="outlined" sx={{ overflowX: 'auto' }}>
               <Table size="small">
                 <TableHead>
                   <TableRow>
@@ -175,9 +181,7 @@ const PendingAssignmentsModal = ({ open, onClose, subjectId }) => {
                           label={dayjs(record.expiresAt).format('DD.MM.YYYY')}
                           size="small"
                           color={
-                            dayjs(record.expiresAt).diff(dayjs(), 'month') < 1
-                              ? 'error'
-                              : 'default'
+                            dayjs(record.expiresAt).diff(dayjs(), 'month') < 1 ? 'error' : 'default'
                           }
                           variant="outlined"
                         />
@@ -203,8 +207,20 @@ const PendingAssignmentsModal = ({ open, onClose, subjectId }) => {
         )}
       </DialogContent>
 
-      <DialogActions>
-        <Button onClick={handleClose} variant="outlined" color="inherit">
+      <DialogActions
+        disableSpacing
+        sx={{
+          flexWrap: 'wrap',
+          gap: 1,
+          justifyContent: { xs: 'stretch', sm: 'flex-end' }
+        }}
+      >
+        <Button
+          onClick={handleClose}
+          variant="outlined"
+          color="inherit"
+          sx={{ width: { xs: '100%', sm: 'auto' } }}
+        >
           Zavrieť
         </Button>
         {pendingAssignments.length > 0 && (
@@ -214,6 +230,7 @@ const PendingAssignmentsModal = ({ open, onClose, subjectId }) => {
             startIcon={<DeleteSweepIcon />}
             onClick={() => setConfirmDeleteAll(true)}
             disabled={isAnyLoading || confirmDeleteAll}
+            sx={{ width: { xs: '100%', sm: 'auto' } }}
           >
             Zmazať všetky
           </Button>

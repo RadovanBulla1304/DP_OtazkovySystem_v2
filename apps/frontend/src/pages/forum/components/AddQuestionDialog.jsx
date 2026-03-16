@@ -169,7 +169,18 @@ const AddQuestionDialog = ({ open, onClose }) => {
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      maxWidth="md"
+      fullWidth
+      PaperProps={{
+        sx: {
+          mx: { xs: 1, sm: 2 },
+          width: { xs: 'calc(100% - 16px)', sm: 'auto' }
+        }
+      }}
+    >
       <DialogTitle sx={{ fontWeight: 600 }}>Pridať novú otázku</DialogTitle>
 
       <DialogContent>
@@ -276,7 +287,7 @@ const AddQuestionDialog = ({ open, onClose }) => {
                 </Box>
               )}
 
-              <Box sx={{ display: 'flex', gap: 1 }}>
+              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                 <TextField
                   label="Pridať nový tag"
                   value={newTagInput}
@@ -284,13 +295,14 @@ const AddQuestionDialog = ({ open, onClose }) => {
                   onKeyDown={handleNewTagKeyDown}
                   placeholder="Napíšte nový tag"
                   size="small"
-                  sx={{ flexGrow: 1 }}
+                  sx={{ flexGrow: 1, minWidth: { xs: '100%', sm: 0 } }}
                 />
                 <Button
                   onClick={handleAddNewTag}
                   variant="contained"
                   size="small"
                   disabled={!newTagInput.trim()}
+                  sx={{ width: { xs: '100%', sm: 'auto' } }}
                 >
                   Pridať
                 </Button>
@@ -300,8 +312,23 @@ const AddQuestionDialog = ({ open, onClose }) => {
         </Box>
       </DialogContent>
 
-      <DialogActions>
-        <Button onClick={handleClose} disabled={isLoading} variant="outlined" color="error">
+      <DialogActions
+        disableSpacing
+        sx={{
+          flexWrap: 'wrap',
+          gap: 1,
+          px: { xs: 2, sm: 3 },
+          pb: 2,
+          justifyContent: { xs: 'stretch', sm: 'flex-end' }
+        }}
+      >
+        <Button
+          onClick={handleClose}
+          disabled={isLoading}
+          variant="outlined"
+          color="error"
+          sx={{ width: { xs: '100%', sm: 'auto' } }}
+        >
           Zrušiť
         </Button>
         <Button
@@ -309,6 +336,7 @@ const AddQuestionDialog = ({ open, onClose }) => {
           variant="contained"
           disabled={isLoading || !isFormValid()}
           startIcon={isLoading ? <CircularProgress size={20} /> : null}
+          sx={{ width: { xs: '100%', sm: 'auto' } }}
         >
           {isLoading ? 'Pridávam...' : 'Pridať'}
         </Button>

@@ -68,9 +68,27 @@ const AssignUsersToProject = ({ open, onClose, projectId, onSuccess }) => {
   const isLoading = !subjectId || isUsersLoading;
 
   return (
-    <Dialog open={open} onClose={handleCancel} maxWidth="lg" fullWidth>
-      <DialogTitle>
-        <Box display="flex" justifyContent="space-between" alignItems="center">
+    <Dialog
+      open={open}
+      onClose={handleCancel}
+      maxWidth="lg"
+      fullWidth
+      PaperProps={{
+        sx: {
+          mx: { xs: 1, sm: 2 },
+          width: { xs: 'calc(100% - 16px)', sm: 'auto' }
+        }
+      }}
+    >
+      <DialogTitle sx={{ pb: 1 }}>
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems={{ xs: 'flex-start', sm: 'center' }}
+          flexDirection={{ xs: 'column', sm: 'row' }}
+          flexWrap="wrap"
+          gap={1}
+        >
           <DialogTitle sx={{ fontWeight: 600, p: 0 }}>Priradiť používateľov k projektu</DialogTitle>
           {selectedUsers.length > 0 && (
             <Typography variant="body2" color="primary">
@@ -79,7 +97,7 @@ const AssignUsersToProject = ({ open, onClose, projectId, onSuccess }) => {
           )}
         </Box>
       </DialogTitle>
-      <DialogContent dividers sx={{ height: 500, p: 2 }}>
+      <DialogContent dividers sx={{ height: { xs: 420, sm: 500 }, p: { xs: 1.25, sm: 2 } }}>
         {isLoading ? (
           <Box display="flex" justifyContent="center" alignItems="center" height="100%">
             <CircularProgress />
@@ -88,6 +106,7 @@ const AssignUsersToProject = ({ open, onClose, projectId, onSuccess }) => {
           <DataGrid
             rows={users}
             columns={columns}
+            sx={{ minWidth: { xs: 760, md: '100%' } }}
             getRowId={(row) => row._id}
             pageSizeOptions={[10, 20, 50]}
             initialState={{
@@ -109,8 +128,23 @@ const AssignUsersToProject = ({ open, onClose, projectId, onSuccess }) => {
           />
         )}
       </DialogContent>
-      <DialogActions>
-        <Button onClick={handleCancel} disabled={isAssigning} variant="outlined" color="error">
+      <DialogActions
+        disableSpacing
+        sx={{
+          flexWrap: 'wrap',
+          gap: 1,
+          px: { xs: 2, sm: 3 },
+          pb: 2,
+          justifyContent: { xs: 'stretch', sm: 'flex-end' }
+        }}
+      >
+        <Button
+          onClick={handleCancel}
+          disabled={isAssigning}
+          variant="outlined"
+          color="error"
+          sx={{ width: { xs: '100%', sm: 'auto' } }}
+        >
           Zrušiť
         </Button>
         <Button
@@ -118,6 +152,7 @@ const AssignUsersToProject = ({ open, onClose, projectId, onSuccess }) => {
           variant="contained"
           color="primary"
           disabled={isAssigning || selectedUsers.length === 0}
+          sx={{ width: { xs: '100%', sm: 'auto' } }}
         >
           {isAssigning ? (
             <CircularProgress size={24} />

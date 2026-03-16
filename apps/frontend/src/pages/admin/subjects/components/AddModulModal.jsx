@@ -92,8 +92,23 @@ const AddModulModal = ({ open, onClose, subjectId, onSuccess }) => {
   };
 
   return (
-    <Dialog open={open} onClose={handleCancel} maxWidth="sm" fullWidth>
-      <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ p: 2, width: '100%' }}>
+    <Dialog
+      open={open}
+      onClose={handleCancel}
+      maxWidth="sm"
+      fullWidth
+      PaperProps={{
+        sx: {
+          mx: { xs: 1, sm: 2 },
+          width: { xs: 'calc(100% - 16px)', sm: 'auto' }
+        }
+      }}
+    >
+      <Box
+        component="form"
+        onSubmit={handleSubmit(onSubmit)}
+        sx={{ p: { xs: 1.5, sm: 2 }, width: '100%' }}
+      >
         <DialogTitle id="modal-modal-title" sx={{ fontWeight: 600, p: 0, pb: 2 }}>
           Pridať nový modul
         </DialogTitle>
@@ -158,7 +173,7 @@ const AddModulModal = ({ open, onClose, subjectId, onSuccess }) => {
 
               {/* Week duration buttons */}
               {startDate && (
-                <Box sx={{ display: 'flex', gap: 1, my: 1 }}>
+                <Box sx={{ display: 'flex', gap: 1, my: 1, flexWrap: 'wrap' }}>
                   {[1, 2, 3].map((weeks) => (
                     <Button
                       key={weeks}
@@ -219,17 +234,32 @@ const AddModulModal = ({ open, onClose, subjectId, onSuccess }) => {
               )}
             />
 
-            <DialogActions>
-              <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+            <DialogActions disableSpacing>
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: { xs: 'stretch', sm: 'flex-end' },
+                  gap: 1,
+                  flexWrap: 'wrap',
+                  width: '100%'
+                }}
+              >
                 <Button
                   variant="outlined"
                   onClick={handleCancel}
                   disabled={isLoading}
                   color="error"
+                  sx={{ width: { xs: '100%', sm: 'auto' } }}
                 >
                   Zrušiť
                 </Button>
-                <Button type="submit" variant="contained" color="primary" disabled={isLoading}>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  disabled={isLoading}
+                  sx={{ width: { xs: '100%', sm: 'auto' } }}
+                >
                   {isLoading ? 'Ukladá sa...' : 'Pridať'}
                 </Button>
               </Box>

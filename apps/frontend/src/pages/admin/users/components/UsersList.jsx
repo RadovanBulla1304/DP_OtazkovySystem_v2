@@ -6,6 +6,7 @@ import {
   useRemoveUserMutation
 } from '@app/redux/api';
 import DeleteIcon from '@mui/icons-material/Delete';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import { Box, Button, Grid2, IconButton, Paper, Tooltip, Typography } from '@mui/material';
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 import { useEffect, useMemo, useState } from 'react';
@@ -118,7 +119,21 @@ const UsersList = () => {
       field: 'actions',
       type: 'actions',
       headerName: 'Akcie',
+      minWidth: 170,
+      flex: 0.8,
       getActions: (params) => [
+        <Tooltip key={'details'} title="Zobraziť detail">
+          <IconButton
+            color="info"
+            size="small"
+            onClick={(e) => {
+              e.stopPropagation();
+              openUserDetails(params.row);
+            }}
+          >
+            <VisibilityIcon />
+          </IconButton>
+        </Tooltip>,
         <EditUserModal key={'edit'} userData={params.row} isTeacher={false} />,
         <Tooltip key={'delete'} title="Odstrániť používateľa">
           <IconButton
@@ -136,9 +151,20 @@ const UsersList = () => {
     }
   ];
 
-  const handleRowClick = (params) => {
-    setSelectedUserForDetails(params.row);
+  const openUserDetails = (row) => {
+    if (!row) return;
+    setSelectedUserForDetails(row);
     setDetailsOpen(true);
+  };
+
+  const handleRowDoubleClick = (params) => {
+    openUserDetails(params?.row);
+  };
+
+  const handleCellDoubleClick = (params) => {
+    // Ignore double-clicks on checkbox and action cells.
+    if (params.field === '__check__' || params.field === 'actions') return;
+    openUserDetails(params?.row);
   };
 
   // Handler for opening assign modal
@@ -157,16 +183,34 @@ const UsersList = () => {
   return (
     <Box>
       <Grid2 container spacing={1} justifyContent={'flex-end'}>
-        <Grid2 display={'flex'} width={'100%'} justifyContent={'space-between'}>
-          <Typography variant="h4" alignSelf={'center'}>
+        <Grid2
+          display={'flex'}
+          width={'100%'}
+          justifyContent={'space-between'}
+          flexDirection={{ xs: 'column', sm: 'row' }}
+          alignItems={{ xs: 'stretch', sm: 'center' }}
+          gap={{ xs: 2, sm: 1 }}
+        >
+          <Typography
+            variant="h4"
+            alignSelf={'center'}
+            sx={{ fontSize: { xs: '1.75rem', sm: '2.125rem' } }}
+          >
             Používatelia
           </Typography>
-          <Grid2 size={{ xs: 12, sm: 6 }} justifyContent={'flex-end'} display={'flex'} gap={1}>
+          <Grid2
+            size={{ xs: 12, sm: 6 }}
+            justifyContent={'flex-end'}
+            display={'flex'}
+            gap={1}
+            flexDirection={{ xs: 'column', sm: 'row' }}
+          >
             <Button
               variant="outlined"
               color="primary"
               disabled={selectedUserIds.length === 0}
               onClick={handleOpenAssignModal}
+              sx={{ width: { xs: '100%', sm: 'auto' } }}
             >
               Priraď k predmetu
             </Button>
@@ -174,11 +218,12 @@ const UsersList = () => {
           </Grid2>
         </Grid2>
       </Grid2>
-      <Paper sx={{ mt: 2 }}>
+      <Paper sx={{ mt: 2, overflowX: 'auto' }}>
         <DataGrid
           loading={isLoading}
           rows={usersWithPoints}
           columns={columns}
+          sx={{ minWidth: { xs: 920, md: '100%' } }}
           getRowId={(row) => row._id}
           pageSizeOptions={[10, 20, 50]}
           initialState={{
@@ -196,7 +241,8 @@ const UsersList = () => {
           slots={{ toolbar: GridToolbar }}
           slotProps={{ toolbar: { showQuickFilter: true } }}
           ignoreDiacritics
-          onRowDoubleClick={handleRowClick}
+          onRowDoubleClick={handleRowDoubleClick}
+          onCellDoubleClick={handleCellDoubleClick}
         />
       </Paper>
       <AssignToSubject
