@@ -302,7 +302,7 @@ const Tests = () => {
 
   if (!subjectId) {
     return (
-      <Box p={3}>
+      <Box sx={{ pt: { xs: 3, sm: 4 }, pb: { xs: 2, sm: 3 }, px: { xs: 1.5, sm: 2, md: 0 } }}>
         <Alert severity="warning">Prosím zvoľte predmet na manažovanie testov</Alert>
       </Box>
     );
@@ -310,8 +310,15 @@ const Tests = () => {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <Box sx={{ pt: 3, pb: 3 }}>
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+      <Box sx={{ pt: { xs: 3, sm: 4 }, pb: { xs: 2, sm: 3 }, px: { xs: 1.5, sm: 2, md: 0 } }}>
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems={{ xs: 'stretch', sm: 'center' }}
+          flexDirection={{ xs: 'column', sm: 'row' }}
+          gap={{ xs: 1.5, sm: 1 }}
+          mb={3}
+        >
           <Typography variant="h4" component="h1">
             Testy
           </Typography>
@@ -321,6 +328,7 @@ const Tests = () => {
               startIcon={<AddIcon />}
               onClick={handleOpenCreate}
               disabled={!modules.length}
+              sx={{ width: { xs: '100%', sm: 'auto' } }}
             >
               Nový test
             </Button>
@@ -339,7 +347,7 @@ const Tests = () => {
             <CircularProgress />
           </Box>
         ) : (
-          <Grid container spacing={3}>
+          <Grid container spacing={{ xs: 2, sm: 3 }}>
             {tests.length === 0 ? (
               <Grid item xs={12}>
                 <Card>
@@ -426,6 +434,12 @@ const Tests = () => {
           onClose={() => setDeleteConfirmModal(null)}
           aria-labelledby="delete-test-dialog-title"
           aria-describedby="delete-test-dialog-description"
+          PaperProps={{
+            sx: {
+              mx: { xs: 1, sm: 2 },
+              width: { xs: 'calc(100% - 16px)', sm: 'auto' }
+            }
+          }}
         >
           <DialogTitle id="delete-test-dialog-title" sx={{ fontWeight: 600 }}>
             Vymazať test?
@@ -435,12 +449,22 @@ const Tests = () => {
               Naozaj chcete odstrániť tento test a všetky jeho pokusy? Táto akcia je nevratná.
             </DialogContentText>
           </DialogContent>
-          <DialogActions>
+          <DialogActions
+            disableSpacing
+            sx={{
+              flexWrap: 'wrap',
+              gap: 1,
+              px: { xs: 2, sm: 3 },
+              pb: 2,
+              justifyContent: { xs: 'stretch', sm: 'flex-end' }
+            }}
+          >
             <Button
               onClick={() => setDeleteConfirmModal(null)}
               disabled={deleting}
               variant="outlined"
               color="error"
+              sx={{ width: { xs: '100%', sm: 'auto' } }}
             >
               Zrušiť
             </Button>
@@ -449,6 +473,7 @@ const Tests = () => {
               color="error"
               variant="contained"
               disabled={deleting}
+              sx={{ width: { xs: '100%', sm: 'auto' } }}
             >
               {deleting ? 'Mazanie...' : 'Vymazať'}
             </Button>

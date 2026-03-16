@@ -105,7 +105,13 @@ const TakeTest = () => {
 
   if (isLoading || !testAttempt) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="400px"
+        px={{ xs: 1.5, sm: 2 }}
+      >
         <CircularProgress />
       </Box>
     );
@@ -115,11 +121,31 @@ const TakeTest = () => {
     ((testAttempt.test.time_limit * 60 - timeRemaining) / (testAttempt.test.time_limit * 60)) * 100;
 
   return (
-    <Box p={3} maxWidth="900px" margin="0 auto">
+    <Box
+      sx={{
+        px: { xs: 1.5, sm: 3 },
+        pt: { xs: 2, sm: 3 },
+        pb: { xs: 2, sm: 3 },
+        maxWidth: '900px',
+        margin: '0 auto'
+      }}
+    >
       {/* Header with timer */}
       <Paper elevation={3} sx={{ p: 2, mb: 3, position: 'sticky', top: 0, zIndex: 10 }}>
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-          <Typography variant="h5">{testAttempt.test.title}</Typography>
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems={{ xs: 'flex-start', sm: 'center' }}
+          flexDirection={{ xs: 'column', sm: 'row' }}
+          gap={{ xs: 1, sm: 0 }}
+          mb={1}
+        >
+          <Typography
+            variant="h5"
+            sx={{ wordBreak: 'break-word', fontSize: { xs: '1.25rem', sm: '1.5rem' } }}
+          >
+            {testAttempt.test.title}
+          </Typography>
           <Typography
             variant="h4"
             color={timeRemaining < 60 ? 'error' : 'primary'}
@@ -193,6 +219,7 @@ const TakeTest = () => {
           size="large"
           onClick={handleSubmitTest}
           disabled={isSubmittingTest || Object.keys(answers).length === 0}
+          sx={{ width: { xs: '100%', sm: 'auto' } }}
         >
           {isSubmittingTest ? 'Odovzdávam...' : 'Odovzdať test'}
         </Button>

@@ -107,7 +107,18 @@ const EditQuestionModal = ({ open, question, onClose, onSubmit }) => {
   if (!question) return null;
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      maxWidth="md"
+      fullWidth
+      PaperProps={{
+        sx: {
+          mx: { xs: 1, sm: 2 },
+          width: { xs: 'calc(100% - 16px)', sm: 'auto' }
+        }
+      }}
+    >
       <form onSubmit={handleSubmit}>
         <DialogTitle>
           <Typography variant="h6">Upraviť otázku</Typography>
@@ -116,7 +127,7 @@ const EditQuestionModal = ({ open, question, onClose, onSubmit }) => {
           </Typography>
         </DialogTitle>
 
-        <DialogContent>
+        <DialogContent sx={{ px: { xs: 2, sm: 3 } }}>
           <Stack spacing={3} sx={{ mt: 1 }}>
             {/* Question text */}
             <TextField
@@ -153,6 +164,7 @@ const EditQuestionModal = ({ open, question, onClose, onSubmit }) => {
                 row
                 value={formData.correct}
                 onChange={(e) => setFormData((prev) => ({ ...prev, correct: e.target.value }))}
+                sx={{ flexWrap: 'wrap' }}
               >
                 {['a', 'b', 'c', 'd'].map((optionKey) => (
                   <FormControlLabel
@@ -200,11 +212,31 @@ const EditQuestionModal = ({ open, question, onClose, onSubmit }) => {
           </Stack>
         </DialogContent>
 
-        <DialogActions>
-          <Button onClick={handleClose} disabled={isSubmitting} color="error">
+        <DialogActions
+          disableSpacing
+          sx={{
+            flexWrap: 'wrap',
+            gap: 1,
+            px: { xs: 2, sm: 3 },
+            pb: 2,
+            justifyContent: { xs: 'stretch', sm: 'flex-end' }
+          }}
+        >
+          <Button
+            onClick={handleClose}
+            disabled={isSubmitting}
+            color="error"
+            variant="outlined"
+            sx={{ width: { xs: '100%', sm: 'auto' } }}
+          >
             Zrušiť
           </Button>
-          <Button type="submit" variant="contained" disabled={isSubmitting}>
+          <Button
+            type="submit"
+            variant="contained"
+            disabled={isSubmitting}
+            sx={{ width: { xs: '100%', sm: 'auto' } }}
+          >
             {isSubmitting ? 'Ukladanie...' : 'Uložiť zmeny'}
           </Button>
         </DialogActions>

@@ -20,10 +20,11 @@ const style = {
   top: '50%',
   left: '50%',
   transform: 'translate(-50%, -50%)',
-  width: 400,
+  width: 'calc(100% - 24px)',
+  maxWidth: 400,
   bgcolor: 'background.paper',
   boxShadow: 24,
-  p: 4,
+  p: { xs: 2, sm: 4 },
   borderRadius: 2
 };
 
@@ -80,8 +81,14 @@ const AssignToSubject = ({ open, onClose, userIds, onSuccess }) => {
               ))}
             </Select>
           </FormControl>
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-            <Button variant="outlined" onClick={handleCancel} disabled={isLoading} color="error">
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, flexWrap: 'wrap' }}>
+            <Button
+              variant="outlined"
+              onClick={handleCancel}
+              disabled={isLoading}
+              color="error"
+              sx={{ width: { xs: '100%', sm: 'auto' } }}
+            >
               Zrušiť
             </Button>
             <Button
@@ -89,6 +96,7 @@ const AssignToSubject = ({ open, onClose, userIds, onSuccess }) => {
               variant="contained"
               color="primary"
               disabled={isLoading || !selectedSubject}
+              sx={{ width: { xs: '100%', sm: 'auto' } }}
             >
               {isLoading ? <CircularProgress size={24} /> : 'Priradiť'}
             </Button>

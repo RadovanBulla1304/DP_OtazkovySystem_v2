@@ -165,7 +165,11 @@ const CreateQuestionModal = ({ open, onClose, modules, onQuestionCreated }) => {
       open={open}
       onClose={handleClose}
       PaperProps={{
-        sx: { borderRadius: 3 }
+        sx: {
+          borderRadius: 3,
+          mx: { xs: 1, sm: 2 },
+          width: { xs: 'calc(100% - 16px)', sm: 'auto' }
+        }
       }}
     >
       <DialogTitle sx={{ pb: 0, fontWeight: 600, marginBottom: 2 }}>
@@ -177,7 +181,8 @@ const CreateQuestionModal = ({ open, onClose, modules, onQuestionCreated }) => {
           flexDirection: 'column',
           gap: 3,
           mx: 'auto',
-          minWidth: { md: '30rem', xs: '90vw' }
+          px: { xs: 2, sm: 3 },
+          minWidth: { md: '30rem', xs: '100%' }
         }}
       >
         <TextField
@@ -241,8 +246,22 @@ const CreateQuestionModal = ({ open, onClose, modules, onQuestionCreated }) => {
           {error}
         </Alert>
       )}
-      <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Button onClick={handleClose} color="error" variant="outlined">
+      <DialogActions
+        disableSpacing
+        sx={{
+          px: { xs: 2, sm: 3 },
+          pb: 2,
+          gap: 1,
+          flexWrap: 'wrap',
+          justifyContent: { xs: 'stretch', sm: 'flex-end' }
+        }}
+      >
+        <Button
+          onClick={handleClose}
+          color="error"
+          variant="outlined"
+          sx={{ width: { xs: '100%', sm: 'auto' } }}
+        >
           Zrušiť
         </Button>
         <Button
@@ -250,6 +269,7 @@ const CreateQuestionModal = ({ open, onClose, modules, onQuestionCreated }) => {
           variant="contained"
           disabled={isSubmitting || !isFormValid() || isLoadingData}
           startIcon={isSubmitting || isLoadingData ? <CircularProgress size={20} /> : null}
+          sx={{ width: { xs: '100%', sm: 'auto' } }}
         >
           {isSubmitting || isLoadingData ? 'Vytváram...' : 'Vytvoriť otázku'}
         </Button>

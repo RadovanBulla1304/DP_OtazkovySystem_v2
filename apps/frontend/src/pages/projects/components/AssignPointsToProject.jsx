@@ -92,9 +92,20 @@ const AssignPointsToProject = ({ open, onClose, project, onSuccess }) => {
   };
 
   return (
-    <Dialog open={open} onClose={handleCancel} maxWidth="sm" fullWidth>
+    <Dialog
+      open={open}
+      onClose={handleCancel}
+      maxWidth="sm"
+      fullWidth
+      PaperProps={{
+        sx: {
+          mx: { xs: 1, sm: 2 },
+          width: { xs: 'calc(100% - 16px)', sm: 'auto' }
+        }
+      }}
+    >
       <DialogTitle sx={{ fontWeight: 600 }}>Priradiť body za projekt</DialogTitle>
-      <DialogContent>
+      <DialogContent sx={{ px: { xs: 2, sm: 3 } }}>
         <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
           {project && (
             <Box mb={3}>
@@ -127,8 +138,23 @@ const AssignPointsToProject = ({ open, onClose, project, onSuccess }) => {
           />
         </Box>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={handleCancel} disabled={isLoading} variant="outlined" color="error">
+      <DialogActions
+        disableSpacing
+        sx={{
+          flexWrap: 'wrap',
+          gap: 1,
+          px: { xs: 2, sm: 3 },
+          pb: 2,
+          justifyContent: { xs: 'stretch', sm: 'flex-end' }
+        }}
+      >
+        <Button
+          onClick={handleCancel}
+          disabled={isLoading}
+          variant="outlined"
+          color="error"
+          sx={{ width: { xs: '100%', sm: 'auto' } }}
+        >
           Zrušiť
         </Button>
         <Button
@@ -136,6 +162,7 @@ const AssignPointsToProject = ({ open, onClose, project, onSuccess }) => {
           variant="contained"
           color="primary"
           disabled={isLoading || !isFormValid()}
+          sx={{ width: { xs: '100%', sm: 'auto' } }}
         >
           {isLoading ? <CircularProgress size={24} /> : 'Priradiť body'}
         </Button>

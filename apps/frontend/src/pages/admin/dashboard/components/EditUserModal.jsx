@@ -101,13 +101,19 @@ const EditUserModal = ({ userData, isTeacher }) => {
         onSubmit={handleSubmit(onSubmit)}
         maxWidth="md"
         fullWidth
+        PaperProps={{
+          sx: {
+            mx: { xs: 1, sm: 2 },
+            width: { xs: 'calc(100% - 16px)', sm: 'auto' }
+          }
+        }}
       >
         <DialogContent
           sx={{
             display: 'flex',
             flexDirection: 'column',
             gap: 2,
-            p: 3,
+            p: { xs: 2, sm: 3 },
             minWidth: {
               md: '48rem',
               sm: '36rem',
@@ -185,12 +191,21 @@ const EditUserModal = ({ userData, isTeacher }) => {
 
           <ErrorNotifier />
 
-          <DialogActions>
+          <DialogActions
+            disableSpacing
+            sx={{
+              px: 0,
+              flexWrap: 'wrap',
+              gap: 1,
+              justifyContent: { xs: 'stretch', sm: 'flex-end' }
+            }}
+          >
             <Button
               onClick={handleClose}
               variant="outlined"
               disabled={isUserLoading || isTeacherLoading}
               color="error"
+              sx={{ width: { xs: '100%', sm: 'auto' } }}
             >
               Zrušiť
             </Button>
@@ -198,6 +213,7 @@ const EditUserModal = ({ userData, isTeacher }) => {
               type="submit"
               variant="contained"
               disabled={isUserLoading || isTeacherLoading || !isValid}
+              sx={{ width: { xs: '100%', sm: 'auto' } }}
             >
               Uložiť
             </Button>

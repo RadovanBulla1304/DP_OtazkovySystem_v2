@@ -96,7 +96,15 @@ const CommentSection = ({ questionId }) => {
               </Alert>
             )}
 
-            <Box sx={{ display: 'flex', gap: 1, mt: 1, justifyContent: 'flex-end' }}>
+            <Box
+              sx={{
+                display: 'flex',
+                gap: 1,
+                mt: 1,
+                justifyContent: { xs: 'stretch', sm: 'flex-end' },
+                flexWrap: 'wrap'
+              }}
+            >
               <Button
                 onClick={() => {
                   setIsAddingComment(false);
@@ -104,6 +112,8 @@ const CommentSection = ({ questionId }) => {
                 }}
                 disabled={addingComment}
                 color="error"
+                variant="outlined"
+                sx={{ width: { xs: '100%', sm: 'auto' } }}
               >
                 Zrušiť
               </Button>
@@ -112,6 +122,7 @@ const CommentSection = ({ questionId }) => {
                 onClick={handleAddComment}
                 disabled={!newComment.trim() || addingComment}
                 startIcon={addingComment ? <CircularProgress size={16} /> : <Send />}
+                sx={{ width: { xs: '100%', sm: 'auto' } }}
               >
                 {addingComment ? 'Pridávam...' : 'Pridať'}
               </Button>

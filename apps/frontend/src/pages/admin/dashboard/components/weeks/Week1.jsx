@@ -63,7 +63,7 @@ const Week1 = ({
       <Typography variant="body2" sx={{ mt: 1, fontStyle: 'italic' }}>
         Pridaj 2 otázky pre tento týždeň
       </Typography>
-      <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
+      <Stack direction="row" spacing={1} useFlexGap sx={{ mt: 1, flexWrap: 'wrap' }}>
         <Chip
           label={`${earnedPoints}/${maxPoints} bodov`}
           color={earnedPoints > 0 ? (earnedPoints >= maxPoints ? 'success' : 'warning') : 'default'}

@@ -55,7 +55,7 @@ const Week2 = ({
       <Typography variant="body2" sx={{ mt: 1, fontStyle: 'italic' }}>
         Validuj 2 otázky od iných študentov
       </Typography>
-      <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
+      <Stack direction="row" spacing={1} useFlexGap sx={{ mt: 1, flexWrap: 'wrap' }}>
         {isCompleted && <Chip label="Validácia dokončená" color="success" size="small" />}
         <Chip
           label={`${earnedPoints}/${maxPoints} bodov`}

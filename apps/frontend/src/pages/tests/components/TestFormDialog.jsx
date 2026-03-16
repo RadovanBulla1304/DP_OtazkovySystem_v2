@@ -62,12 +62,23 @@ const TestFormDialog = ({
   const availableQuestionsCount = questionsCountData?.count || 0;
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="md"
+      fullWidth
+      PaperProps={{
+        sx: {
+          mx: { xs: 1, sm: 2 },
+          width: { xs: 'calc(100% - 16px)', sm: 'auto' }
+        }
+      }}
+    >
       <DialogTitle sx={{ pb: 0, fontWeight: 600 }}>
         {editingTest ? 'Upraviť test' : 'Vytvoriť nový test'}
       </DialogTitle>
-      <DialogContent>
-        <Grid container spacing={3} sx={{ mt: 1 }}>
+      <DialogContent sx={{ px: { xs: 2, sm: 3 } }}>
+        <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ mt: 1 }}>
           <Grid item xs={12}>
             <TextField
               label="Názov Testu"
@@ -89,7 +100,7 @@ const TestFormDialog = ({
             />
           </Grid>
 
-          <Grid item xs={6}>
+          <Grid item xs={12} sm={6}>
             <TextField
               label="Celkový počet otázok"
               type="number"
@@ -101,7 +112,7 @@ const TestFormDialog = ({
             />
           </Grid>
 
-          <Grid item xs={6}>
+          <Grid item xs={12} sm={6}>
             <TextField
               label="Časový limit (minúty)"
               type="number"
@@ -113,7 +124,7 @@ const TestFormDialog = ({
             />
           </Grid>
 
-          <Grid item xs={6}>
+          <Grid item xs={12} sm={6}>
             <DateTimePicker
               label="Dátum a čas začiatku"
               value={formData.date_start}
@@ -123,7 +134,7 @@ const TestFormDialog = ({
             />
           </Grid>
 
-          <Grid item xs={6}>
+          <Grid item xs={12} sm={6}>
             <DateTimePicker
               label="Dátum a čas konca"
               value={formData.date_end}
@@ -133,7 +144,7 @@ const TestFormDialog = ({
             />
           </Grid>
 
-          <Grid item xs={4}>
+          <Grid item xs={12} sm={4}>
             <TextField
               label="Maximálny počet pokusov"
               type="number"
@@ -145,7 +156,7 @@ const TestFormDialog = ({
             />
           </Grid>
 
-          <Grid item xs={4}>
+          <Grid item xs={12} sm={4}>
             <TextField
               label="Hranica úspešnosti (%)"
               type="number"
@@ -157,7 +168,7 @@ const TestFormDialog = ({
             />
           </Grid>
 
-          <Grid item xs={4}>
+          <Grid item xs={12} sm={4}>
             <TextField
               label="Maximálny počet bodov"
               type="number"
@@ -328,14 +339,20 @@ const TestFormDialog = ({
           </Grid>
         </Grid>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} variant="outlined" color="error">
+      <DialogActions disableSpacing sx={{ flexWrap: 'wrap', gap: 1, px: { xs: 2, sm: 3 }, pb: 2 }}>
+        <Button
+          onClick={onClose}
+          variant="outlined"
+          color="error"
+          sx={{ width: { xs: '100%', sm: 'auto' } }}
+        >
           Zrušiť
         </Button>
         <Button
           onClick={onSubmit}
           variant="contained"
           disabled={creating || updating || !formData.title || !formData.selected_modules.length}
+          sx={{ width: { xs: '100%', sm: 'auto' } }}
         >
           {creating || updating ? 'Ukladám...' : editingTest ? 'Upraviť' : 'Vytvoriť'}
         </Button>
@@ -358,3 +375,4 @@ TestFormDialog.propTypes = {
 };
 
 export default TestFormDialog;
+

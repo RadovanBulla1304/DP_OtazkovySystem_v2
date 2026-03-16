@@ -78,9 +78,17 @@ const WeekSelector = ({
   };
 
   return (
-    <Box sx={{ width: '50%', pl: 2 }}>
+    <Box sx={{ width: { xs: '100%', md: '50%' }, pl: { xs: 0, md: 2 } }}>
       {/* Module info and date range at top */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 2,
+          mb: { xs: 1.5, sm: 2 },
+          mt: { xs: 0.5, md: 0 }
+        }}
+      >
         {selectedModul && (
           <Box>
             <Typography sx={{ fontWeight: 600 }}>

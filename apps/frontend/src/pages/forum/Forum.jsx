@@ -121,10 +121,19 @@ const Forum = () => {
   const pagination = questionsData?.pagination || {};
 
   return (
-    <Box sx={{ pt: 3, pb: 3 }}>
+    <Box sx={{ pt: { xs: 3, sm: 4 }, pb: { xs: 2, sm: 3 }, px: { xs: 1.5, sm: 2, md: 0 } }}>
       {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-        <Typography variant="h4" component="h1">
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: { xs: 'stretch', sm: 'center' },
+          flexDirection: { xs: 'column', sm: 'row' },
+          gap: 1.5,
+          mb: 3
+        }}
+      >
+        <Typography variant="h4" component="h1" sx={{ fontSize: { xs: '1.6rem', sm: '2.125rem' } }}>
           Fórum
         </Typography>
         <Button
@@ -132,21 +141,29 @@ const Forum = () => {
           startIcon={<Add />}
           onClick={() => setAddDialogOpen(true)}
           size="medium"
+          sx={{ width: { xs: '100%', sm: 'auto' } }}
         >
           Nová otázka
         </Button>
       </Box>
 
       {/* Filters */}
-      <Paper sx={{ p: 3, mb: 3 }}>
-        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'end' }}>
+      <Paper sx={{ p: { xs: 1.5, sm: 3 }, mb: 3 }}>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))', lg: '2fr 1fr 1fr 1fr' },
+            gap: 1.5,
+            alignItems: 'end'
+          }}
+        >
           {/* Search */}
           <TextField
             label="Vyhľadávanie"
             value={filters.search}
             onChange={handleFilterChange('search')}
             placeholder="Hľadať v nadpisoch a opisoch..."
-            sx={{ minWidth: 300, flexGrow: 1 }}
+            sx={{ width: '100%', gridColumn: { xs: '1 / -1', lg: '1 / 2' } }}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -157,7 +174,7 @@ const Forum = () => {
           />
 
           {/* Module filter */}
-          <FormControl sx={{ minWidth: 150 }}>
+          <FormControl sx={{ minWidth: { xs: '100%', sm: 170 } }}>
             <InputLabel>Modul</InputLabel>
             <Select value={filters.modul} onChange={handleFilterChange('modul')} label="Modul">
               <MenuItem value="">Všetky moduly</MenuItem>
@@ -170,7 +187,7 @@ const Forum = () => {
           </FormControl>
 
           {/* Author type filter */}
-          <FormControl sx={{ minWidth: 150 }}>
+          <FormControl sx={{ minWidth: { xs: '100%', sm: 170 } }}>
             <InputLabel>Autor</InputLabel>
             <Select
               value={filters.createdByModel}
@@ -185,7 +202,7 @@ const Forum = () => {
           </FormControl>
 
           {/* Sort filter */}
-          <FormControl sx={{ minWidth: 150 }}>
+          <FormControl sx={{ minWidth: { xs: '100%', sm: 170 } }}>
             <InputLabel>Zoradiť podľa</InputLabel>
             <Select
               value={filters.sortBy}
@@ -202,7 +219,12 @@ const Forum = () => {
           </FormControl>
 
           {/* Tags filter - Chips */}
-          <Box sx={{ minWidth: 200 }}>
+          <Box
+            sx={{
+              gridColumn: { xs: '1 / -1', lg: '1 / -1' },
+              minWidth: 0
+            }}
+          >
             <Typography variant="body2" color="text.secondary">
               Filtrovať podľa tagov
             </Typography>
@@ -211,7 +233,7 @@ const Forum = () => {
                 display: 'flex',
                 gap: 1,
                 flexWrap: 'wrap',
-                maxHeight: 140,
+                maxHeight: { xs: 120, sm: 140 },
                 overflowY: 'auto',
                 p: 1,
                 border: '1px solid',
@@ -240,9 +262,15 @@ const Forum = () => {
           </Box>
 
           {/* Clear filters */}
-          <Button onClick={handleClearFilters} variant="outlined" sx={{ height: 'fit-content' }}>
-            Vymazať filtre
-          </Button>
+          <Box sx={{ gridColumn: { xs: '1 / -1', sm: '1 / -1' }, display: 'flex' }}>
+            <Button
+              onClick={handleClearFilters}
+              variant="outlined"
+              sx={{ height: 'fit-content', width: { xs: '100%', sm: 'auto' } }}
+            >
+              Vymazať filtre
+            </Button>
+          </Box>
         </Box>
       </Paper>
 
@@ -259,7 +287,7 @@ const Forum = () => {
             <CircularProgress />
           </Box>
         ) : questions.length === 0 ? (
-          <Paper sx={{ p: 4, textAlign: 'center' }}>
+          <Paper sx={{ p: { xs: 2.5, sm: 4 }, textAlign: 'center' }}>
             <Typography variant="h6" gutterBottom>
               Žiadne otázky
             </Typography>
@@ -268,7 +296,12 @@ const Forum = () => {
                 ? 'Pre zadané filtre neboli nájdené žiadne otázky.'
                 : 'Zatiaľ nie sú v tomto fóre žiadne otázky.'}
             </Typography>
-            <Button variant="contained" startIcon={<Add />} onClick={() => setAddDialogOpen(true)}>
+            <Button
+              variant="contained"
+              startIcon={<Add />}
+              onClick={() => setAddDialogOpen(true)}
+              sx={{ width: { xs: '100%', sm: 'auto' } }}
+            >
               Pridať prvú otázku
             </Button>
           </Paper>
@@ -293,6 +326,7 @@ const Forum = () => {
                   onChange={handlePageChange}
                   color="primary"
                   size="large"
+                  sx={{ '& .MuiPagination-ul': { flexWrap: 'wrap', justifyContent: 'center' } }}
                 />
               </Box>
             )}

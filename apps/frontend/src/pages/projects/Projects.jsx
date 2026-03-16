@@ -197,11 +197,23 @@ const Projects = () => {
   }
 
   return (
-    <Box sx={{ pt: 3, pb: 3 }}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
+    <Box sx={{ pt: { xs: 2, sm: 3 }, pb: 3, px: { xs: 1, sm: 0 } }}>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems={{ xs: 'stretch', sm: 'center' }}
+        flexDirection={{ xs: 'column', sm: 'row' }}
+        gap={{ xs: 1.5, sm: 2 }}
+        mb={4}
+      >
         <Typography variant="h4">Projekty</Typography>
-        <Box display="flex" gap={2}>
-          <Button variant="outlined" color="secondary" onClick={handleOpenPeerEvaluation}>
+        <Box display="flex" gap={1} flexWrap="wrap">
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={handleOpenPeerEvaluation}
+            sx={{ width: { xs: '100%', sm: 'auto' } }}
+          >
             Vzájomné hodnotenie
           </Button>
           {isTeacher && (
@@ -211,6 +223,7 @@ const Projects = () => {
               variant="contained"
               color="primary"
               onClick={handleOpenProjectModal}
+              sx={{ width: { xs: '100%', sm: 'auto' } }}
             >
               Nový Projekt
             </Button>
@@ -251,8 +264,15 @@ const Projects = () => {
                 }}
               >
                 <CardContent sx={{ flexGrow: 1 }}>
-                  <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
-                    <Typography gutterBottom variant="h5" component="div">
+                  <Box
+                    display="flex"
+                    justifyContent="space-between"
+                    alignItems="flex-start"
+                    flexDirection={{ xs: 'column', sm: 'row' }}
+                    gap={1}
+                    mb={2}
+                  >
+                    <Typography gutterBottom variant="h5" component="div" sx={{ wordBreak: 'break-word' }}>
                       {project.name}
                     </Typography>
                     <Chip
@@ -315,7 +335,7 @@ const Projects = () => {
                 </CardContent>
                 {isTeacher && (
                   <Box p={2} pt={0}>
-                    <Box display="flex" justifyContent="flex-end" alignItems="center">
+                    <Box display="flex" justifyContent="flex-end" alignItems="center" flexWrap="wrap">
                       <Box>
                         <Tooltip title="Priradiť používateľov">
                           <IconButton
@@ -366,6 +386,12 @@ const Projects = () => {
           onClose={() => setProjectToDelete(null)}
           aria-labelledby="delete-project-dialog-title"
           aria-describedby="delete-project-dialog-description"
+          PaperProps={{
+            sx: {
+              mx: { xs: 1, sm: 2 },
+              width: { xs: 'calc(100% - 16px)', sm: 'auto' }
+            }
+          }}
         >
           <DialogTitle id="delete-project-dialog-title" sx={{ fontWeight: 600 }}>
             Odstrániť projekt?
@@ -376,12 +402,22 @@ const Projects = () => {
               akcia sa nedá vrátiť späť.
             </Typography>
           </DialogContent>
-          <DialogActions>
+          <DialogActions
+            disableSpacing
+            sx={{
+              flexWrap: 'wrap',
+              gap: 1,
+              px: { xs: 2, sm: 3 },
+              pb: 2,
+              justifyContent: { xs: 'stretch', sm: 'flex-end' }
+            }}
+          >
             <Button
               onClick={() => setProjectToDelete(null)}
               disabled={isDeleting}
               variant="outlined"
               color="error"
+              sx={{ width: { xs: '100%', sm: 'auto' } }}
             >
               Zrušiť
             </Button>
@@ -392,6 +428,7 @@ const Projects = () => {
               color="error"
               variant="contained"
               disabled={isDeleting}
+              sx={{ width: { xs: '100%', sm: 'auto' } }}
             >
               {isDeleting ? 'Maže sa...' : 'Vymazať'}
             </Button>

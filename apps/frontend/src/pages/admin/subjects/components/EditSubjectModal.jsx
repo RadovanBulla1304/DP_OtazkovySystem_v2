@@ -77,11 +77,15 @@ const EditSubjectModal = ({ open, onClose, onSuccess, subject }) => {
       open={open}
       onClose={handleClose}
       PaperProps={{
-        sx: { minWidth: 500 }
+        sx: {
+          minWidth: { xs: 'auto', sm: 500 },
+          mx: { xs: 1, sm: 2 },
+          width: { xs: 'calc(100% - 16px)', sm: 'auto' }
+        }
       }}
     >
       <DialogTitle sx={{ fontWeight: 600 }}>Upraviť názov predmetu</DialogTitle>
-      <DialogContent sx={{ pt: '16px !important', pb: 2, px: 3 }}>
+      <DialogContent sx={{ pt: '16px !important', pb: 2, px: { xs: 2, sm: 3 } }}>
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
             Chyba pri úprave predmetu
@@ -103,8 +107,21 @@ const EditSubjectModal = ({ open, onClose, onSuccess, subject }) => {
           )}
         />
       </DialogContent>
-      <DialogActions>
-        <Button onClick={handleClose} disabled={isLoading} variant="outlined" color="error">
+      <DialogActions
+        disableSpacing
+        sx={{
+          flexWrap: 'wrap',
+          gap: 1,
+          justifyContent: { xs: 'stretch', sm: 'flex-end' }
+        }}
+      >
+        <Button
+          onClick={handleClose}
+          disabled={isLoading}
+          variant="outlined"
+          color="error"
+          sx={{ width: { xs: '100%', sm: 'auto' } }}
+        >
           Zrušiť
         </Button>
         <Button
@@ -114,6 +131,7 @@ const EditSubjectModal = ({ open, onClose, onSuccess, subject }) => {
           }}
           variant="contained"
           disabled={isLoading}
+          sx={{ width: { xs: '100%', sm: 'auto' } }}
         >
           {isLoading ? <CircularProgress size={24} /> : 'Uložiť'}
         </Button>

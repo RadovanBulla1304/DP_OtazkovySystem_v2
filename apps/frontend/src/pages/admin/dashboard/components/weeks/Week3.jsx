@@ -66,7 +66,7 @@ const Week3 = ({
       <Typography variant="body2" sx={{ mt: 1, fontStyle: 'italic' }}>
         Reaguj na validácie tvojích otázok {isCurrent && '• Môžeš upraviť svoje otázky'}
       </Typography>
-      <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
+      <Stack direction="row" spacing={1} useFlexGap sx={{ mt: 1, flexWrap: 'wrap' }}>
         {isCompleted && <Chip label="Odpovede dokončené" color="success" size="small" />}
         <Chip
           label={`${earnedPoints}/${maxPoints} bodov`}

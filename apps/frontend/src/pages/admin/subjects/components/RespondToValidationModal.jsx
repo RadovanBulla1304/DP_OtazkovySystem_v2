@@ -52,9 +52,20 @@ const RespondToValidationModal = ({
     : '';
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
+    <Dialog
+      open={open}
+      onClose={onClose}
+      fullWidth
+      maxWidth="md"
+      PaperProps={{
+        sx: {
+          mx: { xs: 1, sm: 2 },
+          width: { xs: 'calc(100% - 16px)', sm: 'auto' }
+        }
+      }}
+    >
       <DialogTitle>Odpoveď na validáciu otázky</DialogTitle>
-      <DialogContent>
+      <DialogContent sx={{ px: { xs: 2, sm: 3 } }}>
         <Box sx={{ mb: 3 }}>
           <Typography variant="h6" sx={{ mb: 1, fontWeight: 600 }}>
             Vaša otázka:
@@ -79,7 +90,7 @@ const RespondToValidationModal = ({
               ))}
           </Box>
 
-          <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+          <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
             <Chip
               label={isValid ? 'Validná' : 'Nevalidná'}
               color={isValid ? 'success' : 'error'}
@@ -134,12 +145,18 @@ const RespondToValidationModal = ({
           placeholder="Napíšte svoj komentár k validácii..."
         />
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} variant="outlined" color="error">
+      <DialogActions disableSpacing sx={{ flexWrap: 'wrap', gap: 1, px: { xs: 2, sm: 3 }, pb: 2 }}>
+        <Button
+          onClick={onClose}
+          variant="outlined"
+          color="error"
+          sx={{ width: { xs: '100%', sm: 'auto' } }}
+        >
           Zrušiť
         </Button>
         <Button
           variant="contained"
+          sx={{ width: { xs: '100%', sm: 'auto' } }}
           onClick={() => {
             if (onSubmit && question && question._id) {
               onSubmit(question._id, { agreed, comment });
@@ -174,3 +191,4 @@ RespondToValidationModal.propTypes = {
   onClose: PropTypes.func,
   onSubmit: PropTypes.func
 };
+

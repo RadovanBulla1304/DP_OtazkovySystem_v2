@@ -10,6 +10,9 @@ import {
 } from '@app/redux/api';
 import {
   Box,
+  Button,
+  ButtonGroup,
+  Chip,
   CircularProgress,
   FormControl,
   InputLabel,
@@ -45,6 +48,7 @@ const Dashboard = () => {
 
   const auth = authService.getUserFromStorage();
   const userId = auth?.id || auth?._id || auth?.userId || null;
+  const isAdmin = Boolean(auth?.isAdmin || auth?.is_admin || auth?.role === 'admin');
 
   // Fetch questions for selected module (all users) then filter to current user
   const { data: modulQuestions = [] } = useGetQuestionsByModulQuery(selectedModulId, {
@@ -136,8 +140,8 @@ const Dashboard = () => {
   const [respondOpen, setRespondOpen] = useState(false);
   const [questionToRespond, setQuestionToRespond] = useState(null);
 
-  // Debug: manual week override disabled
-  // const [debugWeekOverride, setDebugWeekOverride] = useState(null);
+  // Debug: allow manual current-week override for testing
+  const [debugWeekOverride, setDebugWeekOverride] = useState(null);
 
   // When selected module changes, reset selectedWeekNumber to the current week (or 1)
   useEffect(() => {
@@ -206,10 +210,9 @@ const Dashboard = () => {
 
   // Get effective current week (considering debug override)
   const getEffectiveCurrentWeek = (weeks, now) => {
-    // Manual debug override disabled: always use date-based current week.
-    // if (debugWeekOverride !== null && weeks[debugWeekOverride - 1]) {
-    //   return weeks[debugWeekOverride - 1];
-    // }
+    if (debugWeekOverride !== null && weeks[debugWeekOverride - 1]) {
+      return weeks[debugWeekOverride - 1];
+    }
     return weeks.find((w) => isDateInRange(now, w.start, w.end)) || weeks[0] || null;
   };
 
@@ -247,7 +250,7 @@ const Dashboard = () => {
   }, [selectedModul]);
 
   return (
-    <Box sx={{ pt: 2 }}>
+    <Box sx={{ pt: { xs: 3, sm: 4 }, pb: { xs: 2, sm: 3 }, px: { xs: 1.5, sm: 2, md: 0 } }}>
       {isFetching ? (
         <CircularProgress />
       ) : moduls && moduls.length > 0 ? (
@@ -268,13 +271,11 @@ const Dashboard = () => {
             </Select>
           </FormControl>
 
-          {/* Debug controls disabled */}
-          {/*
-          {isAdmin && (
+          {isAdmin && selectedModul && (
             <Box
               sx={{
                 mb: 3,
-                p: 2,
+                p: { xs: 1.5, sm: 2 },
                 borderRadius: 1,
                 border: '1px solid',
                 borderColor: 'divider'
@@ -283,33 +284,30 @@ const Dashboard = () => {
               <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
                 Debug: Manuálne prepnutie týždňa
               </Typography>
-              <ButtonGroup variant="outlined" size="small">
-                <Button
-                  onClick={() => setDebugWeekOverride(1)}
-                  color={debugWeekOverride === 1 ? 'primary' : 'inherit'}
-                >
-                  Týždeň 1
-                </Button>
-                <Button
-                  onClick={() => setDebugWeekOverride(2)}
-                  color={debugWeekOverride === 2 ? 'primary' : 'inherit'}
-                >
-                  Týždeň 2
-                </Button>
-                <Button
-                  onClick={() => setDebugWeekOverride(3)}
-                  color={debugWeekOverride === 3 ? 'primary' : 'inherit'}
-                >
-                  Týždeň 3
-                </Button>
-                <Button onClick={() => setDebugWeekOverride(null)}>Reset</Button>
-              </ButtonGroup>
-              {debugWeekOverride && (
-                <Chip label={`Aktívny: Týždeň ${debugWeekOverride}`} size="small" sx={{ ml: 1 }} />
-              )}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                <ButtonGroup variant="outlined" size="small" sx={{ flexWrap: 'wrap' }}>
+                  {buildWeeks(selectedModul).map((week) => (
+                    <Button
+                      key={week.weekNumber}
+                      onClick={() => setDebugWeekOverride(week.weekNumber)}
+                      color={debugWeekOverride === week.weekNumber ? 'primary' : 'inherit'}
+                    >
+                      Týždeň {week.weekNumber}
+                    </Button>
+                  ))}
+                  <Button onClick={() => setDebugWeekOverride(null)}>Reset</Button>
+                </ButtonGroup>
+                {debugWeekOverride && (
+                  <Chip
+                    label={`Aktívny: Týždeň ${debugWeekOverride}`}
+                    size="small"
+                    color="warning"
+                    variant="outlined"
+                  />
+                )}
+              </Box>
             </Box>
           )}
-          */}
         </>
       ) : (
         <Typography color="text.secondary">Pre tento predmet nie sú žiadne moduly.</Typography>
@@ -380,9 +378,17 @@ const Dashboard = () => {
             };
 
             return (
-              <Box sx={{ mt: 2, display: 'flex', alignItems: 'stretch' }}>
-                {/* Left column - 50% width */}
-                <Box sx={{ width: '50%', pr: 2 }}>
+              <Box
+                sx={{
+                  mt: { xs: 1.5, sm: 2 },
+                  display: 'flex',
+                  flexDirection: { xs: 'column', md: 'row' },
+                  alignItems: 'stretch',
+                  gap: { xs: 2, md: 0 }
+                }}
+              >
+                {/* Left column */}
+                <Box sx={{ width: { xs: '100%', md: '50%' }, pr: { xs: 0, md: 2 } }}>
                   <Typography variant="h6" sx={{ mb: 1 }}>
                     Aktuálny týždeň
                   </Typography>
@@ -397,6 +403,7 @@ const Dashboard = () => {
                 <Box
                   sx={{
                     width: '1px',
+                    display: { xs: 'none', md: 'block' },
                     backgroundColor: 'divider',
                     mx: 1,
                     alignSelf: 'stretch'

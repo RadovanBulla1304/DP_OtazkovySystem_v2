@@ -730,13 +730,16 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
         )}
       </DialogContent>
       <DialogActions
+        disableSpacing
         sx={{
-          padding: '16px',
+          padding: { xs: '12px 16px', sm: '16px' },
           borderTop: '1px solid',
           borderColor: 'divider',
           display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center'
+          justifyContent: { xs: 'stretch', sm: 'space-between' },
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: 1
         }}
       >
         {/* Pagination controls in the footer */}
@@ -762,7 +765,12 @@ const UserPointsModal = ({ open, onClose, userIds }) => {
           </Box>
         )}
 
-        <Button onClick={onClose} variant="outlined" color="error">
+        <Button
+          onClick={onClose}
+          variant="outlined"
+          color="error"
+          sx={{ width: { xs: '100%', sm: 'auto' } }}
+        >
           Zrušiť
         </Button>
       </DialogActions>

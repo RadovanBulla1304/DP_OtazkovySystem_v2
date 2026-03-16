@@ -198,7 +198,7 @@ const Subjects = () => {
 
   if (isLoading || isDeleting) {
     return (
-      <Box display="flex" justifyContent="center" mt={4}>
+      <Box display="flex" justifyContent="center" mt={{ xs: 3, sm: 4 }} px={{ xs: 2, sm: 0 }}>
         <CircularProgress />
       </Box>
     );
@@ -206,17 +206,32 @@ const Subjects = () => {
 
   if (isError) {
     return (
-      <Box display="flex" justifyContent="center" mt={4}>
+      <Box display="flex" justifyContent="center" mt={{ xs: 3, sm: 4 }} px={{ xs: 2, sm: 0 }}>
         <Typography color="error">Chyba načítavania predmetov</Typography>
       </Box>
     );
   }
 
   return (
-    <Box sx={{ pt: 3, pb: 3 }}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
-        <Typography variant="h4">Predmety</Typography>
-        <Box display="flex" gap={2} alignItems="center">
+    <Box sx={{ pt: { xs: 3, sm: 4 }, pb: { xs: 2, sm: 3 }, px: { xs: 1.5, sm: 2, md: 0 } }}>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems={{ xs: 'stretch', sm: 'center' }}
+        flexDirection={{ xs: 'column', sm: 'row' }}
+        gap={{ xs: 2, sm: 1.5 }}
+        mb={{ xs: 2.5, sm: 4 }}
+      >
+        <Typography variant="h4" sx={{ fontSize: { xs: '1.75rem', sm: '2.125rem' } }}>
+          Predmety
+        </Typography>
+        <Box
+          display="flex"
+          gap={1.5}
+          alignItems="center"
+          justifyContent={{ xs: 'stretch', sm: 'flex-end' }}
+          flexWrap="wrap"
+        >
           {isAdminTeacher && (
             <>
               <Tooltip title="Odstrániť priradenie všetkých používateľov (DEBUG)">
@@ -225,6 +240,7 @@ const Subjects = () => {
                   disabled={isTriggeringUnassignment}
                   onClick={handleTriggerYearlyUnassignment}
                   size="large"
+                  sx={{ alignSelf: { xs: 'flex-start', sm: 'center' } }}
                 >
                   <PersonRemove />
                 </IconButton>
@@ -236,6 +252,7 @@ const Subjects = () => {
                 color="primary"
                 onClick={() => setIsBulkAssignOpen(true)}
                 disabled={!subjects || subjects.length === 0}
+                sx={{ width: { xs: '100%', sm: 'auto' } }}
               >
                 Priradenie učiteľov
               </Button>
@@ -247,6 +264,7 @@ const Subjects = () => {
             variant="contained"
             color="primary"
             onClick={handleOpenSubjectModal}
+            sx={{ width: { xs: '100%', sm: 'auto' } }}
           >
             Nový predmet
           </Button>
@@ -266,7 +284,7 @@ const Subjects = () => {
         onSuccess={handleModulCreated}
       />
 
-      <Grid container spacing={3}>
+      <Grid container spacing={{ xs: 2, sm: 3 }}>
         {subjects?.map((subject) => (
           <Grid item xs={12} sm={6} md={4} lg={3} key={subject._id}>
             <SubjectCard

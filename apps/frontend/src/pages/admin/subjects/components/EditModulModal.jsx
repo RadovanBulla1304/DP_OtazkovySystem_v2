@@ -16,10 +16,11 @@ const style = {
   top: '50%',
   left: '50%',
   transform: 'translate(-50%, -50%)',
-  width: 400,
+  width: 'calc(100% - 24px)',
+  maxWidth: 420,
   bgcolor: 'background.paper',
   boxShadow: 24,
-  p: 4,
+  p: { xs: 2, sm: 4 },
   borderRadius: 2
 };
 
@@ -126,7 +127,7 @@ const EditModulModal = ({ open, onClose, onSuccess, modul }) => {
 
             {/* Week duration buttons */}
             {startDate && (
-              <Box sx={{ display: 'flex', gap: 1, my: 1 }}>
+              <Box sx={{ display: 'flex', gap: 1, my: 1, flexWrap: 'wrap' }}>
                 {[1, 2, 3].map((weeks) => (
                   <Button
                     key={weeks}
@@ -169,11 +170,25 @@ const EditModulModal = ({ open, onClose, onSuccess, modul }) => {
               )}
             />
           </LocalizationProvider>
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 2 }}>
-            <Button variant="outlined" onClick={handleCancel} disabled={isLoading} color="error">
+          <Box
+            sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 2, flexWrap: 'wrap' }}
+          >
+            <Button
+              variant="outlined"
+              onClick={handleCancel}
+              disabled={isLoading}
+              color="error"
+              sx={{ width: { xs: '100%', sm: 'auto' } }}
+            >
               Zrušiť
             </Button>
-            <Button type="submit" variant="contained" color="primary" disabled={isLoading}>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              disabled={isLoading}
+              sx={{ width: { xs: '100%', sm: 'auto' } }}
+            >
               {isLoading ? 'Ukladá sa...' : 'Uložiť'}
             </Button>
           </Box>

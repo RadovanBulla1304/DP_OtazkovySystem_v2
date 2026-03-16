@@ -26,7 +26,13 @@ const TestResults = () => {
 
   if (isLoading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="400px"
+        px={{ xs: 1.5, sm: 2 }}
+      >
         <CircularProgress />
       </Box>
     );
@@ -34,7 +40,7 @@ const TestResults = () => {
 
   if (error || !data) {
     return (
-      <Box p={3} textAlign="center">
+      <Box sx={{ px: { xs: 1.5, sm: 3 }, py: { xs: 2, sm: 3 } }} textAlign="center">
         <Typography color="error">Chyba načítania výsledkov testu</Typography>
         <Button variant="contained" onClick={() => navigate('/tests')} sx={{ mt: 2 }}>
           Naspäť na Testy
@@ -52,13 +58,28 @@ const TestResults = () => {
   };
 
   return (
-    <Box p={3} maxWidth="1200px" margin="0 auto">
+    <Box
+      sx={{
+        px: { xs: 1.5, sm: 3 },
+        pt: { xs: 2, sm: 3 },
+        pb: { xs: 2, sm: 3 },
+        maxWidth: '1200px',
+        margin: '0 auto'
+      }}
+    >
       {/* Header with Score */}
       <Paper elevation={3} sx={{ p: 3, mb: 3, textAlign: 'center' }}>
         <Typography variant="h4" gutterBottom>
           {test.title}
         </Typography>
-        <Box display="flex" justifyContent="center" alignItems="center" gap={3} mt={2}>
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          gap={3}
+          mt={2}
+          flexWrap="wrap"
+        >
           <Box>
             <Typography variant="h2" color={testAttempt.passed ? 'success.main' : 'error.main'}>
               {testAttempt.score}%
@@ -199,7 +220,7 @@ const TestResults = () => {
         })}
       </Box>
 
-      <TableContainer component={Paper} sx={{ mb: 4 }}>
+      <TableContainer component={Paper} sx={{ mb: 4, overflowX: 'auto' }}>
         <Table>
           <TableHead>
             <TableRow>
@@ -258,7 +279,7 @@ const TestResults = () => {
       </TableContainer>
 
       {/* Action Buttons */}
-      <Box display="flex" justifyContent="center" gap={2} mb={4}>
+      <Box display="flex" justifyContent="center" gap={2} mb={4} flexWrap="wrap">
         <Button variant="contained" onClick={() => navigate('/tests')}>
           Naspäť na Testy
         </Button>

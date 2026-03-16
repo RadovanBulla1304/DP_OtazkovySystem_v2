@@ -105,28 +105,40 @@ const AuthRegister = () => {
       component="main"
       maxWidth="sm"
       sx={{
+        minHeight: '100dvh',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'flex-start',
         bgcolor: 'none',
-        minHeight: '100vh',
-        py: 4,
+        py: { xs: 3, sm: 4 },
+        px: { xs: 2, sm: 3 },
         overflowX: 'hidden'
       }}
     >
-      <Typography align="center" sx={{ mt: 2 }} variant="h6" color="text.secondary">
+      <Typography align="center" sx={{ mt: { xs: 1, sm: 2 } }} variant="h6" color="text.secondary">
         {userType === 'student' ? 'Registrácia študenta' : 'Registrácia učiteľa'}
       </Typography>
-      <Card sx={{ mt: 2, mb: 4, p: 2, minHeight: 'inherit', width: '100%', maxWidth: '750px' }}>
+      <Card
+        sx={{
+          mt: { xs: 2, sm: 2.5 },
+          mb: { xs: 2, sm: 4 },
+          p: { xs: 1.5, sm: 2 },
+          minHeight: 'inherit',
+          width: '100%',
+          maxWidth: '750px',
+          overflowX: 'hidden'
+        }}
+      >
         {/* Toggle between Student and Teacher */}
-        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', mb: { xs: 2, sm: 3 } }}>
           <ToggleButtonGroup
             value={userType}
             exclusive
             onChange={handleUserTypeChange}
             aria-label="user type"
             color="primary"
+            sx={{ flexWrap: 'wrap' }}
           >
             <ToggleButton value="student" aria-label="student">
               Študent
@@ -140,9 +152,13 @@ const AuthRegister = () => {
         <Box
           component="form"
           onSubmit={handleSubmit}
-          sx={{ mt: 1, paddingBlock: 2, paddingInline: 1 }}
+          sx={{ mt: 1, paddingBlock: { xs: 1, sm: 2 }, paddingInline: { xs: 0.5, sm: 1 } }}
         >
-          <Typography component="h1" variant="h4" sx={{ mb: 3 }}>
+          <Typography
+            component="h1"
+            variant="h4"
+            sx={{ mb: 3, fontSize: { xs: '1.75rem', sm: '2.125rem' } }}
+          >
             Registrácia
           </Typography>
 

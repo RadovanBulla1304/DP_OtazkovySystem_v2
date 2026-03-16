@@ -78,9 +78,20 @@ const UserDetailsDialog = ({ open, user, onClose }) => {
   };
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="lg">
+    <Dialog
+      open={open}
+      onClose={onClose}
+      fullWidth
+      maxWidth="lg"
+      PaperProps={{
+        sx: {
+          mx: { xs: 1, sm: 2 },
+          width: { xs: 'calc(100% - 16px)', sm: 'auto' }
+        }
+      }}
+    >
       <DialogTitle>Detail študenta</DialogTitle>
-      <DialogContent>
+      <DialogContent sx={{ px: { xs: 2, sm: 3 } }}>
         {!userId ? (
           <Typography color="text.secondary">Nie je vybraný študent.</Typography>
         ) : isFetching ? (
@@ -173,7 +184,7 @@ const UserDetailsDialog = ({ open, user, onClose }) => {
               <Typography variant="h6" sx={{ mb: 1 }}>
                 Body podľa predmetov
               </Typography>
-              <TableContainer>
+              <TableContainer sx={{ overflowX: 'auto' }}>
                 <Table size="small">
                   <TableHead>
                     <TableRow>
@@ -207,7 +218,7 @@ const UserDetailsDialog = ({ open, user, onClose }) => {
               <Typography variant="h6" sx={{ mb: 1 }}>
                 Projekty
               </Typography>
-              <TableContainer>
+              <TableContainer sx={{ overflowX: 'auto' }}>
                 <Table size="small">
                   <TableHead>
                     <TableRow>
@@ -247,7 +258,7 @@ const UserDetailsDialog = ({ open, user, onClose }) => {
               <Typography variant="h6" sx={{ mb: 1 }}>
                 Moduly a aktivita
               </Typography>
-              <TableContainer>
+              <TableContainer sx={{ overflowX: 'auto' }}>
                 <Table size="small">
                   <TableHead>
                     <TableRow>
@@ -285,11 +296,24 @@ const UserDetailsDialog = ({ open, user, onClose }) => {
           </Box>
         )}
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} color="inherit">
-          Zavrieť
+      <DialogActions
+        disableSpacing
+        sx={{ flexWrap: 'wrap', gap: 1, justifyContent: { xs: 'stretch', sm: 'flex-end' } }}
+      >
+        <Button
+          onClick={onClose}
+          color="error"
+          variant="outlined"
+          sx={{ width: { xs: '100%', sm: 'auto' } }}
+        >
+          Zrušiť
         </Button>
-        <Button variant="contained" onClick={handleSave} disabled={!userId || isSaving}>
+        <Button
+          variant="contained"
+          onClick={handleSave}
+          disabled={!userId || isSaving}
+          sx={{ width: { xs: '100%', sm: 'auto' } }}
+        >
           {isSaving ? 'Ukladám...' : 'Uložiť profil'}
         </Button>
       </DialogActions>
