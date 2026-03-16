@@ -70,7 +70,9 @@ const TestStatisticsModal = ({ testId, open, onClose }) => {
     >
       <DialogTitle>
         <Box display="flex" justifyContent="space-between" alignItems="center" gap={1}>
-          <DialogTitle sx={{ p: 0, fontWeight: 600 }}>Štatistiky testu</DialogTitle>
+          <Typography variant="h6" component="span" sx={{ p: 0, fontWeight: 600 }}>
+            Štatistiky testu
+          </Typography>
           <IconButton onClick={onClose} size="small">
             <CancelIcon />
           </IconButton>
@@ -470,4 +472,3 @@ TestStatisticsModal.propTypes = {
 };
 
 export default TestStatisticsModal;
-
