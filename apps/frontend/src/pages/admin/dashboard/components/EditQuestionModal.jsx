@@ -1,4 +1,5 @@
 import {
+  Box,
   Button,
   Dialog,
   DialogActions,
@@ -167,26 +168,34 @@ const EditQuestionModal = ({ open, question, onClose, onSubmit }) => {
             {/* Preview */}
             <Stack spacing={1}>
               <Typography variant="subtitle2">Náhľad otázky:</Typography>
-              <Typography
-                variant="body1"
-                sx={{ fontWeight: 600, p: 1, bgcolor: 'grey.50', borderRadius: 1 }}
+              <Box
+                sx={{
+                  p: 2,
+                  borderRadius: 1,
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  bgcolor: (theme) =>
+                    theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.06)' : 'grey.50'
+                }}
               >
-                {formData.text || 'Text otázky...'}
-              </Typography>
-              {['a', 'b', 'c', 'd'].map((optionKey) => (
-                <Typography
-                  key={optionKey}
-                  variant="body2"
-                  sx={{
-                    ml: 2,
-                    color: optionKey === formData.correct ? 'success.dark' : 'text.secondary',
-                    fontWeight: optionKey === formData.correct ? 600 : 400
-                  }}
-                >
-                  {optionKey.toUpperCase()}) {formData.options[optionKey] || '(prázdne)'}
-                  {optionKey === formData.correct && ' ✓'}
+                <Typography variant="body1" sx={{ fontWeight: 600, mb: 1 }}>
+                  {formData.text || 'Text otázky...'}
                 </Typography>
-              ))}
+                {['a', 'b', 'c', 'd'].map((optionKey) => (
+                  <Typography
+                    key={optionKey}
+                    variant="body2"
+                    sx={{
+                      ml: 1,
+                      color: optionKey === formData.correct ? 'success.main' : 'text.secondary',
+                      fontWeight: optionKey === formData.correct ? 600 : 400
+                    }}
+                  >
+                    {optionKey.toUpperCase()}) {formData.options[optionKey] || '(prázdne)'}
+                    {optionKey === formData.correct && ' ✓'}
+                  </Typography>
+                ))}
+              </Box>
             </Stack>
           </Stack>
         </DialogContent>

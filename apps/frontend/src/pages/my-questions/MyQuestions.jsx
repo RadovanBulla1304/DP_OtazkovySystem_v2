@@ -1,13 +1,17 @@
 import { useCurrentSubject } from '@app/hooks/useCurrentSubject'; // adjust path as needed
+import EditQuestionModal from '@app/pages/admin/dashboard/components/EditQuestionModal';
+import RespondToValidationModal from '@app/pages/admin/subjects/components/RespondToValidationModal';
+import ValidateQuestionModal from '@app/pages/admin/subjects/components/ValidateQuestionModal';
 import * as authService from '@app/pages/auth/authService';
 import {
   useGetModulsBySubjectQuery,
   useGetQuestionByUserIdQuery,
   useGetQuestionsByModulQuery,
   useGetQuestionsBySubjectIdQuery,
+  useRespondToValidationMutation,
+  useUpdateQuestionMutation,
   useValidateQuestionMutation
 } from '@app/redux/api';
-import ValidateQuestionModal from '@app/pages/admin/subjects/components/ValidateQuestionModal';
 import { Box, Typography } from '@mui/material';
 import React from 'react';
 import DebugWeekControls from './components/DebugWeekControls';
@@ -35,6 +39,15 @@ const MyQuestions = () => {
   const [validateOpen, setValidateOpen] = React.useState(false);
   const [questionToValidate, setQuestionToValidate] = React.useState(null);
   const [validateQuestion] = useValidateQuestionMutation();
+
+  // Week 3 respond/edit modal states
+  const [respondOpen, setRespondOpen] = React.useState(false);
+  const [questionToRespond, setQuestionToRespond] = React.useState(null);
+  const [respondToValidation] = useRespondToValidationMutation();
+
+  const [editModalOpen, setEditModalOpen] = React.useState(false);
+  const [questionToEdit, setQuestionToEdit] = React.useState(null);
+  const [updateQuestion] = useUpdateQuestionMutation();
 
   // Fetch modules for the selected subject
   const { data: subjectModuls = [] } = useGetModulsBySubjectQuery(subjectId, {
@@ -319,6 +332,22 @@ const MyQuestions = () => {
               setQuestionToValidate(q);
               setValidateOpen(true);
             }}
+            onRespond={
+              currentWeek === 3
+                ? (q) => {
+                    setQuestionToRespond(q);
+                    setRespondOpen(true);
+                  }
+                : undefined
+            }
+            onEdit={
+              currentWeek === 3
+                ? (q) => {
+                    setQuestionToEdit(q);
+                    setEditModalOpen(true);
+                  }
+                : undefined
+            }
           />
         );
       })}
@@ -336,6 +365,40 @@ const MyQuestions = () => {
             }).unwrap();
           } catch (error) {
             console.error('Error submitting validation:', error);
+          }
+        }}
+      />
+
+      <RespondToValidationModal
+        open={respondOpen}
+        question={questionToRespond}
+        onClose={() => setRespondOpen(false)}
+        onSubmit={async (questionId, payload) => {
+          try {
+            await respondToValidation({
+              questionId,
+              agreed: payload.agreed,
+              comment: payload.comment
+            }).unwrap();
+          } catch (error) {
+            console.error('Error submitting response:', error);
+          }
+        }}
+      />
+
+      <EditQuestionModal
+        open={editModalOpen}
+        question={questionToEdit}
+        onClose={() => {
+          setEditModalOpen(false);
+          setQuestionToEdit(null);
+        }}
+        onSubmit={async (questionId, updatedData) => {
+          try {
+            await updateQuestion({ questionId, ...updatedData }).unwrap();
+          } catch (error) {
+            console.error('Error updating question:', error);
+            throw error;
           }
         }}
       />

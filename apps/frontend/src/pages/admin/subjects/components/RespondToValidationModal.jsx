@@ -49,9 +49,25 @@ const RespondToValidationModal = ({
           <Typography variant="h6" sx={{ mb: 1, fontWeight: 600 }}>
             Vaša otázka:
           </Typography>
-          <Typography sx={{ mb: 2, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
-            {question.text}
-          </Typography>
+          <Box
+            sx={{
+              mb: 2,
+              p: 2,
+              borderRadius: 1,
+              border: '1px solid',
+              borderColor: 'divider',
+              bgcolor: (theme) =>
+                theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.06)' : 'grey.50'
+            }}
+          >
+            <Typography sx={{ mb: 1 }}>{question.text}</Typography>
+            {question.options &&
+              Object.entries(question.options).map(([key, value]) => (
+                <Typography key={key} variant="body2" sx={{ color: 'text.secondary', ml: 1 }}>
+                  {key.toUpperCase()}) {value}
+                </Typography>
+              ))}
+          </Box>
 
           <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
             <Chip
@@ -135,6 +151,7 @@ RespondToValidationModal.propTypes = {
   question: PropTypes.shape({
     _id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     text: PropTypes.string,
+    options: PropTypes.object,
     validated: PropTypes.bool,
     validation_comment: PropTypes.string,
     validated_by: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),

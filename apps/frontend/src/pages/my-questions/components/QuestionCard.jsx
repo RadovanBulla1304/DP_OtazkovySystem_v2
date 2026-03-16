@@ -1,8 +1,17 @@
-import { Box, Card, CardContent, Chip, Typography } from '@mui/material';
+import { Box, Button, Card, CardContent, Chip, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
 
-const QuestionCard = ({ question, currentWeek, isValidatedByUser = false, userId, onValidate }) => {
+const QuestionCard = ({
+  question,
+  currentWeek,
+  isValidatedByUser = false,
+  userId,
+  onValidate,
+  onRespond,
+  onEdit
+}) => {
   const isInWeek3OrLater = currentWeek >= 3;
+  const isWeek3 = currentWeek === 3;
 
   // For Week 2 validation questions, use different styling and behavior
   if (isValidatedByUser) {
@@ -21,9 +30,7 @@ const QuestionCard = ({ question, currentWeek, isValidatedByUser = false, userId
             ? {}
             : {
                 backgroundColor: (theme) =>
-                  theme.palette.mode === 'dark'
-                    ? 'rgba(255, 255, 255, 0.08)'
-                    : 'action.hover'
+                  theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'action.hover'
               }
         }}
         onClick={() => {
@@ -87,8 +94,38 @@ const QuestionCard = ({ question, currentWeek, isValidatedByUser = false, userId
   }
 
   // Original rendering for user's own questions
+  const responded = question.user_agreement;
+  const hasValidation = question.validated_by !== undefined && question.validated_by !== null;
+  const canRespondInWeek3 = isWeek3 && !responded && hasValidation && !!onRespond;
+
   return (
-    <Card sx={{ borderRadius: 2, height: 'fit-content' }}>
+    <Card
+      sx={{
+        borderRadius: 2,
+        height: 'fit-content',
+        border: isWeek3 ? '1px solid' : undefined,
+        borderColor: isWeek3
+          ? responded
+            ? 'success.main'
+            : hasValidation
+              ? 'warning.main'
+              : '#000000'
+          : undefined,
+        bgcolor: isWeek3 ? (responded ? 'success.50' : hasValidation ? 'warning.50' : 'transparent') : undefined,
+        cursor: canRespondInWeek3 ? 'pointer' : 'default',
+        '&:hover': canRespondInWeek3
+          ? {
+              backgroundColor: (theme) =>
+                theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'action.hover'
+            }
+          : {}
+      }}
+      onClick={() => {
+        if (canRespondInWeek3 && onRespond) {
+          onRespond(question);
+        }
+      }}
+    >
       <CardContent>
         <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
           {question.text}
@@ -118,7 +155,7 @@ const QuestionCard = ({ question, currentWeek, isValidatedByUser = false, userId
           <Box sx={{ mt: 2 }}>
             <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 1 }}>
               {/* Validation status */}
-              {question.validated_by ? (
+              {hasValidation ? (
                 <Chip
                   label={question.validated ? 'Validná' : 'Nevalidná'}
                   color={question.validated ? 'success' : 'error'}
@@ -130,7 +167,10 @@ const QuestionCard = ({ question, currentWeek, isValidatedByUser = false, userId
                   size="small"
                   sx={{
                     backgroundColor: '#000000',
-                    color: 'white'
+                    color: 'white',
+                    '&:hover': {
+                      backgroundColor: '#333333'
+                    }
                   }}
                 />
               )}
@@ -142,6 +182,21 @@ const QuestionCard = ({ question, currentWeek, isValidatedByUser = false, userId
                   color={question.user_agreement.agreed ? 'success' : 'warning'}
                   size="small"
                 />
+              )}
+
+              {isWeek3 && onEdit && (
+                <Button
+                  size="small"
+                  variant="outlined"
+                  color="primary"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit(question);
+                  }}
+                  sx={{ ml: 'auto' }}
+                >
+                  Upraviť
+                </Button>
               )}
             </Box>
 
@@ -194,7 +249,9 @@ QuestionCard.propTypes = {
   currentWeek: PropTypes.number.isRequired,
   isValidatedByUser: PropTypes.bool,
   userId: PropTypes.string.isRequired,
-  onValidate: PropTypes.func
+  onValidate: PropTypes.func,
+  onRespond: PropTypes.func,
+  onEdit: PropTypes.func
 };
 
 export default QuestionCard;
