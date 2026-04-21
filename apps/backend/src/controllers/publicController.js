@@ -3,10 +3,68 @@ const User = require("../models/user");
 const Teacher = require("../models/teacher");
 const { throwError } = require("../util/universal");
 const { validate, validated } = require("../util/validation");
-const { signinSchema, signupSchema, signupTeacherSchema, signinTeacherSchema } = require("../schemas/auth.schema");
-const { sendConfirmationEmail } = require("../services/emailService");
+const { signinSchema, signupSchema, signupTeacherSchema, signinTeacherSchema, requestPasswordResetSchema, resetPasswordSchema } = require("../schemas/auth.schema");
+const { sendConfirmationEmail, sendPasswordResetEmail } = require("../services/emailService");
 const { resolvePendingAssignments } = require("./pendingAssignmentController");
 const crypto = require("crypto");
+// Request password reset (send email)
+exports.requestPasswordReset = [
+  validate(requestPasswordResetSchema),
+  async (req, res) => {
+    const { email } = validated(req);
+    // Try to find user or teacher
+    let account = await User.findOne({ email });
+    let isTeacher = false;
+    if (!account) {
+      account = await Teacher.findOne({ email });
+      isTeacher = true;
+    }
+    if (!account) {
+      // Do not reveal if email exists
+      return res.status(200).send({ message: 'Ak email existuje, bol odoslaný odkaz na obnovenie hesla.' });
+    }
+    // Generate token
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+    account.passwordResetToken = resetToken;
+    account.passwordResetExpires = expires;
+    await account.save();
+    // Send email
+    await sendPasswordResetEmail(account.email, account.name, resetToken);
+    return res.status(200).send({ message: 'Ak email existuje, bol odoslaný odkaz na obnovenie hesla.' });
+  }
+];
+
+// Reset password (set new password)
+exports.resetPassword = [
+  validate(resetPasswordSchema),
+  async (req, res) => {
+    const { token, password } = validated(req);
+    // Try to find user or teacher by token
+    let account = await User.findOne({ passwordResetToken: token, passwordResetExpires: { $gt: new Date() } });
+    let isTeacher = false;
+    if (!account) {
+      account = await Teacher.findOne({ passwordResetToken: token, passwordResetExpires: { $gt: new Date() } });
+      isTeacher = true;
+    }
+    if (!account) {
+      return res.status(400).send({ message: 'Neplatný alebo expirovaný token.' });
+    }
+    // Set new password — teachers use pbkdf2 (setPassword), students use HMAC (same as SignIn)
+    if (isTeacher) {
+      account.setPassword(password);
+    } else {
+      account.password = crypto
+        .createHmac("sha256", process.env.SALT_KEY)
+        .update(password)
+        .digest("hex");
+    }
+    account.passwordResetToken = undefined;
+    account.passwordResetExpires = undefined;
+    await account.save();
+    return res.status(200).send({ message: 'Heslo bolo úspešne zmenené.' });
+  }
+];
 // Teacher sign-in
 
 

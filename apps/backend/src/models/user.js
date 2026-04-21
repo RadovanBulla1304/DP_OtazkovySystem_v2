@@ -58,6 +58,8 @@ const UserSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    passwordResetToken: { type: String },
+    passwordResetExpires: { type: Date },
     points: [
       {
         type: mongoose.Schema.Types.ObjectId,

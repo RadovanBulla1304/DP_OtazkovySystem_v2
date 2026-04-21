@@ -37,6 +37,8 @@ const TeacherSchema = new mongoose.Schema(
                 ref: "Subject",
             },
         ],
+        passwordResetToken: { type: String },
+        passwordResetExpires: { type: Date },
     },
     {
         timestamps: true,

@@ -46,6 +46,20 @@ export const api = createApi({
         body: data
       })
     }),
+    requestPasswordReset: builder.mutation({
+      query: (data) => ({
+        url: '/public/request-password-reset',
+        method: 'POST',
+        body: data
+      })
+    }),
+    resetPassword: builder.mutation({
+      query: (data) => ({
+        url: '/public/reset-password',
+        method: 'POST',
+        body: data
+      })
+    }),
     createUser: builder.mutation({
       query: (data) => ({
         url: '/admin/user',
@@ -1164,6 +1178,8 @@ export const {
   useLazyGetTeacherMeQuery,
   useLoginUserMutation,
   useLoginTeacherMutation,
+  useRequestPasswordResetMutation,
+  useResetPasswordMutation,
   useGetUserByIdQuery,
   useCreateUserMutation,
   useCreateTeacherMutation,
