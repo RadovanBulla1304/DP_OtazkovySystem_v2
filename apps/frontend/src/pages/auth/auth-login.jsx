@@ -135,7 +135,7 @@ export const AuthPage = () => {
               width: '100%'
             }}
           >
-            <Link component={RouterLink} to="/reset-password" variant="body2">
+            <Link component={RouterLink} to="/auth/request-password-reset" variant="body2">
               Zabudnuté heslo
             </Link>
             <Link component={RouterLink} to="/auth/register" variant="body2">

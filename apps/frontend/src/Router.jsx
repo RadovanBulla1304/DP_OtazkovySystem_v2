@@ -9,6 +9,7 @@ import adminRoutes from '@app/pages/admin';
 import SubjectDetail from './pages/admin/subjects/SubjectDetail';
 import Subjects from './pages/admin/subjects/Subjects';
 import AllUsersQuestions from './pages/all-users-questions/AllUsersQuestions';
+import ResetPassword from './pages/auth/reset-password';
 import Forum from './pages/forum/Forum';
 import MyQuestions from './pages/my-questions/MyQuestions';
 import Projects from './pages/projects/Projects';
@@ -23,6 +24,10 @@ export const router = createBrowserRouter([
       {
         path: 'auth',
         children: authRoutes
+      },
+      {
+        path: 'reset-password/:token',
+        element: <ResetPassword />
       }
     ]
   },

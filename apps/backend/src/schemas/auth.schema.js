@@ -107,4 +107,37 @@ module.exports = {
   signupSchema,
   signupTeacherSchema,
   signinTeacherSchema,
+  // Password reset request schema
+  requestPasswordResetSchema: Joi.object({
+    email: Joi.string()
+      .email({ tlds: { allow: false } })
+      .required()
+      .messages({
+        'string.email': 'Neplatný email',
+        'any.required': 'Email je povinný'
+      })
+  }),
+
+  // Password reset schema
+  resetPasswordSchema: Joi.object({
+    token: Joi.string().required().messages({
+      'any.required': 'Token je povinný'
+    }),
+    password: Joi.string()
+      .pattern(/^(?=.*[A-Z])(?=.*\d).{6,}$/)
+      .required()
+      .messages({
+        'string.pattern.base': 'Heslo musí mať aspoň 6 znakov, jedno veľké písmeno a jedno číslo',
+        'string.empty': 'Heslo je povinné',
+        'any.required': 'Heslo je povinné'
+      }),
+    password_confirmation: Joi.string()
+      .valid(Joi.ref('password'))
+      .required()
+      .messages({
+        'any.only': 'Potvrdenie hesla sa nezhoduje s heslom',
+        'string.empty': 'Potvrdenie hesla je povinné',
+        'any.required': 'Potvrdenie hesla je povinné'
+      })
+  })
 };

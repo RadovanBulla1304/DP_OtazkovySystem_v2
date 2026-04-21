@@ -1,5 +1,7 @@
 -------------------------------------------
 todo:
+-> neviem dat asi viac ako 3 vnorene komentare vo forum
+
 
 Poradie dokoncit odstranovanie prvkov z databazy. 
 -> napr som si akurat vsimol ze ked odstranim usera tak nebol asi odstraneny z predmetu. 

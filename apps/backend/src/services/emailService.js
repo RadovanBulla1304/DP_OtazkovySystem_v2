@@ -72,6 +72,45 @@ Ak ste sa neregistrovali, ignorujte tento email.
     }
 };
 
+const sendPasswordResetEmail = async (email, name, token) => {
+    const transporter = createTransporter();
+    const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/reset-password/${token}`;
+    const mailOptions = {
+        from: process.env.SMTP_FROM || 'noreply@uniza.sk',
+        to: email,
+        subject: 'Obnovenie hesla - Otázkový systém',
+        html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2>Dobrý deň, ${name || email}!</h2>
+                <p>Požiadali ste o obnovenie hesla v otázkovom systéme.</p>
+                <p>Pre nastavenie nového hesla kliknite na nasledujúci odkaz:</p>
+                <div style="margin: 30px 0;">
+                    <a href="${resetUrl}" 
+                         style="background-color: #1976d2; color: white; padding: 12px 30px; text-decoration: none; border-radius: 4px; display: inline-block;">
+                        Obnoviť heslo
+                    </a>
+                </div>
+                <p style="margin-top: 30px; color: #666; font-size: 12px;">
+                    Tento odkaz vyprší za 1 hodinu.<br>
+                    Ak ste o obnovenie hesla nežiadali, ignorujte tento email.
+                </p>
+            </div>
+        `,
+        text: `Dobrý deň, ${name || email}!\n\nPre nastavenie nového hesla použite tento odkaz: ${resetUrl}\nTento odkaz vyprší za 1 hodinu.\nAk ste o obnovenie hesla nežiadali, ignorujte tento email.`
+    };
+    if (transporter) {
+        try {
+            await transporter.sendMail(mailOptions);
+            return true;
+        } catch (error) {
+            return false;
+        }
+    } else {
+        return true;
+    }
+};
+
 module.exports = {
     sendConfirmationEmail,
+    sendPasswordResetEmail,
 };
