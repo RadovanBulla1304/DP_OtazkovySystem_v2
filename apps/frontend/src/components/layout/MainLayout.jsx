@@ -1,7 +1,4 @@
-import logoExpanded from '@app/assets/UNIZA_TEXT_A.png';
-import logoExpandedWhite from '@app/assets/UNIZA_TEXT_A_White.png';
-import logoCollapsed from '@app/assets/UNIZA_TEXT_B.png';
-import logoCollapsedWhite from '@app/assets/UNIZA_TEXT_B_White.png';
+const blendZilaLogo = '/BlendZila-noBg.png';
 import * as authService from '@app/pages/auth/authService';
 import { api, useGetTeacherMeQuery, useGetUserMeQuery } from '@app/redux/api';
 import { replaceDiacritics } from '@app/utils/common.util';
@@ -69,13 +66,17 @@ const SmoothBox = styled(Box)({
   transform: 'translateZ(0)'
 });
 
-const LogoContainer = styled(Box)({
+const LogoContainer = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'drawerCollapsed'
+})(({ drawerCollapsed }) => ({
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
-  height: 64,
-  minHeight: 64,
+  height: drawerCollapsed ? 90 : 160,
+  minHeight: drawerCollapsed ? 90 : 160,
   overflow: 'hidden',
+  transition: `height 300ms cubic-bezier(0.4, 0, 0.2, 1), min-height 300ms cubic-bezier(0.4, 0, 0.2, 1)`,
+  willChange: 'height',
   position: 'relative',
   '& img': {
     position: 'absolute',
@@ -88,17 +89,17 @@ const LogoContainer = styled(Box)({
     backfaceVisibility: 'hidden',
     pointerEvents: 'none' // Prevent image reloading on interactions
   }
-});
+}));
 
 // Memoized logo component to prevent reloading
 const Logo = React.memo(({ expanded, collapsed, drawerCollapsed }) => (
   <>
     <img
       src={expanded}
-      alt="uniza logo expanded"
+      alt="BlendZila logo"
       loading="eager"
       style={{
-        height: '50px',
+        height: '150px',
         width: 'auto',
         opacity: drawerCollapsed ? 0 : 1,
         transform: drawerCollapsed ? 'translateX(-100%)' : 'translateX(0)'
@@ -107,10 +108,10 @@ const Logo = React.memo(({ expanded, collapsed, drawerCollapsed }) => (
     />
     <img
       src={collapsed}
-      alt="uniza logo collapsed"
+      alt="BlendZila logo collapsed"
       loading="eager"
       style={{
-        height: '50px',
+        height: '80px',
         width: 'auto',
         opacity: drawerCollapsed ? 1 : 0,
         transform: drawerCollapsed ? 'translateX(0)' : 'translateX(100%)'
@@ -437,9 +438,8 @@ const MainLayout = ({ children }) => {
   );
 
   function DrawerContent({ drawerCollapsed, mode, adminOptions }) {
-    // Select logos based on theme mode
-    const currentLogoExpanded = mode === 'dark' ? logoExpandedWhite : logoExpanded;
-    const currentLogoCollapsed = mode === 'dark' ? logoCollapsedWhite : logoCollapsed;
+    const currentLogoExpanded = blendZilaLogo;
+    const currentLogoCollapsed = blendZilaLogo;
 
     return (
       <Box
@@ -452,7 +452,7 @@ const MainLayout = ({ children }) => {
           backfaceVisibility: 'hidden'
         }}
       >
-        <LogoContainer>
+        <LogoContainer drawerCollapsed={drawerCollapsed}>
           <Link
             to="/"
             style={{
