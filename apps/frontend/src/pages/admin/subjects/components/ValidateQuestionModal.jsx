@@ -18,6 +18,7 @@ import { useEffect, useState } from 'react';
 const ValidateQuestionModal = ({
   open = false,
   question = null,
+  assignment = null,
   onClose = () => {},
   onSubmit = () => {}
 }) => {
@@ -31,17 +32,22 @@ const ValidateQuestionModal = ({
       return;
     }
 
-    const hasExistingValidation =
-      question?.validated_by !== undefined && question?.validated_by !== null;
-
-    if (hasExistingValidation) {
-      setValid(question?.validated ? 'valid' : 'invalid');
-      setComment(question?.validation_comment || '');
+    // Prefer assignment-level data (per-student); fall back to question-level for old records
+    if (assignment?.validated) {
+      setValid(assignment.validation_result ? 'valid' : 'invalid');
+      setComment(assignment.validation_comment || '');
     } else {
-      setValid('valid');
-      setComment('');
+      const hasExistingValidation =
+        question?.validated_by !== undefined && question?.validated_by !== null;
+      if (hasExistingValidation) {
+        setValid(question?.validated ? 'valid' : 'invalid');
+        setComment(question?.validation_comment || '');
+      } else {
+        setValid('valid');
+        setComment('');
+      }
     }
-  }, [open, question]);
+  }, [open, question, assignment]);
 
   if (!question) return null;
 
@@ -117,6 +123,11 @@ ValidateQuestionModal.propTypes = {
     _id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     text: PropTypes.string,
     correct: PropTypes.string
+  }),
+  assignment: PropTypes.shape({
+    validated: PropTypes.bool,
+    validation_result: PropTypes.bool,
+    validation_comment: PropTypes.string
   }),
   onClose: PropTypes.func,
   onSubmit: PropTypes.func

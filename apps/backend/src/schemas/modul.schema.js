@@ -7,6 +7,8 @@ const createModulSchema = Joi.object({
     week_number: Joi.number().min(1),
     date_start: Joi.date().iso().required(),
     date_end: Joi.date().iso().greater(Joi.ref('date_start')).required(),
+    week2_start: Joi.date().iso().optional(),
+    week3_start: Joi.date().iso().optional(),
     subject: objectId.required(),
     createdBy: objectId.required(),
     is_active: Joi.boolean().default(true),
@@ -24,6 +26,8 @@ const editModulSchema = Joi.object({
         then: Joi.date().greater(Joi.ref('date_start')),
         otherwise: Joi.date()
     }),
+    week2_start: Joi.date().iso().allow(null).optional(),
+    week3_start: Joi.date().iso().allow(null).optional(),
     subject: objectId,
     createdBy: objectId,
     is_active: Joi.boolean(),

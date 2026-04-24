@@ -21,15 +21,8 @@ const Week2 = ({
   const assignments = assignmentsData?.data || [];
   const automaticPoints = assignmentsData?.automaticPoints || 0;
 
-  // Get the assigned questions, filtering out any null/undefined questions
-  const assignedQuestions = assignments
-    .map((assignment) => assignment.question)
-    .filter((q) => q !== null && q !== undefined);
-
-  // Check which questions have been validated by the current user
-  const questionsValidatedByUser = assignedQuestions.filter(
-    (q) => q && q.validated_by && String(q.validated_by) === String(userId)
-  ).length;
+  // Per-student validation status now lives on the assignment, not on q.validated_by
+  const questionsValidatedByUser = assignments.filter((a) => a.validated).length;
 
   // Week 2 points are module-specific: 1 point per validated assigned question (max 2)
   const earnedPoints = questionsValidatedByUser;
@@ -69,10 +62,13 @@ const Week2 = ({
       </Stack>
       <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
         {[0, 1].map((i) => {
-          const q = assignedQuestions[i];
-          if (q) {
-            // Check if current user has validated this question
-            const validated = q.validated_by && String(q.validated_by) === String(userId);
+          const assignment = assignments[i];
+          const q = assignment?.question;
+          if (q && q._id) {
+            // Use assignment-level validation data (per-student, never overwritten by other students)
+            const validated = assignment.validated;
+            const validationResult = assignment.validation_result;
+            const validationComment = assignment.validation_comment;
             const canValidateInWeek2 = isCurrent;
             return (
               <Box
@@ -95,7 +91,7 @@ const Week2 = ({
                 }}
                 onClick={() => {
                   if (canValidateInWeek2) {
-                    setQuestionToValidate(q);
+                    setQuestionToValidate({ question: q, assignment });
                     setValidateOpen(true);
                   }
                 }}
@@ -119,16 +115,16 @@ const Week2 = ({
                 {validated && (
                   <Box sx={{ mt: 1 }}>
                     <Chip
-                      label={q.validated ? 'Validná' : 'Nevalidná'}
-                      color={q.validated ? 'success' : 'error'}
+                      label={validationResult ? 'Validná' : 'Nevalidná'}
+                      color={validationResult ? 'success' : 'error'}
                       size="small"
                     />
-                    {q.validation_comment && (
+                    {validationComment && (
                       <Typography
                         variant="body2"
                         sx={{ mt: 1, fontStyle: 'italic', color: 'text.secondary' }}
                       >
-                        Komentár: {q.validation_comment}
+                        Komentár: {validationComment}
                       </Typography>
                     )}
                   </Box>

@@ -107,11 +107,6 @@ const MyQuestions = () => {
 
   // Helper to determine current week for a module
   const getCurrentWeek = (modul) => {
-    // Manual debug override disabled: always use module dates.
-    // if (debugWeekOverride !== null) {
-    //   return debugWeekOverride;
-    // }
-
     if (!modul || !modul.date_start || !modul.date_end) return 1;
 
     try {
@@ -120,8 +115,14 @@ const MyQuestions = () => {
       const end = new Date(modul.date_end);
 
       if (now < start) return 0; // Not started
-      if (now > end) return 4; // Finished (past week 3)
+      if (now > end) return 4; // Finished
 
+      // Use custom phase boundaries if the teacher set them
+      if (modul.week3_start && now >= new Date(modul.week3_start)) return 3;
+      if (modul.week2_start && now >= new Date(modul.week2_start)) return 2;
+      if (modul.week2_start || modul.week3_start) return 1; // Custom phases set, we're in phase 1
+
+      // Fallback: split range into equal 7-day buckets
       const diffDays = Math.floor((now - start) / (1000 * 60 * 60 * 24));
       const week = Math.floor(diffDays / 7) + 1;
       return Math.min(Math.max(week, 1), 3);

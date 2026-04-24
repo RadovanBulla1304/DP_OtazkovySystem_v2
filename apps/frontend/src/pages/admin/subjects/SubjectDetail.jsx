@@ -285,21 +285,65 @@ const SubjectDetail = () => {
     },
     {
       field: 'date_start',
-      headerName: 'Začiatok',
+      headerName: 'Začiatok modulu',
       flex: 1,
+      minWidth: 120,
+      headerAlign: 'center',
+      renderCell: (params) =>
+        params.row?.date_start ? dayjs(params.row.date_start).format('DD.MM.YYYY') : '-'
+    },
+    {
+      field: 'week2_start',
+      headerName: 'Prepnutie 1. → 2.',
+      flex: 1,
+      minWidth: 130,
       headerAlign: 'center',
       renderCell: (params) => {
-        return params.row?.date_start ? dayjs(params.row.date_start).format('DD.MM.YYYY') : '-';
+        if (params.row?.week2_start) return dayjs(params.row.week2_start).format('DD.MM.YYYY');
+        const weekCount = params.row?.week_number || 0;
+        if (params.row?.date_start && weekCount >= 2) {
+          const calculated = dayjs(params.row.date_start).add(7, 'day').format('DD.MM.YYYY');
+          return (
+            <Tooltip title="Vypočítané automaticky (nie je nastavený vlastný termín)" arrow>
+              <span style={{ cursor: 'help', borderBottom: '1px dashed currentColor' }}>
+                {calculated} *
+              </span>
+            </Tooltip>
+          );
+        }
+        return '—';
+      }
+    },
+    {
+      field: 'week3_start',
+      headerName: 'Prepnutie 2. → 3.',
+      flex: 1,
+      minWidth: 130,
+      headerAlign: 'center',
+      renderCell: (params) => {
+        if (params.row?.week3_start) return dayjs(params.row.week3_start).format('DD.MM.YYYY');
+        const weekCount = params.row?.week_number || 0;
+        if (params.row?.date_start && weekCount >= 3) {
+          const calculated = dayjs(params.row.date_start).add(14, 'day').format('DD.MM.YYYY');
+          return (
+            <Tooltip title="Vypočítané automaticky (nie je nastavený vlastný termín)" arrow>
+              <span style={{ cursor: 'help', borderBottom: '1px dashed currentColor' }}>
+                {calculated} *
+              </span>
+            </Tooltip>
+          );
+        }
+        return '—';
       }
     },
     {
       field: 'date_end',
-      headerName: 'Koniec',
+      headerName: 'Ukončenie modulu',
       flex: 1,
+      minWidth: 130,
       headerAlign: 'center',
-      renderCell: (params) => {
-        return params.row?.date_end ? dayjs(params.row.date_end).format('DD.MM.YYYY') : '-';
-      }
+      renderCell: (params) =>
+        params.row?.date_end ? dayjs(params.row.date_end).format('DD.MM.YYYY') : '-'
     },
     {
       field: 'duration_days',
@@ -678,12 +722,14 @@ const SubjectDetail = () => {
       />
 
       {/* Edit Modul Modal */}
-      <EditModulModal
-        open={editModulModalOpen}
-        onClose={handleCloseEditModulModal}
-        onSuccess={handleEditModulSuccess}
-        modul={modulToEdit}
-      />
+      {editModulModalOpen && (
+        <EditModulModal
+          open={editModulModalOpen}
+          onClose={handleCloseEditModulModal}
+          onSuccess={handleEditModulSuccess}
+          modul={modulToEdit}
+        />
+      )}
 
       {/* Edit Subject Modal */}
       <EditSubjectModal

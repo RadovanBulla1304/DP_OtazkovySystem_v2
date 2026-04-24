@@ -21,6 +21,8 @@ const ModuleSchema = new mongoose.Schema(
             type: Date,
             required: true,
         },
+        week2_start: { type: Date, default: null },
+        week3_start: { type: Date, default: null },
         subject: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Subject",
