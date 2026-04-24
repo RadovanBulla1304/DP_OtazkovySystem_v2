@@ -139,15 +139,23 @@ const Dashboard = () => {
 
   // Debug week override disabled.
 
-  // When selected module changes, reset selectedWeekNumber to the current week (or 1)
+  // When selected module changes, reset selectedWeekNumber to the current week
   useEffect(() => {
     if (!selectedModul) return;
     const weeks = buildWeeks(selectedModul);
     const now = new Date();
-    const currentWeek = weeks.find((w) => isDateInRange(now, w.start, w.end)) || weeks[0] || null;
-    setSelectedWeekNumber(
-      currentWeek ? currentWeek.weekNumber : (weeks[0] && weeks[0].weekNumber) || 1
-    );
+    const currentWeek = weeks.find((w) => isDateInRange(now, w.start, w.end)) || null;
+    setSelectedWeekNumber(currentWeek ? currentWeek.weekNumber : (weeks[0]?.weekNumber ?? 1));
+    // Debug: log what phase data we received from the API
+    console.debug('[Dashboard] modul phase data:', {
+      title: selectedModul.title,
+      date_start: selectedModul.date_start,
+      week2_start: selectedModul.week2_start,
+      week3_start: selectedModul.week3_start,
+      date_end: selectedModul.date_end,
+      computedWeeks: weeks,
+      detectedCurrentWeek: currentWeek?.weekNumber ?? null
+    });
   }, [selectedModul]);
 
   // Helper: build week ranges from module dates, respecting custom phase boundaries
@@ -165,7 +173,7 @@ const Dashboard = () => {
 
         if (w2 || w3) {
           // Custom phases set by teacher
-          const week1End = w2 ? new Date(w2.getTime() - 1) : (w3 ? new Date(w3.getTime() - 1) : end);
+          const week1End = w2 ? new Date(w2.getTime() - 1) : w3 ? new Date(w3.getTime() - 1) : end;
           weeks.push({ weekNumber: 1, start: start.toISOString(), end: week1End.toISOString() });
           if (w2) {
             const week2End = w3 ? new Date(w3.getTime() - 1) : end;
@@ -354,7 +362,12 @@ const Dashboard = () => {
             if (isFinished) {
               return (
                 <Box sx={{ mt: { xs: 1.5, sm: 2 } }}>
-                  <Chip label="Modul ukončený — len na čítanie" color="default" size="small" sx={{ mb: 2 }} />
+                  <Chip
+                    label="Modul ukončený — len na čítanie"
+                    color="default"
+                    size="small"
+                    sx={{ mb: 2 }}
+                  />
                   <Box
                     sx={{
                       display: 'grid',
@@ -367,9 +380,7 @@ const Dashboard = () => {
                     }}
                   >
                     {weeks.map((w) => (
-                      <Box key={w.weekNumber}>
-                        {renderWeek(w, false)}
-                      </Box>
+                      <Box key={w.weekNumber}>{renderWeek(w, false)}</Box>
                     ))}
                   </Box>
                 </Box>

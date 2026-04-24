@@ -58,7 +58,12 @@ const CustomPhasesDialog = ({ open, onClose, onConfirm, initialValues }) => {
       toast.error('Ukončenie modulu musí byť po začiatku 3. týždňa.');
       return;
     }
-    onConfirm({ date_start: dateStart, week2_start: week2Start, week3_start: week3Start, date_end: dateEnd });
+    onConfirm({
+      date_start: dateStart,
+      week2_start: week2Start,
+      week3_start: week3Start,
+      date_end: dateEnd
+    });
     onClose();
   };
 

@@ -97,143 +97,143 @@ const EditModulModal = ({ open, onClose, onSuccess, modul }) => {
 
   return (
     <>
-    <Modal open={open} onClose={handleCancel} aria-labelledby="modal-editmodul-title">
-      <Box sx={style} component="form" onSubmit={handleSubmit(onSubmit)}>
-        <DialogTitle id="modal-editmodul-title" sx={{ fontWeight: 600, p: 0, mb: 3 }}>
-          Upraviť modul
-        </DialogTitle>
+      <Modal open={open} onClose={handleCancel} aria-labelledby="modal-editmodul-title">
+        <Box sx={style} component="form" onSubmit={handleSubmit(onSubmit)}>
+          <DialogTitle id="modal-editmodul-title" sx={{ fontWeight: 600, p: 0, mb: 3 }}>
+            Upraviť modul
+          </DialogTitle>
 
-        <Stack spacing={3}>
-          <Controller
-            name="title"
-            control={control}
-            rules={{ required: 'Názov modulu je povinný.' }}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                label="Názov modulu"
-                fullWidth
-                error={!!errors.title}
-                helperText={errors.title?.message}
-                disabled={isLoading}
+          <Stack spacing={3}>
+            <Controller
+              name="title"
+              control={control}
+              rules={{ required: 'Názov modulu je povinný.' }}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label="Názov modulu"
+                  fullWidth
+                  error={!!errors.title}
+                  helperText={errors.title?.message}
+                  disabled={isLoading}
+                />
+              )}
+            />
+
+            <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={sk}>
+              <Controller
+                name="date_start"
+                control={control}
+                render={({ field }) => (
+                  <DatePicker
+                    label="Dátum začiatku"
+                    value={field.value}
+                    onChange={(date) => field.onChange(date)}
+                    disabled={isLoading}
+                    format="dd/MM/yyyy"
+                    slotProps={{
+                      textField: { fullWidth: true }
+                    }}
+                  />
+                )}
               />
-            )}
-          />
 
-          <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={sk}>
-            <Controller
-              name="date_start"
-              control={control}
-              render={({ field }) => (
-                <DatePicker
-                  label="Dátum začiatku"
-                  value={field.value}
-                  onChange={(date) => field.onChange(date)}
-                  disabled={isLoading}
-                  format="dd/MM/yyyy"
-                  slotProps={{
-                    textField: { fullWidth: true }
-                  }}
-                />
-              )}
-            />
-
-            {/* Duration / phase buttons */}
-            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
-              {[1, 2, 3].map((weeks) => (
-                <Button
-                  key={weeks}
-                  variant="outlined"
-                  size="small"
-                  disabled={!startDate || isLoading}
-                  onClick={() => {
-                    const newEnd = new Date(startDate);
-                    newEnd.setDate(newEnd.getDate() + weeks * 7 - 1);
-                    newEnd.setHours(23, 59, 59, 999);
-                    setValue('date_end', newEnd);
-                    setValue('week2_start', null);
-                    setValue('week3_start', null);
-                  }}
-                >
-                  {weeks} týždeň{weeks > 1 ? 'e' : ''}
-                </Button>
-              ))}
-              <Tooltip title="Nastaviť vlastné termíny pre každú fázu modulu">
-                <Button
-                  variant={hasCustomPhases ? 'contained' : 'outlined'}
-                  size="small"
-                  color={hasCustomPhases ? 'secondary' : 'primary'}
-                  disabled={isLoading}
-                  onClick={() => setCustomPhasesOpen(true)}
-                >
-                  Vlastné{hasCustomPhases ? ' ✓' : ''}
-                </Button>
-              </Tooltip>
-            </Box>
-
-            <Controller
-              name="date_end"
-              control={control}
-              render={({ field }) => (
-                <DatePicker
-                  label="Dátum konca"
-                  value={field.value}
-                  onChange={(date) => field.onChange(date)}
-                  disabled={isLoading || !startDate}
-                  minDate={startDate || undefined}
-                  format="dd/MM/yyyy"
-                  slotProps={{
-                    textField: { fullWidth: true }
-                  }}
-                />
-              )}
-            />
-
-            {hasCustomPhases && (
-              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                {week2Start && (
-                  <Chip
-                    label={`2. týždeň od: ${dayjs(week2Start).format('DD/MM/YYYY')}`}
-                    size="small"
-                    color="secondary"
+              {/* Duration / phase buttons */}
+              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
+                {[1, 2, 3].map((weeks) => (
+                  <Button
+                    key={weeks}
                     variant="outlined"
-                  />
-                )}
-                {week3Start && (
-                  <Chip
-                    label={`3. týždeň od: ${dayjs(week3Start).format('DD/MM/YYYY')}`}
                     size="small"
-                    color="secondary"
-                    variant="outlined"
-                  />
-                )}
+                    disabled={!startDate || isLoading}
+                    onClick={() => {
+                      const newEnd = new Date(startDate);
+                      newEnd.setDate(newEnd.getDate() + weeks * 7 - 1);
+                      newEnd.setHours(23, 59, 59, 999);
+                      setValue('date_end', newEnd);
+                      setValue('week2_start', null);
+                      setValue('week3_start', null);
+                    }}
+                  >
+                    {weeks} týždeň{weeks > 1 ? 'e' : ''}
+                  </Button>
+                ))}
+                <Tooltip title="Nastaviť vlastné termíny pre každú fázu modulu">
+                  <Button
+                    variant={hasCustomPhases ? 'contained' : 'outlined'}
+                    size="small"
+                    color={hasCustomPhases ? 'secondary' : 'primary'}
+                    disabled={isLoading}
+                    onClick={() => setCustomPhasesOpen(true)}
+                  >
+                    Vlastné{hasCustomPhases ? ' ✓' : ''}
+                  </Button>
+                </Tooltip>
               </Box>
-            )}
-          </LocalizationProvider>
 
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, flexWrap: 'wrap' }}>
-            <Button
-              variant="outlined"
-              onClick={handleCancel}
-              disabled={isLoading}
-              color="error"
-              sx={{ width: { xs: '100%', sm: 'auto' } }}
-            >
-              Zrušiť
-            </Button>
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              disabled={isLoading}
-              sx={{ width: { xs: '100%', sm: 'auto' } }}
-            >
-              {isLoading ? 'Ukladá sa...' : 'Uložiť'}
-            </Button>
-          </Box>
-        </Stack>
-      </Box>
-    </Modal>
+              <Controller
+                name="date_end"
+                control={control}
+                render={({ field }) => (
+                  <DatePicker
+                    label="Dátum konca"
+                    value={field.value}
+                    onChange={(date) => field.onChange(date)}
+                    disabled={isLoading || !startDate}
+                    minDate={startDate || undefined}
+                    format="dd/MM/yyyy"
+                    slotProps={{
+                      textField: { fullWidth: true }
+                    }}
+                  />
+                )}
+              />
+
+              {hasCustomPhases && (
+                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                  {week2Start && (
+                    <Chip
+                      label={`2. týždeň od: ${dayjs(week2Start).format('DD/MM/YYYY')}`}
+                      size="small"
+                      color="secondary"
+                      variant="outlined"
+                    />
+                  )}
+                  {week3Start && (
+                    <Chip
+                      label={`3. týždeň od: ${dayjs(week3Start).format('DD/MM/YYYY')}`}
+                      size="small"
+                      color="secondary"
+                      variant="outlined"
+                    />
+                  )}
+                </Box>
+              )}
+            </LocalizationProvider>
+
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, flexWrap: 'wrap' }}>
+              <Button
+                variant="outlined"
+                onClick={handleCancel}
+                disabled={isLoading}
+                color="error"
+                sx={{ width: { xs: '100%', sm: 'auto' } }}
+              >
+                Zrušiť
+              </Button>
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                disabled={isLoading}
+                sx={{ width: { xs: '100%', sm: 'auto' } }}
+              >
+                {isLoading ? 'Ukladá sa...' : 'Uložiť'}
+              </Button>
+            </Box>
+          </Stack>
+        </Box>
+      </Modal>
 
       {customPhasesOpen && (
         <CustomPhasesDialog

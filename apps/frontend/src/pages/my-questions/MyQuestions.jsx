@@ -115,7 +115,7 @@ const MyQuestions = () => {
       const end = new Date(modul.date_end);
 
       if (now < start) return 0; // Not started
-      if (now > end) return 4;   // Finished
+      if (now > end) return 4; // Finished
 
       // Use custom phase boundaries if the teacher set them
       if (modul.week3_start && now >= new Date(modul.week3_start)) return 3;
