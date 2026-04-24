@@ -10,6 +10,7 @@ import {
 } from '@app/redux/api';
 import {
   Box,
+  Chip,
   CircularProgress,
   FormControl,
   InputLabel,
@@ -149,12 +150,9 @@ const Dashboard = () => {
     );
   }, [selectedModul]);
 
-  // Helper: build week ranges from module dates or fallback to week_number
+  // Helper: build week ranges from module dates, respecting custom phase boundaries
   const buildWeeks = (modul) => {
     if (!modul) return [];
-
-    // Always prioritize modul.week_number if it exists
-    const count = modul.week_number || 3;
     const weeks = [];
 
     try {
@@ -162,8 +160,25 @@ const Dashboard = () => {
       const end = modul.date_end ? new Date(modul.date_end) : null;
 
       if (start && end && end > start) {
-        // Use the week_number field to determine how many weeks, not the date calculation
-        // This ensures we respect the module configuration
+        const w2 = modul.week2_start ? new Date(modul.week2_start) : null;
+        const w3 = modul.week3_start ? new Date(modul.week3_start) : null;
+
+        if (w2 || w3) {
+          // Custom phases set by teacher
+          const week1End = w2 ? new Date(w2.getTime() - 1) : (w3 ? new Date(w3.getTime() - 1) : end);
+          weeks.push({ weekNumber: 1, start: start.toISOString(), end: week1End.toISOString() });
+          if (w2) {
+            const week2End = w3 ? new Date(w3.getTime() - 1) : end;
+            weeks.push({ weekNumber: 2, start: w2.toISOString(), end: week2End.toISOString() });
+          }
+          if (w3) {
+            weeks.push({ weekNumber: 3, start: w3.toISOString(), end: end.toISOString() });
+          }
+          return weeks;
+        }
+
+        // No custom phases: equal 7-day buckets based on week_number
+        const count = modul.week_number || 3;
         for (let i = 0; i < count; i++) {
           const s = new Date(start);
           s.setDate(start.getDate() + i * 7);
@@ -174,13 +189,13 @@ const Dashboard = () => {
         return weeks;
       }
     } catch {
-      // fall back to creating weeks from today
+      // fall through
     }
 
-    // Fallback: create weeks from today using week_number
+    // Hard fallback: weeks from today
+    const count = modul.week_number || 3;
     const now = new Date();
     for (let i = 0; i < count; i++) {
-      // Rough ranges: consecutive 7-day buckets from today
       const s = new Date(now);
       s.setDate(now.getDate() + i * 7);
       const e = new Date(s);
@@ -203,9 +218,9 @@ const Dashboard = () => {
     }
   };
 
-  // Get effective current week based on module dates.
+  // Get effective current week based on module dates. Returns null if module hasn't started or has ended.
   const getEffectiveCurrentWeek = (weeks, now) => {
-    return weeks.find((w) => isDateInRange(now, w.start, w.end)) || weeks[0] || null;
+    return weeks.find((w) => isDateInRange(now, w.start, w.end)) || null;
   };
 
   // Automatically trigger bulk assignment when transitioning to Week 2
@@ -333,6 +348,35 @@ const Dashboard = () => {
               return <DefaultWeek {...commonProps} />;
             };
 
+            const isFinished = !currentWeek && now >= new Date(weeks[weeks.length - 1]?.end || 0);
+
+            // Finished module: 3-column read-only grid
+            if (isFinished) {
+              return (
+                <Box sx={{ mt: { xs: 1.5, sm: 2 } }}>
+                  <Chip label="Modul ukončený — len na čítanie" color="default" size="small" sx={{ mb: 2 }} />
+                  <Box
+                    sx={{
+                      display: 'grid',
+                      gridTemplateColumns: {
+                        xs: '1fr',
+                        sm: 'repeat(2, 1fr)',
+                        lg: 'repeat(3, 1fr)'
+                      },
+                      gap: 2
+                    }}
+                  >
+                    {weeks.map((w) => (
+                      <Box key={w.weekNumber}>
+                        {renderWeek(w, false)}
+                      </Box>
+                    ))}
+                  </Box>
+                </Box>
+              );
+            }
+
+            // Active or not-started module: current week left + week selector right
             return (
               <Box
                 sx={{
@@ -351,7 +395,9 @@ const Dashboard = () => {
                   {currentWeek ? (
                     renderWeek(currentWeek, true)
                   ) : (
-                    <Typography>Žiadny aktuálny týždeň</Typography>
+                    <Typography color="text.secondary">
+                      Modul ešte nezačal. Začiatok: {formatDate(weeks[0]?.start)}
+                    </Typography>
                   )}
                 </Box>
 
@@ -381,7 +427,7 @@ const Dashboard = () => {
                   setValidateOpen={setValidateOpen}
                   setQuestionToRespond={setQuestionToRespond}
                   setRespondOpen={setRespondOpen}
-                  currentWeekNumber={getEffectiveCurrentWeek(weeks, now)?.weekNumber || 1}
+                  currentWeekNumber={getEffectiveCurrentWeek(weeks, now)?.weekNumber ?? 0}
                 />
               </Box>
             );

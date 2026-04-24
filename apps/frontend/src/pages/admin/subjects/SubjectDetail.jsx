@@ -678,12 +678,14 @@ const SubjectDetail = () => {
       />
 
       {/* Edit Modul Modal */}
-      <EditModulModal
-        open={editModulModalOpen}
-        onClose={handleCloseEditModulModal}
-        onSuccess={handleEditModulSuccess}
-        modul={modulToEdit}
-      />
+      {editModulModalOpen && (
+        <EditModulModal
+          open={editModulModalOpen}
+          onClose={handleCloseEditModulModal}
+          onSuccess={handleEditModulSuccess}
+          modul={modulToEdit}
+        />
+      )}
 
       {/* Edit Subject Modal */}
       <EditSubjectModal

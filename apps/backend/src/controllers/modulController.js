@@ -19,13 +19,18 @@ exports.createModul = [
             // Compute week_number if not present
             let week_number = matched.week_number;
             if (!week_number && matched.date_start && matched.date_end) {
-                const start = new Date(matched.date_start);
-                const end = new Date(matched.date_end);
-                // Always 1, 2, or 3 (for 1, 2, or 3 week modules)
-                const totalDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
-                if (totalDays <= 7) week_number = 1;
-                else if (totalDays <= 14) week_number = 2;
-                else week_number = 3;
+                if (matched.week3_start) {
+                    week_number = 3;
+                } else if (matched.week2_start) {
+                    week_number = 2;
+                } else {
+                    const start = new Date(matched.date_start);
+                    const end = new Date(matched.date_end);
+                    const totalDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+                    if (totalDays <= 7) week_number = 1;
+                    else if (totalDays <= 14) week_number = 2;
+                    else week_number = 3;
+                }
             }
             matched.week_number = week_number;
 

@@ -42,6 +42,8 @@ export const editModulSchema = Joi.object({
         then: Joi.date().greater(Joi.ref('date_start')),
         otherwise: Joi.date()
     }),
+    week2_start: Joi.date().iso().allow(null).optional(),
+    week3_start: Joi.date().iso().allow(null).optional(),
     subject: Joi.string().regex(/^[0-9a-fA-F]{24}$/),
     is_active: Joi.boolean(),
     required_questions_per_user: Joi.number(),
