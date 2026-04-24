@@ -7,6 +7,7 @@ const Module = require("../models/modul");
 const User = require("../models/user");
 const Teacher = require("../models/teacher");
 const Point = require("../models/point");
+const QuestionAssignment = require("../models/questionAssignment");
 /**
  * GET all questions
  */
@@ -167,14 +168,15 @@ exports.deleteQuestion = [
 
 /**
  * VALIDATE a question (Week 2 functionality)
+ * Each student's validation is stored on their QuestionAssignment record.
+ * The Question top-level validated_by is set by the FIRST validator only (for the author's Week 3 view).
  */
 exports.validateQuestion = async (req, res) => {
     try {
         const { id } = req.params;
         const { valid, comment } = req.body;
+        const validatorId = req.user?.user_id || req.user?.id || req.user?._id || null;
 
-
-        // Validate input
         if (typeof valid !== 'boolean') {
             return res.status(400).json({ message: "Valid field must be a boolean." });
         }
@@ -184,44 +186,81 @@ exports.validateQuestion = async (req, res) => {
             return res.status(404).json({ message: "Question not found." });
         }
 
-        // Update question with validation info
-        question.validated = valid;
-        question.validation_comment = comment || '';
-        question.validated_at = new Date();
-        const validatorId = req.user?.user_id || req.user?.id || req.user?._id || null;
-        question.validated_by = validatorId;
+        // Find this student's assignment for the question
+        const assignment = validatorId
+            ? await QuestionAssignment.findOne({ question: id, assignedTo: validatorId })
+            : null;
 
-        await question.save();
+        if (assignment) {
+            // Save validation result to the assignment (per-student, never overwrites other students)
+            assignment.validated = true;
+            assignment.validation_result = valid;
+            assignment.validation_comment = comment || '';
+            assignment.validated_at = new Date();
 
-        // Award point immediately for question validation
-        if (validatorId && !question.pointsAwarded.validation) {
-            try {
-                const modulRecord = await Module.findById(question.modul).select('subject');
-                const point = new Point({
-                    student: validatorId,
-                    subject: modulRecord?.subject || null,
-                    reason: `Question validated: ${question.text.substring(0, 50)}...`,
-                    points: 1,
-                    category: 'question_validation',
-                    related_entity: {
-                        entity_type: 'Question',
-                        entity_id: question._id
-                    }
-                });
-                await point.save();
-
-                // Mark question as awarded
-                question.pointsAwarded.validation = true;
-                await question.save();
-
-                // Add point to user's points array
-                await User.findByIdAndUpdate(
-                    validatorId,
-                    { $push: { points: point._id } }
-                );
-            } catch (pointError) {
-                // Don't fail the validation if point awarding fails
+            // Award point for THIS student's validation if not already awarded on this assignment
+            if (validatorId && !assignment.pointsAwarded) {
+                try {
+                    const modulRecord = await Module.findById(question.modul).select('subject');
+                    const point = new Point({
+                        student: validatorId,
+                        subject: modulRecord?.subject || null,
+                        reason: `Question validated: ${question.text.substring(0, 50)}...`,
+                        points: 1,
+                        category: 'question_validation',
+                        related_entity: {
+                            entity_type: 'Question',
+                            entity_id: question._id
+                        }
+                    });
+                    await point.save();
+                    assignment.pointsAwarded = true;
+                    await User.findByIdAndUpdate(validatorId, { $push: { points: point._id } });
+                } catch (pointError) {
+                    // Don't fail the validation if point awarding fails
+                }
             }
+
+            await assignment.save();
+
+            // Update question top-level ONLY for the FIRST validator (first-wins for author's Week 3 view)
+            if (!question.validated_by) {
+                question.validated = valid;
+                question.validation_comment = comment || '';
+                question.validated_at = new Date();
+                question.validated_by = validatorId;
+                await question.save();
+            }
+        } else {
+            // No assignment found — fallback: save directly to question (old behaviour / teacher use)
+            question.validated = valid;
+            question.validation_comment = comment || '';
+            question.validated_at = new Date();
+            question.validated_by = validatorId;
+
+            if (validatorId && !question.pointsAwarded.validation) {
+                try {
+                    const modulRecord = await Module.findById(question.modul).select('subject');
+                    const point = new Point({
+                        student: validatorId,
+                        subject: modulRecord?.subject || null,
+                        reason: `Question validated: ${question.text.substring(0, 50)}...`,
+                        points: 1,
+                        category: 'question_validation',
+                        related_entity: {
+                            entity_type: 'Question',
+                            entity_id: question._id
+                        }
+                    });
+                    await point.save();
+                    question.pointsAwarded.validation = true;
+                    await User.findByIdAndUpdate(validatorId, { $push: { points: point._id } });
+                } catch (pointError) {
+                    // Don't fail the validation if point awarding fails
+                }
+            }
+
+            await question.save();
         }
 
         res.status(200).json({

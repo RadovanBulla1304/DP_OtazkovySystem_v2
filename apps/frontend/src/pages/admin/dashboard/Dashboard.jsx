@@ -448,7 +448,8 @@ const Dashboard = () => {
       {/* Validation modal for external questions */}
       <ValidateQuestionModal
         open={validateOpen}
-        question={questionToValidate}
+        question={questionToValidate?.question || questionToValidate}
+        assignment={questionToValidate?.assignment}
         onClose={() => setValidateOpen(false)}
         onSubmit={async (questionId, payload) => {
           try {

@@ -28,7 +28,14 @@ const QuestionAssignmentSchema = new mongoose.Schema(
         assignedAt: {
             type: Date,
             default: Date.now
-        }
+        },
+
+        // Per-student validation data (each student stores their own result)
+        validated: { type: Boolean, default: false },
+        validation_result: { type: Boolean, default: null },  // true = valid, false = invalid
+        validation_comment: { type: String, trim: true, default: '' },
+        validated_at: { type: Date },
+        pointsAwarded: { type: Boolean, default: false }
     },
     {
         timestamps: true
